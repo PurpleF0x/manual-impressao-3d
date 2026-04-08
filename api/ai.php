@@ -214,9 +214,18 @@ if ($curlError) {
     echo json_encode(['success' => false, 'error' => 'Erro de rede: ' . $curlError]); exit;
 }
 
+if (empty(GEMINI_API_KEY)) {
+    echo json_encode(['success' => false, 'error' => 'Configuração: GEMINI_API_KEY não definida no servidor.']); exit;
+}
+
 $data = json_decode($response, true);
 if ($httpCode !== 200 || !isset($data['choices'][0]['message']['content'])) {
-    $errorDetail = $data['error']['message'] ?? 'Erro desconhecido da API.';
+    $errorDetail = $data['error']['message'] ?? null;
+    if (!$errorDetail && isset($data['error']['code'])) {
+        $errorDetail = "Erro Gemini ({$data['error']['code']}): " . ($data['error']['status'] ?? 'Verificar consola.');
+    }
+    if (!$errorDetail) $errorDetail = 'Erro inesperado da API (HTTP ' . $httpCode . ').';
+
     error_log("Erro Gemini API ($httpCode): " . $response);
     echo json_encode(['success' => false, 'error' => $errorDetail]); exit;
 }
