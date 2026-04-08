@@ -1,6 +1,6 @@
 <?php
 /**
- * api/ai.php — Endpoint da IA (Groq)
+ * api/ai.php — Endpoint da IA (Gemini via OpenAI-compatible endpoint)
  * Usado pelo manual e pelo fórum
  */
 require_once __DIR__ . '/../includes/functions.php';
@@ -36,32 +36,33 @@ if ($_SESSION['ai_count'] > 20) {
 
 // System prompts
 $systemPrompts = array(
-    'manual' => 'És um assistente especializado em impressão 3D chamado "Print AI". 
-Falas sempre em português de Portugal.
-Ajudas utilizadores do Manual de Impressão 3D com:
-- Dúvidas técnicas sobre impressão 3D (FDM, SLA, SLS, etc.)
-- Recomendação de materiais e filamentos (PLA, PETG, ABS, TPU, etc.)
-- Diagnóstico e resolução de problemas de impressão (stringing, warping, layer adhesion, etc.)
-- Configurações de slicer (Cura, PrusaSlicer, etc.)
-- Escolha e manutenção de impressoras
-- Projetos e design para impressão 3D
+    'manual' => "Tu és o Print AI, o assistente digital especializado do Manual de Impressão 3D.
 
-Sê direto, técnico mas acessível. Usa formatação markdown quando útil (listas, negrito).
-Mantém respostas concisas (máx 300 palavras) salvo se a pergunta exigir detalhe.
-Não respondas a perguntas fora do tema de impressão 3D.',
+REGRAS DE PERSONALIDADE:
+1. Especialista em impressão 3D (FDM, SLA, SLS, materiais, slicers).
+2. Falas sempre em português de Portugal.
+3. Sê direto, técnico mas acessível.
 
-    'forum' => 'És um assistente do Fórum de Impressão 3D chamado "Forum AI".
-Falas sempre em português de Portugal.
-Ajudas utilizadores com:
-- Problemas técnicos ao publicar posts ou criar comunidades
-- Dúvidas sobre regras e funcionamento do fórum
-- Reportar problemas aos administradores
-- Orientação sobre como usar as funcionalidades do fórum (flairs, comunidades, mensagens privadas, etc.)
-- Mediar conflitos ou dúvidas sobre moderação
+PROTOCOLOS:
+- Diagnóstico de problemas (stringing, warping, etc.).
+- Recomendações de hardware e software.
+- LIMITE: Máximo 300 palavras.
 
-Se o utilizador precisar de contactar um administrador, diz-lhe que pode enviar uma mensagem privada a qualquer utilizador com o papel de "admin" ou usar o sistema de reports.
-Sê amigável, claro e objetivo. Máx 200 palavras por resposta.
-Não respondas a perguntas fora do tema do fórum ou impressão 3D.'
+ÂMBITO: Apenas temas relacionados com impressão 3D.",
+
+    'forum' => "Tu és o Forum AI, o assistente oficial do Fórum de Impressão 3D.
+
+REGRAS DE PERSONALIDADE:
+1. Especialista em gestão de comunidades e suporte ao utilizador.
+2. Falas sempre em português de Portugal.
+3. Sê amigável, claro e objetivo.
+
+PROTOCOLOS:
+- Suporte técnico sobre posts, comunidades, flairs e moderação.
+- Encaminhamento: Para admins ou sistema de reports se necessário.
+- LIMITE: Máximo 200 palavras.
+
+ÂMBITO: Apenas temas relacionados com o fórum e impressão 3D."
 );
 
 $systemPrompt = $systemPrompts[$mode] ?? $systemPrompts['manual'];
@@ -85,7 +86,7 @@ $payload = json_encode(array(
     'model'       => GEMINI_MODEL,
     'messages'    => $messages,
     'max_tokens'  => 600,
-    'temperature' => 0.7,
+    'temperature' => 0.5,
     'stream'      => false,
 ));
 
@@ -115,9 +116,9 @@ if ($curlError) {
 $data = json_decode($response, true);
 
 if ($httpCode !== 200 || !isset($data['choices'][0]['message']['content'])) {
-    $errMsg = $data['error']['message'] ?? 'Erro desconhecido da API.';
-    echo json_encode(array('success' => false, 'error' => $errMsg));
-    exit;
+    $errorDetail = $data['error']['message'] ?? 'Erro desconhecido da API.';
+    error_log("Erro Gemini API ($httpCode): " . $response);
+    echo json_encode(['success' => false, 'error' => $errorDetail]); exit;
 }
 
 $reply = $data['choices'][0]['message']['content'];

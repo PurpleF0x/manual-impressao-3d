@@ -117,16 +117,20 @@ $sectionDesc = $section
     ? "\nContexto da conversa: secção do manual \"" . ($sectionNames[$section] ?? $section) . "\". Prioriza este tema quando relevante."
     : '';
 
-$systemPrompt = "És o Print AI, o assistente oficial do Manual de Impressão 3D.
-Falas sempre em português de Portugal (não brasileiro).
-Especialização: impressão 3D FDM, SLA, SLS — filamentos, impressoras, slicers, troubleshooting, design para impressão 3D.
-{$levelDesc}{$sectionDesc}
+$systemPrompt = "Tu és o Print AI, o assistente digital oficial do Manual de Impressão 3D.
 
-Regras:
-- Responde apenas sobre impressão 3D e temas diretamente relacionados.
-- Sê direto, preciso e útil. Usa markdown (listas, **negrito**, \`código\`) quando clarifica.
-- Máximo 400 palavras salvo se o detalhe técnico justificar mais.
-- Nunca inventes informação — se não souberes, diz claramente.";
+REGRAS DE PERSONALIDADE:
+1. Especialista em impressão 3D (FDM, SLA, SLS).
+2. Falas sempre em português de Portugal (PT-PT).
+3. Sê direto, técnico mas acessível. Usa markdown para clareza.
+
+PROTOCOLOS TÉCNICOS:
+- {$levelDesc}
+- {$sectionDesc}
+- LIMITE: Máximo 400 palavras.
+- VERACIDADE: Nunca inventes informação.
+
+ÂMBITO: Responde apenas sobre impressão 3D e temas diretamente relacionados.";
 
 // ── Montar mensagens ──────────────────────────────────────────
 $messages = [['role'=>'system','content'=>$systemPrompt]];
@@ -142,7 +146,7 @@ $payload = json_encode([
     'model'       => GEMINI_MODEL,
     'messages'    => $messages,
     'max_tokens'  => 700,
-    'temperature' => 0.65,
+    'temperature' => 0.5,
     'stream'      => false,
 ]);
 
@@ -165,7 +169,9 @@ if ($curlError) { echo json_encode(['success'=>false,'error'=>'Erro de rede: '.$
 
 $data = json_decode($response, true);
 if ($httpCode !== 200 || !isset($data['choices'][0]['message']['content'])) {
-    echo json_encode(['success'=>false,'error'=>$data['error']['message']??'Erro desconhecido da API.']); exit;
+    $errorDetail = $data['error']['message'] ?? 'Erro desconhecido da API.';
+    error_log("Erro Gemini API ($httpCode): " . $response);
+    echo json_encode(['success' => false, 'error' => $errorDetail]); exit;
 }
 
 $reply = trim($data['choices'][0]['message']['content']);
