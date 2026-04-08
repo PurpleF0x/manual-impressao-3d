@@ -80,23 +80,23 @@ foreach ($recentHistory as $h) {
 // Mensagem atual
 $messages[] = array('role' => 'user', 'content' => mb_substr($message, 0, 1000));
 
-// Chamada à API Groq
+// Chamada à API GEMINI (via OpenAI-compatible endpoint)
 $payload = json_encode(array(
-    'model'       => GROQ_MODEL,
+    'model'       => GEMINI_MODEL,
     'messages'    => $messages,
     'max_tokens'  => 600,
     'temperature' => 0.7,
     'stream'      => false,
 ));
 
-$ch = curl_init(GROQ_API_URL);
+$ch = curl_init(GEMINI_API_URL);
 curl_setopt_array($ch, array(
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST           => true,
     CURLOPT_POSTFIELDS     => $payload,
     CURLOPT_HTTPHEADER     => array(
         'Content-Type: application/json',
-        'Authorization: Bearer ' . GROQ_API_KEY,
+        'Authorization: Bearer ' . GEMINI_API_KEY,
     ),
     CURLOPT_TIMEOUT        => 30,
     CURLOPT_SSL_VERIFYPEER => false,

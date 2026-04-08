@@ -3,25 +3,40 @@
  * Configuração da Base de Dados — Manual de Impressão 3D
  */
 
-define('DB_HOST',    'sql303.infinityfree.com');
-define('DB_PORT',    3306);
-define('DB_NAME',    'if0_41343921_manual_3d');
-define('DB_USER',    'if0_41343921');
-define('DB_PASS',    'eBZRgR0bkaEB');
+define('DB_HOST',    getenv('DB_HOST')    ?: 'sql303.infinityfree.com');
+define('DB_PORT',    getenv('DB_PORT')    ?: 3306);
+define('DB_NAME',    getenv('DB_NAME')    ?: 'if0_41343921_manual_3d');
+define('DB_USER',    getenv('DB_USER')    ?: 'if0_41343921');
+define('DB_PASS',    getenv('DB_PASS')    ?: 'eBZRgR0bkaEB');
 define('DB_CHARSET', 'utf8mb4');
 
 define('DB_OPTIONS', [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     PDO::ATTR_EMULATE_PREPARES   => false,
+    // ESSENCIAL PARA O AIVEN: Ativa o SSL para ligações remotas seguras
+    PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
 ]);
 
 /**
  * Inicializa a base de dados a partir do sql/database.sql
  */
 function initializeDatabase(): bool {
-    $sqlFile = __DIR__ . '/../sql/database.sql';
-    if (!is_readable($sqlFile)) return false;
+    // Tenta encontrar o ficheiro SQL (nome original ou genérico)
+    $files = [
+        __DIR__ . '/../sql/database.sql',
+        __DIR__ . '/../sql/if0_41343921_manual_3d.sql'
+    ];
+
+    $sqlFile = null;
+    foreach ($files as $f) {
+        if (is_readable($f)) {
+            $sqlFile = $f;
+            break;
+        }
+    }
+
+    if (!$sqlFile) return false;
 
     try {
         $dsn = 'mysql:host=' . DB_HOST . ';port=' . DB_PORT . ';charset=' . DB_CHARSET;

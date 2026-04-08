@@ -146,21 +146,17 @@ if ($mode === 'assistant') {
     $maxTokens  = 600;
 }
 
-// ── CHAMADA À API GROQ ────────────────────────────────────────
 $payload = json_encode([
-    'model'       => GROQ_MODEL,
     'messages'    => $messages,
     'max_tokens'  => $maxTokens,
     'temperature' => 0.7,
     'stream'      => false,
 ]);
 
-$ch = curl_init(GROQ_API_URL);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST           => true,
     CURLOPT_POSTFIELDS     => $payload,
-    CURLOPT_HTTPHEADER     => ['Content-Type: application/json', 'Authorization: Bearer ' . GROQ_API_KEY],
     CURLOPT_TIMEOUT        => 30,
     CURLOPT_SSL_VERIFYPEER => false,
 ]);

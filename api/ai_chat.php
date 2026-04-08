@@ -137,21 +137,21 @@ foreach (array_slice($history, -20) as $h) {
 }
 $messages[] = ['role'=>'user','content'=>mb_substr($message,0,2000)];
 
-// ── Chamada à API Groq ────────────────────────────────────────
+// ── Chamada à API GEMINI (via OpenAI-compatible endpoint) ────
 $payload = json_encode([
-    'model'       => GROQ_MODEL,
+    'model'       => GEMINI_MODEL,
     'messages'    => $messages,
     'max_tokens'  => 700,
     'temperature' => 0.65,
     'stream'      => false,
 ]);
 
-$ch = curl_init(GROQ_API_URL);
+$ch = curl_init(GEMINI_API_URL);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST           => true,
     CURLOPT_POSTFIELDS     => $payload,
-    CURLOPT_HTTPHEADER     => ['Content-Type: application/json','Authorization: Bearer '.GROQ_API_KEY],
+    CURLOPT_HTTPHEADER     => ['Content-Type: application/json','Authorization: Bearer '.GEMINI_API_KEY],
     CURLOPT_TIMEOUT        => 30,
     CURLOPT_SSL_VERIFYPEER => false,
 ]);
