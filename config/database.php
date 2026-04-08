@@ -3,11 +3,12 @@
  * Configuração da Base de Dados — Manual de Impressão 3D
  */
 
-define('DB_HOST',    getenv('DB_HOST')    ?: 'sql303.infinityfree.com');
+// Tenta obter as variáveis do Render. Se não existirem, usa fallbacks locais (não o InfinityFree)
+define('DB_HOST',    getenv('DB_HOST')    ?: 'localhost');
 define('DB_PORT',    getenv('DB_PORT')    ?: 3306);
-define('DB_NAME',    getenv('DB_NAME')    ?: 'if0_41343921_manual_3d');
-define('DB_USER',    getenv('DB_USER')    ?: 'if0_41343921');
-define('DB_PASS',    getenv('DB_PASS')    ?: 'eBZRgR0bkaEB');
+define('DB_NAME',    getenv('DB_NAME')    ?: 'manual_3d');
+define('DB_USER',    getenv('DB_USER')    ?: 'root');
+define('DB_PASS',    getenv('DB_PASS')    ?: '');
 define('DB_CHARSET', 'utf8mb4');
 
 define('DB_OPTIONS', [
