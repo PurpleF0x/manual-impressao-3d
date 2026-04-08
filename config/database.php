@@ -39,9 +39,15 @@ function initializeDatabase(): bool {
     if (!$sqlFile) return false;
 
     try {
-        $dsn = 'mysql:host=' . DB_HOST . ';port=' . DB_PORT . ';charset=' . DB_CHARSET;
+        // Liga-se à base de dados específica para criar as tabelas
+        $dsn = 'mysql:host=' . DB_HOST . ';port=' . DB_PORT . ';dbname=' . DB_NAME . ';charset=' . DB_CHARSET;
         $pdo = new PDO($dsn, DB_USER, DB_PASS, DB_OPTIONS);
-        $pdo->exec(file_get_contents($sqlFile));
+
+        // Lê o conteúdo do ficheiro SQL
+        $query = file_get_contents($sqlFile);
+
+        // Executa o SQL
+        $pdo->exec($query);
         return true;
     } catch (PDOException $e) {
         error_log('Erro ao inicializar BD: ' . $e->getMessage());
