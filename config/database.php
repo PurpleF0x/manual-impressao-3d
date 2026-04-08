@@ -18,9 +18,12 @@ define('DB_OPTIONS', [
 ]);
 
 /**
- * Garante as tabelas estruturais que podem faltar no backup SQL
+ * Garante as tabelas estruturais com Chaves Primárias (exigência do Aiven)
  */
 function ensureStructuralTables(PDO $pdo): void {
+    // Desativar restrição de PK apenas para esta sessão (se o utilizador tiver permissão)
+    try { $pdo->exec("SET SESSION sql_require_primary_key = 0;"); } catch (Exception $e) {}
+
     // Tabelas do Fórum
     $pdo->exec("CREATE TABLE IF NOT EXISTS forum_communities (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -37,7 +40,8 @@ function ensureStructuralTables(PDO $pdo): void {
         user_id INT NOT NULL,
         title VARCHAR(255) NOT NULL,
         content TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (community_id) REFERENCES forum_communities(id) ON DELETE CASCADE
     ) ENGINE=InnoDB;");
 
     // Tabelas da IA
@@ -56,12 +60,13 @@ function ensureStructuralTables(PDO $pdo): void {
         conversation_id INT,
         role ENUM('system', 'user', 'assistant') NOT NULL,
         content TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (conversation_id) REFERENCES ai_conversations(id) ON DELETE CASCADE
     ) ENGINE=InnoDB;");
 }
 
 /**
- * Inicializa a base de dados a partir do sql/database.sql
+ * Inicializa a base de dados
  */
 function initializeDatabase(): bool {
     $files = [
@@ -78,9 +83,11 @@ function initializeDatabase(): bool {
         $dsn = 'mysql:host=' . DB_HOST . ';port=' . DB_PORT . ';dbname=' . DB_NAME . ';charset=' . DB_CHARSET;
         $pdo = new PDO($dsn, DB_USER, DB_PASS, DB_OPTIONS);
 
+        // ESSENCIAL PARA O AIVEN: Desativar a exigência de PK para o dump antigo
+        try { $pdo->exec("SET SESSION sql_require_primary_key = 0;"); } catch (Exception $e) {}
+
         if ($sqlFile) {
             $query = file_get_contents($sqlFile);
-            // Limpeza básica de comandos do InfinityFree
             $query = preg_replace('/USE `.*?`;/i', '', $query);
             $pdo->exec($query);
         }
@@ -97,6 +104,9 @@ function applyMigrationIfNeeded(PDO $pdo): void {
     static $done = false;
     if ($done) return;
     $done = true;
+
+    ensureStructuralTables($pdo);
+
     $migFile = __DIR__ . '/../sql/migration_comments.sql';
     if (is_readable($migFile)) {
         try {
@@ -104,8 +114,6 @@ function applyMigrationIfNeeded(PDO $pdo): void {
             if (empty($cols)) $pdo->exec(file_get_contents($migFile));
         } catch (Exception $e) {}
     }
-    // Sempre garantir tabelas estruturais no arranque
-    ensureStructuralTables($pdo);
 }
 
 function getDB(): PDO {
