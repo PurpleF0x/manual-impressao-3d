@@ -224,7 +224,10 @@ if ($httpCode !== 200 || !isset($data['choices'][0]['message']['content'])) {
     if (!$errorDetail && isset($data['error']['code'])) {
         $errorDetail = "Erro Gemini ({$data['error']['code']}): " . ($data['error']['status'] ?? 'Verificar consola.');
     }
-    if (!$errorDetail) $errorDetail = 'Erro inesperado da API (HTTP ' . $httpCode . ').';
+    // Se ainda não temos detalhe, mostra os primeiros 150 caracteres da resposta bruta
+    if (!$errorDetail) {
+        $errorDetail = 'Erro HTTP ' . $httpCode . ': ' . mb_substr(strip_tags($response), 0, 150);
+    }
 
     error_log("Erro Gemini API ($httpCode): " . $response);
     echo json_encode(['success' => false, 'error' => $errorDetail]); exit;
