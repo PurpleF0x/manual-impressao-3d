@@ -11,7 +11,8 @@ define('GEMINI_API_KEY', $envKey ?: '');
 // Nota: v1beta é necessário para o modelo gemini-2.0-flash
 define('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/v1beta/openai/v1/chat/completions');
 
-// Modelo: gemini-1.5-flash é mais estável e tem limites de quota superiores
-define('GEMINI_MODEL', 'gemini-1.5-flash');
+// Modelo: gemini-2.0-flash (Versão mais rápida e recente)
+define('GEMINI_MODEL', 'gemini-2.0-flash');
+
 
 
