@@ -139,6 +139,9 @@ $payload = json_encode([
     'temperature' => 0.7
 ]);
 
+// LOG DE DEBUG PARA O PAYLOAD
+error_log("Grok Payload: " . $payload);
+
 $ch = curl_init(GROK_API_URL);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
