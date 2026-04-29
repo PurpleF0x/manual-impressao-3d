@@ -648,7 +648,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <div class="bc-inner">
         <a href="index.php" style="color:var(--muted);text-decoration:none" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">🌐 Fórum</a>
         <span>›</span>
-        <a href="comunidade.php?slug=<?php echo urlencode($post['comm_slug']); ?>" style="color:var(--muted);text-decoration:none" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'"><?php echo $post['comm_icon']; ?> <?php echo sanitize($post['community_name']); ?></a>
+        <a href="comunidade.php?slug=<?php echo urlencode($post['comm_slug'] ?? ''); ?>" style="color:var(--muted);text-decoration:none" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'"><?php echo $post['comm_icon'] ?? ''; ?> <?php echo sanitize($post['community_name'] ?? ''); ?></a>
         <span>›</span>
         <span style="color:var(--text)"><?php echo sanitize(mb_substr($post['title'],0,55)).(mb_strlen($post['title'])>55?'…':''); ?></span>
     </div>
