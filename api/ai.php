@@ -97,7 +97,9 @@ if ($mode === 'assistant') {
 
     $messages = [['role' => 'system', 'content' => $systemPrompt]];
     foreach (array_slice($historyRows, -15) as $h) {
-        $messages[] = ['role' => $h['role'], 'content' => $h['content']];
+        if (!empty($h['role']) && !empty($h['content'])) {
+            $messages[] = ['role' => $h['role'], 'content' => $h['content']];
+        }
     }
     $messages[] = ['role' => 'user', 'content' => $message];
 
@@ -126,6 +128,11 @@ if ($mode === 'assistant') {
 }
 
 // ── CHAMADA À API GROK ────────────────────────────────────────
+if (empty(GROK_API_KEY)) {
+    echo json_encode(['success' => false, 'error' => 'Configuração incompleta: GROK_API_KEY não encontrada no servidor.']);
+    exit;
+}
+
 $payload = json_encode([
     'model'    => GROK_MODEL,
     'messages' => $messages,
@@ -147,12 +154,21 @@ curl_setopt_array($ch, [
 
 $response = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$curlError = curl_error($ch);
 curl_close($ch);
 
 $data = json_decode($response, true);
 if ($httpCode !== 200 || !isset($data['choices'][0]['message']['content'])) {
-    $err = $data['error']['message'] ?? 'Erro na API Grok.';
-    echo json_encode(['success' => false, 'error' => "Erro ($httpCode): $err"]); exit;
+    $err = $data['error']['message'] ?? $curlError ?? 'Erro desconhecido na API.';
+    // Log detalhado para o programador (podes ver isto nos logs do Render)
+    error_log("Grok API Error ($httpCode): " . print_r($data, true));
+
+    echo json_encode([
+        'success' => false,
+        'error' => "Erro ($httpCode): $err",
+        'debug' => (GROK_API_KEY === '') ? 'API Key em falta' : 'API Key presente'
+    ]);
+    exit;
 }
 
 $reply = trim($data['choices'][0]['message']['content']);
