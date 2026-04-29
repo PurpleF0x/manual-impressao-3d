@@ -127,27 +127,27 @@ if ($mode === 'assistant') {
     $messages[] = ['role' => 'user', 'content' => $message];
 }
 
-// ── CHAMADA À API GROK ────────────────────────────────────────
-if (empty(GROK_API_KEY)) {
-    echo json_encode(['success' => false, 'error' => 'Chave da API não configurada no servidor.']);
+// ── CHAMADA À API GROQ ────────────────────────────────────────
+if (empty(GROQ_API_KEY)) {
+    echo json_encode(['success' => false, 'error' => 'Chave da API Groq não configurada no servidor.']);
     exit;
 }
 
 $payload = json_encode([
-    'model'    => GROK_MODEL,
+    'model'    => GROQ_MODEL,
     'messages' => $messages,
     'temperature' => 0.7,
     'stream' => false
 ]);
 
-$ch = curl_init(GROK_API_URL);
+$ch = curl_init(GROQ_API_URL);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST           => true,
     CURLOPT_POSTFIELDS     => $payload,
     CURLOPT_HTTPHEADER     => [
         'Content-Type: application/json',
-        'Authorization: Bearer ' . GROK_API_KEY
+        'Authorization: Bearer ' . GROQ_API_KEY
     ],
     CURLOPT_TIMEOUT => 30,
     CURLOPT_SSL_VERIFYPEER => false,
@@ -170,13 +170,13 @@ if ($httpCode !== 200 || !isset($data['choices'][0]['message']['content'])) {
     }
 
     // Adicionar log do payload para debug (CUIDADO: remove isto depois)
-    error_log("Grok API Error ($httpCode). Payload enviado: " . $payload);
+    error_log("Groq API Error ($httpCode). Payload enviado: " . $payload);
     error_log("Resposta da API: " . $response);
 
     echo json_encode([
         'success' => false,
         'error' => "Erro ($httpCode): $err",
-        'debug' => "Modelo: " . GROK_MODEL
+        'debug' => "Modelo: " . GROQ_MODEL
     ]);
     exit;
 }
