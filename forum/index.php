@@ -209,10 +209,120 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .topbar-logo{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:3px;text-transform:uppercase;text-decoration:none;white-space:nowrap}
 .topbar-logo span{color:var(--muted)}
 .topbar-search{flex:1;max-width:420px;position:relative}
-.topbar-search input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px 8px 36px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;transition:border-color 0.2s}
-.topbar-search input:focus{outline:none;border-color:var(--accent)}
-.topbar-search input::placeholder{color:var(--muted)}
-.topbar-search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
+.topbar-search input{
+    width:100%;
+    background:rgba(26,26,38,0.5);
+    backdrop-filter:blur(10px) saturate(180%);
+    -webkit-backdrop-filter:blur(10px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.08);
+    border-bottom:2px solid var(--border);
+    border-radius:10px;
+    padding:9px 14px 9px 38px;
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.topbar-search input:focus{
+    outline:none;
+    background:rgba(34,34,53,0.7);
+    border-color:rgba(0,229,255,0.3);
+    border-bottom-color:var(--accent);
+    box-shadow: 0 8px 20px rgba(0,229,255,0.12);
+    transform:translateY(-1px);
+}
+.topbar-search input::placeholder{color:var(--muted);opacity:0.6}
+.topbar-search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none;transition:color 0.2s}
+.topbar-search:focus-within .topbar-search-icon { color: var(--accent); }
+
+/* Global Search Dropdown Windows 11 Style */
+.global-search-results {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 0;
+    right: 0;
+    background: rgba(17, 17, 24, 0.8);
+    backdrop-filter: blur(25px) saturate(200%);
+    -webkit-backdrop-filter: blur(25px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 24px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    max-height: 450px;
+    overflow-y: auto;
+    display: none;
+    z-index: 120;
+    animation: winSearchReveal 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+@keyframes winSearchReveal {
+    from { opacity: 0; transform: translateY(-12px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.global-search-results.active { display: block; }
+
+.search-group-label {
+    padding: 12px 16px 6px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    color: var(--accent);
+    letter-spacing: 2px;
+    opacity: 0.8;
+}
+
+.search-item {
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+}
+
+.search-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-left-color: var(--accent);
+}
+
+.search-item-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--surface3);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.search-item-info { flex: 1; min-width: 0; }
+.search-item-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+.search-item-sub {
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.search-no-res {
+    padding: 30px 20px;
+    text-align: center;
+    color: var(--muted);
+}
 .topbar-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
 .topbar-btn{background:none;border:1px solid var(--border2);border-radius:8px;padding:7px 14px;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;white-space:nowrap}
 .topbar-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,0.05)}
@@ -471,7 +581,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <a href="index.php" class="topbar-logo">3D<span>/</span>FÓRUM</a>
     <div class="topbar-search">
         <span class="topbar-search-icon">🔍</span>
-        <input type="text" placeholder="Pesquisar no fórum…" oninput="searchForum(this.value)">
+        <input type="text" placeholder="Pesquisar no fórum e manual…" oninput="handleGlobalSearch(this.value)" autocomplete="off" id="globalSearchInput">
+        <div id="globalSearchResults" class="global-search-results"></div>
     </div>
     <div class="topbar-actions">
         <a href="../index.php" class="topbar-btn">← Manual</a>
@@ -696,6 +807,102 @@ function searchForum(val) {
         card.style.display=(!val||title.toLowerCase().indexOf(val)>=0||excerpt.toLowerCase().indexOf(val)>=0||comm.toLowerCase().indexOf(val)>=0)?'flex':'none';
     });
 }
+
+async function handleGlobalSearch(query) {
+    const resultsContainer = document.getElementById('globalSearchResults');
+    const q = query.toLowerCase().trim();
+
+    if (q.length < 2) {
+        resultsContainer.classList.remove('active');
+        return;
+    }
+
+    let html = '';
+
+    // 1. Pesquisa Local nos Posts do Feed
+    const localPosts = [];
+    document.querySelectorAll('.post-card').forEach(card => {
+        const title = card.querySelector('.post-title').textContent;
+        const comm = card.querySelector('.post-community').textContent;
+        const id = card.id.replace('post-', '');
+        if (title.toLowerCase().includes(q) || comm.toLowerCase().includes(q)) {
+            localPosts.push({ id, title, comm: comm.trim() });
+        }
+    });
+
+    if (localPosts.length > 0) {
+        html += '<div class="search-group-label">Posts no Feed</div>';
+        localPosts.slice(0, 5).forEach(p => {
+            html += `
+                <a href="topico.php?id=${p.id}" class="search-item">
+                    <div class="search-item-icon">📝</div>
+                    <div class="search-item-info">
+                        <span class="search-item-title">${p.title}</span>
+                        <span class="search-item-sub">${p.comm}</span>
+                    </div>
+                </a>
+            `;
+        });
+    }
+
+    // 2. Atalhos do Manual
+    const manualTopics = [
+        { t: 'Filamentos', h: '../index.php#filamentos', i: '🧪' },
+        { t: 'Troubleshooting', h: '../index.php#problemas', i: '🔧' },
+        { t: 'Parâmetros', h: '../index.php#processo', i: '⚙️' },
+        { t: 'Impressoras', h: '../index.php#tipos-impressoras', i: '🖨️' }
+    ].filter(m => m.t.toLowerCase().includes(q));
+
+    if (manualTopics.length > 0) {
+        html += '<div class="search-group-label">Manual de Impressão</div>';
+        manualTopics.forEach(m => {
+            html += `
+                <a href="${m.h}" class="search-item">
+                    <div class="search-item-icon">${m.i}</div>
+                    <div class="search-item-info">
+                        <span class="search-item-title">${m.t}</span>
+                        <span class="search-item-sub">Capítulo do Manual</span>
+                    </div>
+                </a>
+            `;
+        });
+    }
+
+    // 3. Pesquisa na API (Comunidades)
+    try {
+        const res = await fetch('api/forum.php?action=search_meta&q=' + encodeURIComponent(q));
+        const data = await res.json();
+        if (data.success && data.communities && data.communities.length > 0) {
+            html += '<div class="search-group-label">Comunidades</div>';
+            data.communities.forEach(c => {
+                html += `
+                    <a href="comunidade.php?slug=${c.slug}" class="search-item">
+                        <div class="search-item-icon">${c.icon}</div>
+                        <div class="search-item-info">
+                            <span class="search-item-title">${c.name}</span>
+                            <span class="search-item-sub">${c.member_count} membros</span>
+                        </div>
+                    </a>
+                `;
+            });
+        }
+    } catch(e) {}
+
+    if (!html) {
+        html = '<div class="search-no-res">Sem resultados para "' + query + '"</div>';
+    }
+
+    resultsContainer.innerHTML = html;
+    resultsContainer.classList.add('active');
+}
+
+// Fechar ao clicar fora
+document.addEventListener('click', function(e) {
+    const searchBox = document.querySelector('.topbar-search');
+    if (searchBox && !searchBox.contains(e.target)) {
+        document.getElementById('globalSearchResults').classList.remove('active');
+    }
+});
 
 
 // ── Preferências de conteúdo ──────────────────────────────────

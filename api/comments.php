@@ -151,6 +151,11 @@ switch ($action) {
             exit;
         }
 
+        // Atribuição de Recompensa se aprovado automaticamente pela IA
+        if ($toxResult === 'aprovado') {
+            addXP((int)$user['id'], 5, "Comentário aprovado automaticamente: #$id", 3);
+        }
+
         $message = $toxResult === 'aprovado'
             ? '✅ Comentário publicado com sucesso!'
             : '⏳ Comentário submetido! Ficará visível após moderação.';
@@ -194,6 +199,9 @@ switch ($action) {
             $row->execute([$cid]);
             $r = $row->fetch();
             if ($r) {
+                // Atribuição de Recompensa (XP/Coins) ao ser aprovado manualmente
+                addXP((int)$r['user_id'], 5, "Comentário aprovado: #$cid", 3);
+
                 sendEmailNotificationResend(
                     (int)$r['user_id'],
                     'O teu comentário foi aprovado!',
@@ -238,6 +246,18 @@ switch ($action) {
         $cid = (int)($input['comment_id'] ?? 0);
         if ($cid < 1) { echo json_encode(['success'=>false,'error'=>'ID inválido.']); exit; }
         $result = toggleCommentLike($cid, (int)$user['id']);
+
+        // Atribuição de Recompensa ao autor do comentário por receber um like
+        if ($result['liked']) {
+            $db = getDB();
+            $stmt = $db->prepare("SELECT user_id FROM comments WHERE id = ?");
+            $stmt->execute([$cid]);
+            $author = $stmt->fetch();
+            if ($author && (int)$author['user_id'] !== (int)$user['id']) {
+                addXP((int)$author['user_id'], 3, "Recebeu Like no comentário #$cid", 2);
+            }
+        }
+
         echo json_encode(['success'=>true,'liked'=>$result['liked'],'count'=>$result['count']]);
         break;
 

@@ -51,6 +51,18 @@ $loc       = $profile['location'] ?? '';
 $web       = $profile['website']  ?? '';
 $avUrl     = $profile['avatar_url'] ?? '';
 
+// XP e Emblemas
+$karmaTotal    = (int)($profile['karma_total'] ?? 0);
+$currentLevel  = getUserLevel($karmaTotal);
+$nextLevelXP   = $currentLevel['next'];
+$xpProgress    = 100;
+if ($nextLevelXP) {
+    $range = $nextLevelXP - $currentLevel['min'];
+    $currentRange = $karmaTotal - $currentLevel['min'];
+    $xpProgress = min(100, max(0, round(($currentRange / $range) * 100)));
+}
+$topBadges = getTopBadges($targetId);
+
 $csrf = generateCSRFToken();
 ?>
 <!DOCTYPE html>
@@ -113,7 +125,20 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
 .badge-exp.iniciante{background:rgba(0,229,255,0.1);color:var(--accent);border:1px solid rgba(0,229,255,0.3)}
 .badge-exp.intermedio{background:rgba(255,107,53,0.1);color:var(--accent2);border:1px solid rgba(255,107,53,0.3)}
 .badge-exp.avancado{background:rgba(124,58,237,0.1);color:#a78bfa;border:1px solid rgba(124,58,237,0.3)}
-.badge-exp.profissional{background:rgba(0,255,136,0.1);color:var(--accent4);border:1px solid rgba(0,255,136,0.3)}
+  .badge-exp.profissional{background:rgba(0,255,136,0.1);color:var(--accent4);border:1px solid rgba(0,255,136,0.3)}
+
+  /* WIDGET XP */
+  .xp-widget{background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;min-width:200px;text-align:left}
+  .xp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .xp-level-name{font-family:'Space Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+  .xp-value{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)}
+  .xp-bar-bg{height:6px;background:rgba(255,255,255,0.05);border-radius:10px;overflow:hidden}
+  .xp-bar-fill{height:100%;transition:width 0.5s ease-out;box-shadow:0 0 10px rgba(0,229,255,0.3)}
+  .xp-next{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);margin-top:6px;text-align:right}
+
+  .badges-row{display:flex;gap:8px;margin-top:12px}
+  .badge-slot{width:32px;height:32px;border-radius:8px;background:var(--surface3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;transition:all 0.2s}
+  .badge-slot:hover{transform:scale(1.1);border-color:var(--accent)}
 .meta-item{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--muted)}
 .meta-item a{color:var(--accent);text-decoration:none}
 .hero-bio{color:var(--muted);font-size:14px;line-height:1.7;max-width:520px}
@@ -260,10 +285,17 @@ main{max-width:960px;margin:0 auto;padding:40px 32px}
             <div class="hero-name"><?php echo sanitize($profile['full_name']); ?></div>
             <div class="hero-username">@<?php echo sanitize($profile['username']); ?></div>
             <div class="hero-meta">
-                <span class="badge-exp <?php echo sanitize($expLvl); ?>"><?php echo $expLabels[$expLvl] ?? 'Iniciante'; ?></span>
+                <span class="badge-exp" style="background:<?php echo $currentLevel['color']; ?>22; color:<?php echo $currentLevel['color']; ?>; border:1px solid <?php echo $currentLevel['color']; ?>55">
+                    <?php echo $currentLevel['name']; ?>
+                </span>
                 <?php if (!empty($loc)): ?><span class="meta-item">📍 <?php echo sanitize($loc); ?></span><?php endif; ?>
                 <?php if (!empty($web)): ?><span class="meta-item">🌐 <a href="<?php echo sanitize($web); ?>" target="_blank" rel="noopener noreferrer"><?php echo sanitize(parse_url($web, PHP_URL_HOST) ?: $web); ?></a></span><?php endif; ?>
                 <span class="meta-item">📅 Membro desde <?php echo date('M Y', strtotime($profile['created_at'])); ?></span>
+            </div>
+            <div class="badges-row">
+                <?php foreach($topBadges as $tb): ?>
+                    <div class="badge-slot" title="<?php echo sanitize($tb['name'] . ': ' . $tb['desc']); ?>"><?php echo $tb['icon']; ?></div>
+                <?php endforeach; ?>
             </div>
             <?php if (!empty($bio)): ?>
                 <div class="hero-bio"><?php echo nl2br(sanitize($bio)); ?></div>
@@ -271,9 +303,23 @@ main{max-width:960px;margin:0 auto;padding:40px 32px}
         </div>
 
         <div class="hero-stats">
-            <div class="stat-box"><div class="stat-num"><?php echo count($printers); ?></div><div class="stat-lbl">Impressoras</div></div>
-            <div class="stat-box"><div class="stat-num"><?php echo count($slicers); ?></div><div class="stat-lbl">Slicers</div></div>
-            <div class="stat-box"><div class="stat-num"><?php echo count($materials); ?></div><div class="stat-lbl">Materiais</div></div>
+            <div class="xp-widget">
+                <div class="xp-header">
+                    <span class="xp-level-name" style="color:<?php echo $currentLevel['color']; ?>"><?php echo $currentLevel['name']; ?></span>
+                    <span class="xp-value"><?php echo number_format($karmaTotal); ?> XP</span>
+                </div>
+                <div class="xp-bar-bg">
+                    <div class="xp-bar-fill" style="width: <?php echo $xpProgress; ?>%; background: <?php echo $currentLevel['color']; ?>"></div>
+                </div>
+                <?php if ($nextLevelXP): ?>
+                    <div class="xp-next">Faltam <?php echo ($nextLevelXP - $karmaTotal); ?> XP para o nível <?php echo getUserLevel($nextLevelXP)['name']; ?></div>
+                <?php endif; ?>
+            </div>
+            <div style="display:flex; gap:16px; margin-top:8px; justify-content: flex-end">
+                <div class="stat-box"><div class="stat-num"><?php echo count($printers); ?></div><div class="stat-lbl">Impressoras</div></div>
+                <div class="stat-box"><div class="stat-num"><?php echo count($slicers); ?></div><div class="stat-lbl">Slicers</div></div>
+                <div class="stat-box"><div class="stat-num"><?php echo count($materials); ?></div><div class="stat-lbl">Materiais</div></div>
+            </div>
         </div>
     </div>
 </div>

@@ -118,20 +118,18 @@ $config = $db->prepare("SELECT * FROM user_profile_config WHERE user_id=?");
 $config->execute(array($uid));
 $profileConfig = $config->fetch();
 if (!$profileConfig) {
-    $db->prepare("INSERT INTO user_profile_config (user_id, coins) VALUES (?,0)")->execute(array($uid));
-    $profileConfig = array('user_id'=>$uid,'frame_key'=>null,'background_key'=>null,'banner_url'=>null,'accent_color'=>null,'coins'=>0);
+    // Tenta obter moedas legadas calculando uma vez se for o primeiro acesso à nova loja
+    try {
+        $postCount   = (int)$db->query("SELECT COUNT(*) FROM forum_posts WHERE user_id=$uid AND status='approved'")->fetchColumn();
+        $replyCount  = (int)$db->query("SELECT COUNT(*) FROM forum_replies WHERE user_id=$uid")->fetchColumn();
+        $karmaPos    = (int)$db->query("SELECT COALESCE(SUM(GREATEST(vote_score,0)),0) FROM forum_posts WHERE user_id=$uid")->fetchColumn();
+        $legacyCoins = $postCount * 10 + $replyCount * 3 + $karmaPos * 2;
+    } catch(Exception $e){ $legacyCoins = 0; }
+
+    $db->prepare("INSERT INTO user_profile_config (user_id, coins) VALUES (?,?)")->execute(array($uid, $legacyCoins));
+    $profileConfig = array('user_id'=>$uid,'frame_key'=>null,'background_key'=>null,'banner_url'=>null,'accent_color'=>null,'coins'=>$legacyCoins);
 }
 $coins = (int)($profileConfig['coins'] ?? 0);
-
-// ── Calcular moedas por actividade (sync) ────────────────────
-try {
-    $postCount   = (int)$db->prepare("SELECT COUNT(*) FROM forum_posts WHERE user_id=?")->execute(array($uid)) ? $db->query("SELECT COUNT(*) FROM forum_posts WHERE user_id=$uid")->fetchColumn() : 0;
-    $replyCount  = (int)$db->query("SELECT COUNT(*) FROM forum_replies WHERE user_id=$uid")->fetchColumn();
-    $karmaPos    = (int)$db->query("SELECT COALESCE(SUM(GREATEST(vote_score,0)),0) FROM forum_posts WHERE user_id=$uid")->fetchColumn();
-    $earned = $postCount * 10 + $replyCount * 3 + $karmaPos * 2;
-    $db->prepare("UPDATE user_profile_config SET coins=? WHERE user_id=?")->execute(array($earned, $uid));
-    $coins = $earned;
-} catch(Exception $e){}
 
 // ── Inventário ────────────────────────────────────────────────
 $inventory = array();

@@ -20,6 +20,29 @@ function getCurrentUser(): ?array {
     global $_CACHE;
     if (!isset($_CACHE['current_user'])) {
         $db   = getDB();
+        // Garantir que a coluna karma_total e tabela xp_log existem (Auto-fix)
+        try {
+            $stmt = $db->prepare('SELECT karma_total FROM users LIMIT 1');
+            $stmt->execute();
+        } catch (Exception $e) {
+            $db->exec("ALTER TABLE users ADD COLUMN karma_total INT DEFAULT 0");
+            $db->exec("ALTER TABLE users ADD COLUMN prefs_show_karma TINYINT(1) DEFAULT 1");
+            $db->exec("ALTER TABLE users ADD COLUMN top_badges TEXT DEFAULT NULL");
+        }
+
+        try {
+            $db->query("SELECT 1 FROM xp_log LIMIT 1");
+        } catch (Exception $e) {
+            $db->exec("CREATE TABLE xp_log (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                xp_amount INT NOT NULL,
+                reason VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+        }
+
         $stmt = $db->prepare('SELECT * FROM users WHERE id = ? AND is_active = TRUE LIMIT 1');
         $stmt->execute([$_SESSION['user_id']]);
         $_CACHE['current_user'] = $stmt->fetch() ?: false;
@@ -48,14 +71,15 @@ function canModerate(?array $user = null): bool {
 
 function generateAvatar(string $name): string {
     $initials = '';
-    foreach (explode(' ', trim($name)) as $part) {
+    $parts = explode(' ', trim($name));
+    foreach ($parts as $part) {
         $i = strtoupper(substr($part, 0, 1));
         if ($i !== '') {
             $initials .= $i;
             if (strlen($initials) >= 2) break;
         }
     }
-    return substr($initials, 0, 2) ?: '??';
+    return $initials ?: '??';
 }
 
 function sanitize(string $input): string {
@@ -214,35 +238,131 @@ function verifyPassword(string $password, string $hash): bool {
 }
 
 /**
- * Sistema de XP e Karma
+ * Sistema de XP e Karma (e Moedas da Loja)
  */
-function addXP(int $userId, int $amount, string $reason): bool {
+function addXP(int $userId, int $xpAmount, string $reason, int $coinAmount = 0): bool {
     $db = getDB();
     try {
         $db->beginTransaction();
 
-        // Log da transação
+        // Log da transação de XP
         $stmt = $db->prepare("INSERT INTO xp_log (user_id, xp_amount, reason) VALUES (?, ?, ?)");
-        $stmt->execute([$userId, $amount, $reason]);
+        $stmt->execute([$userId, $xpAmount, $reason]);
 
-        // Atualiza o total no perfil do utilizador
+        // Atualiza o total no perfil do utilizador (Karma/XP)
         $stmt = $db->prepare("UPDATE users SET karma_total = karma_total + ? WHERE id = ?");
-        $stmt->execute([$amount, $userId]);
+        $stmt->execute([$xpAmount, $userId]);
+
+        // Atualiza moedas na loja (unificação da economia)
+        if ($coinAmount !== 0) {
+            // Garantir que a tabela existe (fallback caso a loja não tenha sido aberta)
+            try {
+                $db->query("SELECT coins FROM user_profile_config LIMIT 1");
+            } catch (Exception $e) {
+                $db->exec("CREATE TABLE IF NOT EXISTS user_profile_config (
+                    user_id INT PRIMARY KEY,
+                    frame_key VARCHAR(50) NULL,
+                    background_key VARCHAR(50) NULL,
+                    banner_url VARCHAR(500) NULL,
+                    accent_color VARCHAR(20) NULL,
+                    coins INT DEFAULT 0,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            }
+
+            $stmt = $db->prepare("UPDATE user_profile_config SET coins = coins + ? WHERE user_id = ?");
+            $stmt->execute([$coinAmount, $userId]);
+
+            // Se não afetou nenhuma linha, o registo pode não existir
+            if ($stmt->rowCount() === 0) {
+                $check = $db->prepare("SELECT 1 FROM user_profile_config WHERE user_id = ?");
+                $check->execute([$userId]);
+                if (!$check->fetch()) {
+                    $ins = $db->prepare("INSERT INTO user_profile_config (user_id, coins) VALUES (?, ?)");
+                    $ins->execute([$userId, max(0, $coinAmount)]);
+                }
+            }
+        }
 
         $db->commit();
         return true;
     } catch (Exception $e) {
-        $db->rollBack();
+        if ($db->inTransaction()) $db->rollBack();
         error_log("Erro addXP: " . $e->getMessage());
         return false;
     }
 }
 
 function getUserLevel(int $xp): array {
-    if ($xp >= 500) return ['name' => 'Lendário', 'color' => '#ff4500', 'min' => 500];
-    if ($xp >= 200) return ['name' => 'Especialista', 'color' => '#00e5ff', 'min' => 200];
-    if ($xp >= 100) return ['name' => 'Veterano', 'color' => '#ffd700', 'min' => 100];
-    if ($xp >= 50)  return ['name' => 'Ativo', 'color' => '#c0c0c0', 'min' => 50];
-    if ($xp >= 20)  return ['name' => 'Membro', 'color' => '#cd7f32', 'min' => 20];
-    return ['name' => 'Novo', 'color' => '#888', 'min' => 0];
+    if ($xp >= 500) return ['name' => 'Lendário', 'color' => '#ff4500', 'min' => 500, 'next' => null];
+    if ($xp >= 200) return ['name' => 'Especialista', 'color' => '#00e5ff', 'min' => 200, 'next' => 500];
+    if ($xp >= 100) return ['name' => 'Veterano', 'color' => '#ffd700', 'min' => 100, 'next' => 200];
+    if ($xp >= 50)  return ['name' => 'Ativo', 'color' => '#c0c0c0', 'min' => 50, 'next' => 100];
+    if ($xp >= 20)  return ['name' => 'Membro', 'color' => '#cd7f32', 'min' => 20, 'next' => 50];
+    return ['name' => 'Novo', 'color' => '#888', 'min' => 0, 'next' => 20];
+}
+
+/**
+ * Retorna os emblemas disponíveis para o utilizador com base nas suas conquistas.
+ */
+function getAvailableBadges(int $userId): array {
+    $db = getDB();
+    $badges = [];
+
+    // Buscar dados do utilizador
+    $stmt = $db->prepare("SELECT karma_total, created_at FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $u = $stmt->fetch();
+    if (!$u) return [];
+
+    $xp = (int)$u['karma_total'];
+
+    // Emblemas por Nível/XP
+    if ($xp >= 20)  $badges[] = ['id' => 'lvl_membro', 'name' => 'Membro Ativo', 'icon' => '🛡️', 'desc' => 'Alcançou o nível de Membro'];
+    if ($xp >= 100) $badges[] = ['id' => 'lvl_veterano', 'name' => 'Veterano', 'icon' => '🎖️', 'desc' => 'Alcançou o nível de Veterano'];
+    if ($xp >= 500) $badges[] = ['id' => 'lvl_lendario', 'name' => 'Lenda do Fórum', 'icon' => '👑', 'desc' => 'Alcançou o nível Lendário'];
+
+    // Emblemas por Atividade (Exemplos)
+    try {
+        $posts = (int)$db->query("SELECT COUNT(*) FROM forum_posts WHERE user_id = $userId")->fetchColumn();
+        if ($posts >= 10) $badges[] = ['id' => 'act_pioneer', 'name' => 'Pioneiro', 'icon' => '🚀', 'desc' => 'Publicou mais de 10 tópicos'];
+
+        $replies = (int)$db->query("SELECT COUNT(*) FROM forum_replies WHERE user_id = $userId")->fetchColumn();
+        if ($replies >= 50) $badges[] = ['id' => 'act_helper', 'name' => 'Ajudante', 'icon' => '🤝', 'desc' => 'Deu mais de 50 respostas'];
+
+        $printers = (int)$db->query("SELECT COUNT(*) FROM user_printers WHERE user_id = $userId")->fetchColumn();
+        if ($printers >= 3) $badges[] = ['id' => 'eqp_collector', 'name' => 'Colecionador', 'icon' => '🖨️', 'desc' => 'Tem 3 ou mais impressoras'];
+    } catch (Exception $e) {}
+
+    // Emblema de Antiguidade
+    $years = (time() - strtotime($u['created_at'])) / (365 * 24 * 3600);
+    if ($years >= 1) $badges[] = ['id' => 'time_1year', 'name' => '1 Ano de Casa', 'icon' => '🎂', 'desc' => 'Membro há mais de um ano'];
+
+    return $badges;
+}
+
+/**
+ * Retorna os Top 3 emblemas selecionados pelo utilizador.
+ */
+function getTopBadges(int $userId): array {
+    $db = getDB();
+    $stmt = $db->prepare("SELECT top_badges FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $val = $stmt->fetchColumn();
+    if (!$val) return [];
+
+    $selectedIds = json_decode($val, true) ?: [];
+    $allAvailable = getAvailableBadges($userId);
+
+    $top = [];
+    foreach ($selectedIds as $id) {
+        foreach ($allAvailable as $badge) {
+            if ($badge['id'] === $id) {
+                $top[] = $badge;
+                break;
+            }
+        }
+    }
+    return array_slice($top, 0, 3);
 }

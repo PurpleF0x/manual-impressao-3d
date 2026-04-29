@@ -1,9 +1,8 @@
 <?php
 /**
- * ai.php — Assistente Print AI (página completa com histórico)
+ * ai.php — Assistente Print AI (Limpo e Restaurado)
  */
 require_once __DIR__ . '/includes/functions.php';
-require_once __DIR__ . '/includes/ui_components.php';
 require_once __DIR__ . '/config/ai_config.php';
 
 $currentUser = isLoggedIn() ? getCurrentUser() : null;
@@ -56,13 +55,6 @@ if ($currentUser) {
     }
 }
 
-// ── Avatar helper ─────────────────────────────────────────────
-function avPathAi($url) {
-    if (!$url) return '';
-    if (strpos($url,'http')===0) return $url;
-    return ltrim($url, '/');
-}
-
 // ── Renderizar markdown no lado do servidor ───────────────────
 function renderMarkdown(string $text): string {
     $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
@@ -93,6 +85,7 @@ $pageTitle = $activeConv ? htmlspecialchars($activeConv['title']) : 'Print AI �
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= $pageTitle ?></title>
 <link rel="icon" type="image/svg+xml" href="favicons/favicon-manual.svg">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap">
 <style>
 :root {
@@ -116,7 +109,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
 /* ── LAYOUT ─────────────────────────────────────────────────── */
 .app-layout { display: flex; flex: 1; overflow: hidden; height: 100vh; }
 
-/* ── RAILS SIDEBAR (ICONS) ──────────────────────────────────── */
+/* ── RAILS SIDEBAR ─────────────────────────────────────────── */
 .rails-sidebar {
     width: 52px; background: #08080c; border-right: 1px solid var(--border2);
     display: flex; flex-direction: column; align-items: center; padding: 16px 0; gap: 20px; flex-shrink: 0; z-index: 60;
@@ -128,12 +121,11 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
 }
 .rails-btn:hover, .rails-btn.active { color: var(--accent); background: rgba(0,229,255,0.05); border-color: rgba(0,229,255,0.1); }
 .rails-btn.new { color: var(--text); border-color: var(--border2); margin-top: 4px; }
-
 .rails-spacer { flex: 1; }
 .rails-avatar {
     width: 32px; height: 32px; border-radius: 50%;
     background: linear-gradient(135deg, var(--accent3), var(--accent));
-    color: #000; font-size: 10px; font-weight: 800;
+    color: #fff; font-size: 10px; font-weight: 800;
     display: flex; align-items: center; justify-content: center; overflow: hidden;
     margin-bottom: 4px; border: 1px solid var(--border2); text-decoration: none;
 }
@@ -147,9 +139,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
 }
 .sidebar.collapsed { width: 0; border-right: none; }
 .sidebar-header { padding: 22px 18px 14px; border-bottom: 1px solid var(--border2); flex-shrink: 0; min-width: 260px; }
-.sidebar-label { font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
-.clear-history { font-size: 9px; cursor: pointer; color: var(--muted); transition: color 0.2s; border: none; background: none; text-transform: uppercase; letter-spacing: 1px; }
-.clear-history:hover { color: var(--accent2); }
+.sidebar-label { font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
 .new-conv-btn {
     width: 100%; background: var(--surface2); color: var(--text); border: 1px solid var(--border2); border-radius: 10px;
     padding: 10px 14px; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 600;
@@ -173,16 +163,15 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
 /* ── CHAT AREA ──────────────────────────────────────────────── */
 .chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); position: relative; }
 
-/* Context Banner */
-.context-banner {
-    padding: 10px 24px; background: rgba(124,58,237,0.07); border-bottom: 1px solid rgba(124,58,237,0.15);
-    display: flex; align-items: center; gap: 10px; font-size: 12px; color: #c4b5fd; flex-shrink: 0; z-index: 30;
-}
-.context-banner a { color: #a78bfa; text-decoration: none; font-weight: 600; }
-.context-close { margin-left: auto; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; }
-
 .messages { flex: 1; overflow-y: auto; padding: 40px 20px; display: flex; flex-direction: column; scroll-behavior: smooth; }
 .messages-inner { max-width: 800px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 32px; }
+
+/* Typing Indicator */
+.typing { display: flex; gap: 4px; padding: 12px 18px; background: var(--surface2); border-radius: 18px; width: fit-content; border-top-left-radius: 4px; margin-top: 10px; }
+.typing span { width: 6px; height: 6px; background: var(--muted); border-radius: 50%; animation: blink 1.4s infinite both; }
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: 0.2; } 40% { opacity: 1; } }
 
 /* Bubbles */
 .msg { display: flex; gap: 20px; animation: msgIn 0.3s ease-out; }
@@ -199,7 +188,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
 .msg-time { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 6px; display: block; }
 .msg.user .msg-time { text-align: right; }
 
-/* Welcome & Suggestions */
+/* Welcome */
 .welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; }
 .welcome-icon { width: 80px; height: 80px; background: linear-gradient(135deg, var(--accent3), var(--accent)); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 38px; margin-bottom: 24px; box-shadow: 0 0 40px rgba(0,229,255,0.15); }
 .suggestions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 600px; margin-top: 30px; }
@@ -220,9 +209,10 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
 .mode-toggle { display: flex; background: var(--surface2); border-radius: 8px; padding: 3px; gap: 3px; }
 .mode-btn { padding: 5px 10px; border-radius: 6px; border: none; background: none; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); cursor: pointer; transition: all 0.2s; }
 .mode-btn.active { background: var(--surface3); color: var(--accent); }
+#btnA.active { color: #a78bfa; border-color: rgba(167,139,250,0.3); }
 
 .send-btn { width: 38px; height: 38px; background: var(--accent); color: #000; border: none; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.2s; }
-.send-btn:hover:not(:disabled) { transform: scale(1.05); background: #fff; }
+.send-btn:hover { background: #fff; transform: scale(1.05); }
 
 .input-footer { text-align: center; font-size: 11px; color: var(--muted); margin-top: 10px; font-family: 'Space Mono', monospace; }
 
@@ -236,38 +226,32 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
 <body>
 
 <div class="app-layout">
-
     <nav class="rails-sidebar">
-        <button class="rails-btn" onclick="toggleSidebar()" title="Abrir/Fechar Histórico"><span id="sideIcon">📂</span></button>
-        <div class="rails-btn" title="Pesquisa Global" onclick="openGlobalSearch()"><span>🔍</span></div>
-        <a href="ai.php" class="rails-btn new" title="Nova Conversa"><span>+</span></a>
+        <button class="rails-btn" onclick="toggleSidebar()" title="Abrir/Fechar Histórico"><i class="fas fa-folder"></i></button>
+        <a href="ai.php" class="rails-btn new" title="Nova Conversa"><i class="fas fa-plus"></i></a>
         <div class="rails-spacer"></div>
-        <a href="forum/index.php" class="rails-btn" title="Fórum">🌐</a>
-        <a href="index.php" class="rails-btn" title="Manual">📖</a>
+        <a href="forum/" class="rails-btn" title="Fórum"><i class="fas fa-globe"></i></a>
+        <a href="index.php" class="rails-btn" title="Manual"><i class="fas fa-book"></i></a>
         <?php if ($currentUser): ?>
-        <div class="rails-btn karma-trigger" onclick="toggleKarma()" title="Ver o meu Karma" style="color:#ffd700; font-size: 14px; font-weight: bold; margin-bottom: -10px;">
-            ⚡
-        </div>
         <a href="forum/perfil.php?id=<?= (int)$currentUser['id'] ?>" class="rails-avatar">
-            <?php if (!empty($currentUser['avatar_url'])): ?><img src="<?= sanitize(avPathAi($currentUser['avatar_url'])) ?>" alt=""><?php else: ?><?= sanitize(mb_substr($currentUser['full_name'],0,2)) ?><?php endif; ?>
+            <?php if (!empty($currentUser['avatar_url'])): ?>
+                <img src="<?= sanitize($currentUser['avatar_url']) ?>" alt="">
+            <?php else: ?>
+                <?= sanitize(generateAvatar($currentUser['full_name'])) ?>
+            <?php endif; ?>
         </a>
         <?php endif; ?>
     </nav>
 
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-label">
-                <span>Histórico</span>
-                <?php if (!empty($conversations)): ?>
-                <button class="clear-history" onclick="clearAllHistory()">Limpar Tudo</button>
-                <?php endif; ?>
-            </div>
-            <a href="ai.php<?= $sectionContext ? '?section='.$sectionContext : '' ?>" class="new-conv-btn">Nova Conversa</a>
+            <div class="sidebar-label">Histórico</div>
+            <a href="ai.php" class="new-conv-btn">Nova Conversa</a>
         </div>
         <div class="sidebar-list" id="convList">
             <?php foreach ($conversations as $conv): $isActive = (int)$conv['id'] === $activeConvId; ?>
             <a href="ai.php?conv=<?= (int)$conv['id'] ?>" class="conv-item <?= $isActive ? 'active' : '' ?>" id="ci-<?= (int)$conv['id'] ?>">
-                <span class="conv-icon">📄</span>
+                <i class="far fa-file-alt"></i>
                 <div class="conv-title"><?= sanitize($conv['title']) ?></div>
                 <button class="conv-delete" onclick="deleteConv(event,<?= (int)$conv['id'] ?>)">×</button>
             </a>
@@ -276,14 +260,6 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
     </aside>
 
     <main class="chat-area">
-        <?php if ($sectionContext && !$activeConvId): ?>
-        <div class="context-banner" id="ctxBanner">
-            <span>📖</span>
-            <span>Contexto: <a href="index.php#<?= sanitize($sectionContext) ?>"><?= sanitize($sectionLabels[$sectionContext] ?? $sectionContext) ?></a></span>
-            <button class="context-close" onclick="document.getElementById('ctxBanner').remove()">×</button>
-        </div>
-        <?php endif; ?>
-
         <div class="messages" id="messages">
             <div class="messages-inner" id="messagesInner">
                 <?php if (empty($activeMessages)): ?>
@@ -319,7 +295,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
                             <button class="mode-btn active" id="btnB" onclick="setMode('beginner')">BÁSICO</button>
                             <button class="mode-btn" id="btnA" onclick="setMode('advanced')">AVANÇADO</button>
                         </div>
-                        <button class="send-btn" id="sendBtn" onclick="send()">↑</button>
+                        <button class="send-btn" id="sendBtn" onclick="send()"><i class="fas fa-arrow-up"></i></button>
                     </div>
                 </div>
                 <p class="input-footer">Print AI · <kbd>Enter</kbd> envia · <kbd>Shift+Enter</kbd> nova linha</p>
@@ -331,7 +307,6 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
 <script>
 var CSRF = '<?= $csrf ?>';
 var CONV_ID = <?= $activeConvId ?: 'null' ?>;
-var SECTION = '<?= sanitize($sectionContext) ?>';
 var MODE = localStorage.getItem('ai_mode') || 'beginner';
 var LOADING = false;
 
@@ -365,22 +340,6 @@ async function deleteConv(e, id) {
     } catch(e) { alert('Erro ao eliminar.'); }
 }
 
-async function clearAllHistory() {
-    if(!confirm('Tens a certeza que queres apagar TODO o histórico? Esta ação não pode ser revertida.')) return;
-    try {
-        const res = await fetch('api/ai.php', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({action:'clear_all', csrf_token:CSRF})
-        });
-        const data = await res.json();
-        if(data.success) {
-            document.getElementById('convList').innerHTML = '';
-            window.location.href = 'ai.php';
-        }
-    } catch(e) { alert('Erro ao limpar histórico.'); }
-}
-
 function useSug(btn) { document.getElementById('msgInput').value = btn.textContent; autoResize(document.getElementById('msgInput')); send(); }
 
 function md(text) {
@@ -408,25 +367,34 @@ async function send() {
     if(!msg) return;
     LOADING = true; inp.value = ''; inp.style.height = 'auto';
     appendMsg('user', msg);
+
+    // Typing Indicator
+    const typing = document.createElement('div');
+    typing.id = 'typing-indicator';
+    typing.className = 'msg assistant';
+    typing.innerHTML = `<div class="msg-av">🤖</div><div class="msg-body"><div class="typing"><span></span><span></span><span></span></div></div>`;
+    document.getElementById('messagesInner').appendChild(typing);
+    scrollBot();
+
     try {
         const res = await fetch('api/ai.php', {
             method: 'POST',
             headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({mode:'assistant', ai_mode:MODE, message:msg, conversation_id:CONV_ID, section:SECTION, csrf_token:CSRF})
+            body: JSON.stringify({mode:'assistant', ai_mode:MODE, message:msg, conversation_id:CONV_ID, csrf_token:CSRF})
         });
         const data = await res.json();
+        if(document.getElementById('typing-indicator')) document.getElementById('typing-indicator').remove();
         if(data.success) {
             appendMsg('assistant', data.reply);
             if(!CONV_ID && data.conversation_id) { CONV_ID = data.conversation_id; window.history.replaceState(null,'','ai.php?conv='+CONV_ID); }
         }
-    } catch(e) { appendMsg('assistant', '⚠️ Erro na ligação.'); }
+    } catch(e) {
+        if(document.getElementById('typing-indicator')) document.getElementById('typing-indicator').remove();
+        appendMsg('assistant', '⚠️ Erro na ligação.');
+    }
     LOADING = false;
 }
 scrollBot();
 </script>
-<?php
-renderSearchPill();
-if ($currentUser) renderKarmaPopover((int)$currentUser['id']);
-?>
 </body>
 </html>

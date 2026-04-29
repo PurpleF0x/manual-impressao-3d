@@ -86,6 +86,15 @@ if ($action === 'vote_post') {
     }
 
     $db->prepare("UPDATE forum_posts SET vote_score=? WHERE id=?")->execute(array($newScore,$postId));
+
+    // Atribuição de Karma/XP ao autor do post (+3 Like, -2 Dislike) e Moedas (+2 por Like)
+    if ($userVote !== 0) {
+        $xp = ($userVote === 1) ? 3 : -2;
+        $coins = ($userVote === 1) ? 2 : 0;
+        $reason = ($userVote === 1) ? "Recebeu Like no post #$postId" : "Recebeu Dislike no post #$postId";
+        addXP((int)$post['user_id'], $xp, $reason, $coins);
+    }
+
     echo json_encode(array('success'=>true,'score'=>$newScore,'user_vote'=>$userVote));
     exit;
 }
@@ -136,8 +145,13 @@ if ($action === 'create_reply') {
     if ($post['is_locked']) { echo json_encode(array('success'=>false,'error'=>'Este tópico está fechado.')); exit; }
     $ins = $db->prepare("INSERT INTO forum_replies (post_id,parent_id,user_id,content) VALUES (?,?,?,?)");
     $ins->execute(array($postId,$parentId,$uid,$content));
+    $replyId = (int)$db->lastInsertId();
     $db->prepare("UPDATE forum_posts SET reply_count=reply_count+1 WHERE id=?")->execute(array($postId));
-    echo json_encode(array('success'=>true,'reply_id'=>(int)$db->lastInsertId()));
+
+    // Atribuição de Karma/XP (+5 por resposta) e Moedas (+3)
+    addXP($uid, 5, "Publicou resposta no post #$postId", 3);
+
+    echo json_encode(array('success'=>true,'reply_id'=>$replyId));
     exit;
 }
 
@@ -159,6 +173,15 @@ if ($action === 'vote_reply') {
         else { $db->prepare("UPDATE forum_reply_votes SET value=? WHERE user_id=? AND reply_id=?")->execute(array($value,$uid,$replyId)); $newScore+=$value*2; $userVote=$value; }
     } else { $db->prepare("INSERT INTO forum_reply_votes (user_id,reply_id,value) VALUES (?,?,?)")->execute(array($uid,$replyId,$value)); $newScore+=$value; $userVote=$value; }
     $db->prepare("UPDATE forum_replies SET vote_score=? WHERE id=?")->execute(array($newScore,$replyId));
+
+    // Atribuição de Karma/XP ao autor da resposta (+3 Like, -2 Dislike) e Moedas (+2 por Like)
+    if ($userVote !== 0) {
+        $xp = ($userVote === 1) ? 3 : -2;
+        $coins = ($userVote === 1) ? 2 : 0;
+        $reason = ($userVote === 1) ? "Recebeu Like na resposta #$replyId" : "Recebeu Dislike na resposta #$replyId";
+        addXP((int)$reply['user_id'], $xp, $reason, $coins);
+    }
+
     echo json_encode(array('success'=>true,'score'=>$newScore,'user_vote'=>$userVote));
     exit;
 }
@@ -232,6 +255,10 @@ if ($action === 'approve_post') {
            ->execute(array((int)$post['community_id']));
         $db->prepare("INSERT INTO forum_moderation_log (post_id,moderator_id,action) VALUES (?,?,'approved')")
            ->execute(array($postId,$uid));
+
+        // Atribuição de Recompensa ao autor (agora que o post foi aprovado)
+        addXP((int)$post['user_id'], 15, "Post aprovado pela moderação: #$postId", 10);
+
         $db->commit();
         echo json_encode(array('success'=>true,'status'=>'approved'));
     } catch(Exception $e) {
@@ -334,9 +361,15 @@ if ($action === 'send_message') {
     if (mb_strlen($content) > 2000) { echo json_encode(array('success'=>false,'error'=>'Mensagem demasiado longa.')); exit; }
 
     // Verificar se destinatário existe
-    $rs = $db->prepare("SELECT id,full_name,username,avatar_url FROM users WHERE id=? AND is_active=1");
+    $rs = $db->prepare("SELECT id,full_name,username,avatar_url,role FROM users WHERE id=? AND is_active=1");
     $rs->execute(array($receiverId)); $receiver=$rs->fetch();
     if (!$receiver) { echo json_encode(array('success'=>false,'error'=>'Utilizador não encontrado.')); exit; }
+
+    // Bloquear envio para Master se o remetente não for staff
+    if ($receiver['role'] === 'master' && !canModerate($user)) {
+        echo json_encode(array('success'=>false,'error'=>'Não tens permissão para enviar mensagens diretas ao Administrador Master.'));
+        exit;
+    }
 
     $ins = $db->prepare("INSERT INTO private_messages (sender_id,receiver_id,content) VALUES (?,?,?)");
     $ins->execute(array($uid,$receiverId,$content));

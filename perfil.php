@@ -18,6 +18,8 @@ try { $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS location VARCHAR(100
 try { $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS website VARCHAR(255) DEFAULT NULL"); } catch(Exception $e){}
 try { $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) DEFAULT NULL"); } catch(Exception $e){}
 try { $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS experience_level ENUM('iniciante','intermedio','avancado','profissional') DEFAULT 'iniciante'"); } catch(Exception $e){}
+try { $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS karma_total INT DEFAULT 0"); } catch(Exception $e){}
+try { $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS top_badges TEXT DEFAULT NULL"); } catch(Exception $e){}
 
 // --- Tabelas extra ---
 try { $db->exec("CREATE TABLE IF NOT EXISTS user_printers (
@@ -151,6 +153,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
         }
         elseif ($action === 'remove_material') { $db->prepare("DELETE FROM user_materials WHERE id=? AND user_id=?")->execute([(int)$_POST['material_id'],$user['id']]); $success[]="Material removido."; }
+        elseif ($action === 'update_top_badges') {
+            $selected = $_POST['badges'] ?? [];
+            if (count($selected) > 3) {
+                $errors[] = "Só podes selecionar até 3 emblemas.";
+            } else {
+                $db->prepare("UPDATE users SET top_badges=? WHERE id=?")->execute([json_encode(array_values($selected)), $user['id']]);
+                $success[] = "Emblemas em destaque atualizados!";
+            }
+        }
     }
 }
 
@@ -198,6 +209,21 @@ try {
                               + array_sum(array_column($forumReplies, 'vote_score'));
 } catch(Exception $e) {}
 $csrf = generateCSRFToken();
+
+// XP e Emblemas
+$karmaTotal    = (int)($user['karma_total'] ?? 0);
+$currentLevel  = getUserLevel($karmaTotal);
+$nextLevelXP   = $currentLevel['next'];
+$xpProgress    = 100;
+if ($nextLevelXP) {
+    $range = $nextLevelXP - $currentLevel['min'];
+    $currentRange = $karmaTotal - $currentLevel['min'];
+    $xpProgress = min(100, max(0, round(($currentRange / $range) * 100)));
+}
+
+$availableBadges = getAvailableBadges((int)$user['id']);
+$topBadges       = getTopBadges((int)$user['id']);
+$topBadgeIds     = array_column($topBadges, 'id');
 $expLvl    = $user['experience_level'] ?? 'iniciante';
 $bio       = $user['bio'] ?? '';
 $loc       = $user['location'] ?? '';
@@ -413,6 +439,29 @@ if (!empty($_POST['action'])) {
   ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
   ::-webkit-scrollbar-thumb:hover{background:rgba(0,229,255,0.3)}
 
+  /* WIDGET XP */
+  .xp-widget{background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;min-width:200px}
+  .xp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .xp-level-name{font-family:'Space Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+  .xp-value{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)}
+  .xp-bar-bg{height:6px;background:rgba(255,255,255,0.05);border-radius:10px;overflow:hidden}
+  .xp-bar-fill{height:100%;transition:width 0.5s ease-out;box-shadow:0 0 10px rgba(0,229,255,0.3)}
+  .xp-next{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);margin-top:6px;text-align:right}
+
+  .badges-row{display:flex;gap:8px;margin-top:12px}
+  .badge-slot{width:32px;height:32px;border-radius:8px;background:var(--surface3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;transition:all 0.2s}
+  .badge-slot:hover{transform:scale(1.1);border-color:var(--accent)}
+
+  .badge-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+  .badge-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:all 0.2s;position:relative}
+  .badge-item:hover{border-color:var(--accent);background:var(--surface3)}
+  .badge-item.selected{border-color:var(--accent);background:rgba(0,229,255,0.05);box-shadow:inset 0 0 10px rgba(0,229,255,0.1)}
+  .badge-item.selected::after{content:'✓';position:absolute;top:5px;right:8px;color:var(--accent);font-weight:700;font-size:12px}
+  .badge-item input{display:none}
+  .badge-icon{font-size:24px;margin-bottom:8px;display:block}
+  .badge-name{display:block;font-weight:700;font-size:12px;color:#fff;margin-bottom:2px}
+  .badge-desc{display:block;font-size:10px;color:var(--muted);line-height:1.2}
+
   #avatarFileInput{display:none}
 
   @media(max-width:1024px){
@@ -508,18 +557,44 @@ if (!empty($_POST['action'])) {
     <h1><?php echo sanitize($user['full_name']); ?></h1>
     <div class="username">@<?php echo sanitize($user['username']); ?></div>
     <div class="hero-meta">
-      <span class="badge-exp <?php echo sanitize($expLvl); ?>"><?php echo $expLabels[$expLvl] ?? 'Iniciante'; ?></span>
+      <span class="badge-exp" style="background:<?php echo $currentLevel['color']; ?>22; color:<?php echo $currentLevel['color']; ?>; border:1px solid <?php echo $currentLevel['color']; ?>55">
+        <?php echo $currentLevel['name']; ?>
+      </span>
       <?php if (!empty($loc)): ?><span class="meta-item">📍 <?php echo sanitize($loc); ?></span><?php endif; ?>
       <?php if (!empty($web)): ?><span class="meta-item">🌐 <a href="<?php echo sanitize($web); ?>" target="_blank" rel="noopener"><?php echo sanitize(parse_url($web,PHP_URL_HOST)?:$web); ?></a></span><?php endif; ?>
       <span class="meta-item">📅 Membro desde <?php echo date('M Y', strtotime($user['created_at'])); ?></span>
+    </div>
+    <div class="badges-row">
+        <?php foreach($topBadges as $tb): ?>
+            <div class="badge-slot" title="<?php echo sanitize($tb['name'] . ': ' . $tb['desc']); ?>"><?php echo $tb['icon']; ?></div>
+        <?php endforeach; ?>
+        <?php for($i=count($topBadges); $i<3; $i++): ?>
+            <div class="badge-slot" style="opacity:0.2; border-style:dashed">?</div>
+        <?php endfor; ?>
     </div>
     <?php if (!empty($bio)): ?><div class="hero-bio"><?php echo nl2br(sanitize($bio)); ?></div><?php endif; ?>
   </div>
 
   <div class="hero-stats">
-    <div class="stat-box"><div class="stat-num"><?php echo count($printers); ?></div><div class="stat-lbl">Impressoras</div></div>
-    <div class="stat-box"><div class="stat-num"><?php echo count($slicers); ?></div><div class="stat-lbl">Slicers</div></div>
-    <div class="stat-box"><div class="stat-num"><?php echo count($materials); ?></div><div class="stat-lbl">Materiais</div></div>
+    <div class="xp-widget">
+        <div class="xp-header">
+            <span class="xp-level-name" style="color:<?php echo $currentLevel['color']; ?>"><?php echo $currentLevel['name']; ?></span>
+            <span class="xp-value"><?php echo number_format($karmaTotal); ?> XP</span>
+        </div>
+        <div class="xp-bar-bg">
+            <div class="xp-bar-fill" style="width: <?php echo $xpProgress; ?>%; background: <?php echo $currentLevel['color']; ?>"></div>
+        </div>
+        <?php if ($nextLevelXP): ?>
+            <div class="xp-next">Faltam <?php echo ($nextLevelXP - $karmaTotal); ?> XP para o próximo nível</div>
+        <?php else: ?>
+            <div class="xp-next">Nível máximo atingido!</div>
+        <?php endif; ?>
+    </div>
+    <div style="display:flex; gap:16px; margin-top:8px">
+        <div class="stat-box"><div class="stat-num"><?php echo count($printers); ?></div><div class="stat-lbl">Impressoras</div></div>
+        <div class="stat-box"><div class="stat-num"><?php echo count($slicers); ?></div><div class="stat-lbl">Slicers</div></div>
+        <div class="stat-box"><div class="stat-num"><?php echo count($materials); ?></div><div class="stat-lbl">Materiais</div></div>
+    </div>
   </div>
 </div>
 
@@ -568,6 +643,37 @@ if (!empty($_POST['action'])) {
         </div>
         <button type="submit" class="btn btn-primary">💾 GUARDAR ALTERAÇÕES</button>
       </form>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">🎖️</span> Emblemas em Destaque</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">Seleciona até 3 emblemas conquistados para exibir no teu perfil.</p>
+
+      <?php if (empty($availableBadges)): ?>
+        <div class="empty-state">Ainda não conquistaste emblemas. Participa no fórum para ganhar XP!</div>
+      <?php else: ?>
+        <form method="POST">
+          <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
+          <input type="hidden" name="action" value="update_top_badges">
+          <div class="badge-picker">
+            <?php foreach ($availableBadges as $badge): $sel = in_array($badge['id'], $topBadgeIds); ?>
+              <label class="badge-item <?php echo $sel?'selected':''; ?>" id="lbl-<?php echo $badge['id']; ?>">
+                <input type="checkbox" name="badges[]" value="<?php echo $badge['id']; ?>" <?php echo $sel?'checked':''; ?>
+                       onchange="this.parentElement.classList.toggle('selected', this.checked); updateBadgeCount(this)">
+                <span class="badge-icon"><?php echo $badge['icon']; ?></span>
+                <span class="badge-name"><?php echo sanitize($badge['name']); ?></span>
+                <span class="badge-desc"><?php echo sanitize($badge['desc']); ?></span>
+              </label>
+            <?php endforeach; ?>
+          </div>
+          <div style="margin-top:20px; display:flex; align-items:center; gap:16px">
+            <button type="submit" class="btn btn-primary" id="btnUpdateBadges">💾 ATUALIZAR DESTAQUES</button>
+            <span id="badgeCountMsg" style="font-size:11px; color:var(--muted); font-family:'Space Mono',monospace;">
+                <?php echo count($topBadgeIds); ?> / 3 selecionados
+            </span>
+          </div>
+        </form>
+      <?php endif; ?>
     </div>
     <div class="card">
       <div class="card-title"><span class="icon">📷</span> Foto de Perfil</div>
@@ -1092,6 +1198,24 @@ window.addEventListener('scroll', () => {
   document.getElementById('progressFill').style.width = p + '%';
   document.getElementById('backToTop').classList.toggle('visible', window.scrollY > 400);
 });
+
+function updateBadgeCount(input) {
+    const checked = document.querySelectorAll('input[name="badges[]"]:checked');
+    const msg = document.getElementById('badgeCountMsg');
+    const btn = document.getElementById('btnUpdateBadges');
+
+    msg.textContent = checked.length + ' / 3 selecionados';
+
+    if (checked.length > 3) {
+        msg.style.color = '#ff4444';
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+    } else {
+        msg.style.color = 'var(--muted)';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+    }
+}
 
 // MANTER TAB APÓS SUBMIT
 document.addEventListener('DOMContentLoaded', () => {

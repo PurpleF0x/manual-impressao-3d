@@ -288,12 +288,11 @@ async function sendAIMessage() {
             method: 'POST',
             headers: {'Content-Type':'application/json'},
             body: JSON.stringify({
-                mode: 'assistant',
+                mode: 'manual',
                 ai_mode: 'beginner',
                 csrf_token: csrf,
                 message: msg,
-                conversation_id: aiConversationId,
-                section: ''
+                history: aiHistory.slice(-6)
             })
         });
         var data = await res.json();
@@ -1617,23 +1616,32 @@ async function sendAIMessage() {
   .search-box {
     position: relative;
     margin: 0 16px 20px;
+    z-index: 110;
   }
 
   .search-box input {
     width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
+    background: rgba(26, 26, 38, 0.6);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 2px solid var(--border);
+    border-radius: 8px;
     padding: 12px 16px 12px 40px;
     color: var(--text);
     font-family: 'Inter', sans-serif;
     font-size: 13px;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
 
   .search-box input:focus {
     outline: none;
-    border-color: var(--accent);
+    background: rgba(34, 34, 53, 0.8);
+    border-color: rgba(0,229,255,0.4);
+    border-bottom-color: var(--accent);
+    box-shadow: 0 8px 24px rgba(0,229,255,0.15);
+    transform: translateY(-1px);
   }
 
   .search-box::before {
@@ -1643,7 +1651,78 @@ async function sendAIMessage() {
     top: 50%;
     transform: translateY(-50%);
     font-size: 14px;
-    opacity: 0.5;
+    opacity: 0.7;
+    z-index: 1;
+    transition: all 0.2s;
+  }
+
+  .search-box:focus-within::before {
+    opacity: 1;
+    color: var(--accent);
+  }
+
+  /* Search Results Dropdown */
+  .search-results {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: rgba(17, 17, 24, 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+    z-index: 120;
+    animation: searchReveal 0.2s ease-out;
+  }
+
+  @keyframes searchReveal {
+    from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .search-results.active { display: block; }
+
+  .search-result-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-decoration: none;
+  }
+
+  .search-result-item:last-child { border-bottom: none; }
+
+  .search-result-item:hover {
+    background: rgba(0, 229, 255, 0.08);
+  }
+
+  .search-result-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .search-result-category {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+
+  .search-no-results {
+    padding: 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
   }
 
 /* Tempo de leitura */
@@ -1820,7 +1899,8 @@ async function sendAIMessage() {
   </div>
 
   <div class="search-box">
-    <input type="text" placeholder="Pesquisar..." id="searchInput" onkeyup="searchContent()">
+    <input type="text" placeholder="Pesquisar..." id="searchInput" oninput="handleSearch(this.value)" autocomplete="off">
+    <div id="searchResults" class="search-results"></div>
   </div>
 
   <div class="level-toggle">
@@ -2797,7 +2877,74 @@ async function sendAIMessage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  function handleSearch(query) {
+    const resultsContainer = document.getElementById('searchResults');
+    const queryLower = query.toLowerCase().trim();
+
+    if (queryLower.length < 2) {
+      resultsContainer.classList.remove('active');
+      return;
+    }
+
+    const sections = document.querySelectorAll('.section');
+    let resultsHtml = '';
+    let matchCount = 0;
+
+    sections.forEach(section => {
+      const h2 = section.querySelector('h2');
+      const title = h2 ? h2.textContent : 'Secção';
+      const text = section.textContent.toLowerCase();
+      const id = section.id;
+
+      if (text.includes(queryLower)) {
+        matchCount++;
+        resultsHtml += `
+          <a href="#${id}" class="search-result-item" onclick="closeSearch()">
+            <span class="search-result-category">Manual</span>
+            <span class="search-result-title">${title}</span>
+          </a>
+        `;
+      }
+    });
+
+    // Adicionar link para pesquisa no fórum se não houver muitos resultados aqui
+    resultsHtml += `
+      <a href="forum/index.php" class="search-result-item">
+        <span class="search-result-category">Fórum</span>
+        <span class="search-result-title">Procurar "${query}" no fórum global →</span>
+      </a>
+    `;
+
+    if (matchCount === 0 && queryLower.length >= 2) {
+      resultsContainer.innerHTML = `
+        <div class="search-no-results">
+          Sem resultados no manual para "${query}"
+        </div>
+        <a href="forum/index.php" class="search-result-item">
+          <span class="search-result-category">Fórum</span>
+          <span class="search-result-title">Tentar no fórum global →</span>
+        </a>
+      `;
+    } else {
+      resultsContainer.innerHTML = resultsHtml;
+    }
+
+    resultsContainer.classList.add('active');
+  }
+
+  function closeSearch() {
+    document.getElementById('searchResults').classList.remove('active');
+  }
+
+  // Fechar ao clicar fora
+  document.addEventListener('click', function(e) {
+    if (!document.querySelector('.search-box').contains(e.target)) {
+      closeSearch();
+    }
+  });
+
   function searchContent() {
+    // Mantido para compatibilidade se necessário, mas handleSearch é o novo padrão
     const query = document.getElementById('searchInput').value.toLowerCase();
     const allSections = document.querySelectorAll('.section');
     

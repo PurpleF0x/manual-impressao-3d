@@ -40,13 +40,31 @@ if (!$user || !$user['is_active']) {
 }
 
 // ── Personalização do perfil ─────────────────────────────────
-$customConfig = array('frame_key'=>null,'background_key'=>null,'banner_url'=>null,'accent_color'=>null);
+$customConfig = array('frame_key'=>null,'background_key'=>null,'banner_url'=>null,'accent_color'=>null,'top_badges'=>null);
 try {
     $cq = $db->prepare("SELECT * FROM user_profile_config WHERE user_id=?");
     $cq->execute(array($targetId));
     $cc = $cq->fetch();
-    if ($cc) $customConfig = $cc;
+    if ($cc) {
+        $customConfig = $cc;
+        // Auto-fix para top_badges se necessário
+        if (!isset($cc['top_badges'])) {
+             try { $db->exec("ALTER TABLE user_profile_config ADD COLUMN top_badges TEXT NULL"); } catch(Exception $e){}
+        }
+    }
 } catch(Exception $e){}
+
+// Buscar Badges
+$topBadges = [];
+if (!empty($customConfig['top_badges'])) {
+    $badgeIds = json_decode($customConfig['top_badges'], true);
+    if (is_array($badgeIds) && count($badgeIds) > 0) {
+        $placeholders = implode(',', array_fill(0, count($badgeIds), '?'));
+        $bq = $db->prepare("SELECT * FROM shop_items WHERE id IN ($placeholders)");
+        $bq->execute($badgeIds);
+        $topBadges = $bq->fetchAll();
+    }
+}
 
 // Buscar CSS do frame e background
 $frameCSS = '';
@@ -497,7 +515,24 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     </div>
 
     <div style="padding:14px 0 20px">
-        <div class="hero-name"><?php echo sanitize($user['full_name']); ?></div>
+        <div style="display:flex;align-items:center;gap:15px;margin-bottom:4px">
+            <div class="hero-name"><?php echo sanitize($user['full_name']); ?></div>
+            <?php if (!empty($topBadges)): ?>
+            <div class="top-badges-row" style="display:flex;gap:6px">
+                <?php foreach($topBadges as $badge): ?>
+                    <div class="badge-mini" title="<?php echo sanitize($badge['name']); ?>" style="width:24px;height:24px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:help">
+                        <?php if($badge['category'] === 'frame'): ?>
+                            <div style="width:14px;height:14px;border-radius:50%;<?php echo $badge['css_value']; ?>"></div>
+                        <?php elseif($badge['category'] === 'accent'): ?>
+                            <div style="width:12px;height:12px;border-radius:50%;background:<?php echo $badge['css_value']; ?>"></div>
+                        <?php else: ?>
+                            🏅
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+        </div>
         <div class="hero-username">@<?php echo sanitize($user['username']); ?></div>
         <?php if (!empty($user['bio'])): ?><div class="hero-bio"><?php echo nl2br(sanitize($user['bio'])); ?></div><?php endif; ?>
         <div class="hero-meta">

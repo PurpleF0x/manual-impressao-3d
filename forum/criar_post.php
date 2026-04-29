@@ -115,13 +115,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
                 $newPostId = (int)$db->lastInsertId();
 
                 if ($postStatus === 'approved') {
-                    // Moderadores publicam diretamente
+                    // Atribuição imediata de Karma/XP e Moedas apenas se for aprovado (moderadores)
+                    addXP((int)$currentUser['id'], 15, "Publicou novo post #$newPostId", 10);
+
                     $db->prepare("UPDATE forum_communities SET post_count=post_count+1 WHERE id=?")->execute(array($commId));
                     ob_end_clean();
                     header('Location: topico.php?id='.$newPostId);
                     exit;
                 } else {
-                    // Post pendente — redirecionar para a comunidade com mensagem flash
+                    // Post pendente — será recompensado apenas após aprovação em api/forum.php
                     $_SESSION['forum_flash'] = 'O teu post foi submetido e aguarda aprovação pela equipa da comunidade.';
                     ob_end_clean();
                     header('Location: comunidade.php?slug='.$comm['slug']);

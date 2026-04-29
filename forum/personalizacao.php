@@ -17,7 +17,7 @@ $db  = getDB();
 // ── Garantir tabelas ──────────────────────────────────────────
 try { $db->exec("CREATE TABLE IF NOT EXISTS shop_items (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100) NOT NULL, description VARCHAR(255), category ENUM('frame','background','banner','accent') NOT NULL, item_key VARCHAR(50) NOT NULL UNIQUE, css_value TEXT NOT NULL, preview_css TEXT, price INT DEFAULT 100, source ENUM('shop','community','achievement') DEFAULT 'shop', community_id INT NULL, is_active TINYINT(1) DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"); } catch(Exception $e){}
 try { $db->exec("CREATE TABLE IF NOT EXISTS user_inventory (user_id INT NOT NULL, item_id INT NOT NULL, obtained_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (user_id, item_id), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (item_id) REFERENCES shop_items(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"); } catch(Exception $e){}
-try { $db->exec("CREATE TABLE IF NOT EXISTS user_profile_config (user_id INT PRIMARY KEY, frame_key VARCHAR(50) NULL, background_key VARCHAR(50) NULL, banner_url VARCHAR(500) NULL, accent_color VARCHAR(20) NULL, coins INT DEFAULT 0, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"); } catch(Exception $e){}
+try { $db->exec("CREATE TABLE IF NOT EXISTS user_profile_config (user_id INT PRIMARY KEY, frame_key VARCHAR(50) NULL, background_key VARCHAR(50) NULL, banner_url VARCHAR(500) NULL, accent_color VARCHAR(20) NULL, top_badges TEXT NULL, coins INT DEFAULT 0, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"); } catch(Exception $e){}
 
 // ── Seed items se vazio ───────────────────────────────────────
 if ((int)$db->query("SELECT COUNT(*) FROM shop_items")->fetchColumn() === 0) {
@@ -45,24 +45,30 @@ if ((int)$db->query("SELECT COUNT(*) FROM shop_items")->fetchColumn() === 0) {
     foreach ($items as $i) { try { $ins->execute($i); } catch(Exception $e){} }
 }
 
-// ── Config do utilizador ──────────────────────────────────────
-$config = array('frame_key'=>null,'background_key'=>null,'banner_url'=>null,'accent_color'=>null,'coins'=>0);
+// Calcular moedas por actividade (Sync legado se não houver config)
+$config = array('frame_key'=>null,'background_key'=>null,'banner_url'=>null,'accent_color'=>null,'top_badges'=>null,'coins'=>0);
 try {
     $cq = $db->prepare("SELECT * FROM user_profile_config WHERE user_id=?");
     $cq->execute(array($uid)); $cc = $cq->fetch();
-    if ($cc) $config = $cc;
-    else $db->prepare("INSERT INTO user_profile_config (user_id,coins) VALUES (?,0)")->execute(array($uid));
+    if ($cc) {
+        $config = $cc;
+        if (!isset($cc['top_badges'])) {
+             try { $db->exec("ALTER TABLE user_profile_config ADD COLUMN top_badges TEXT NULL"); } catch(Exception $e){}
+        }
+    } else {
+        // Tenta obter moedas legadas calculando uma vez se for o primeiro acesso
+        try {
+            $postCount   = (int)$db->query("SELECT COUNT(*) FROM forum_posts WHERE user_id=$uid AND status='approved'")->fetchColumn();
+            $replyCount  = (int)$db->query("SELECT COUNT(*) FROM forum_replies WHERE user_id=$uid")->fetchColumn();
+            $karmaPos    = (int)$db->query("SELECT COALESCE(SUM(GREATEST(vote_score,0)),0) FROM forum_posts WHERE user_id=$uid")->fetchColumn();
+            $legacyCoins = $postCount * 10 + $replyCount * 3 + $karmaPos * 2;
+        } catch(Exception $e){ $legacyCoins = 0; }
+
+        $db->prepare("INSERT INTO user_profile_config (user_id,coins) VALUES (?,?)")->execute(array($uid, $legacyCoins));
+        $config['coins'] = $legacyCoins;
+    }
 } catch(Exception $e){}
 
-// Calcular moedas por actividade
-try {
-    $posts   = (int)$db->query("SELECT COUNT(*) FROM forum_posts WHERE user_id=$uid")->fetchColumn();
-    $replies = (int)$db->query("SELECT COUNT(*) FROM forum_replies WHERE user_id=$uid")->fetchColumn();
-    $karma   = (int)$db->query("SELECT COALESCE(SUM(GREATEST(vote_score,0)),0) FROM forum_posts WHERE user_id=$uid")->fetchColumn();
-    $earned  = $posts*10 + $replies*3 + $karma*2;
-    $db->prepare("UPDATE user_profile_config SET coins=? WHERE user_id=?")->execute(array($earned,$uid));
-    $config['coins'] = $earned;
-} catch(Exception $e){}
 $coins = (int)$config['coins'];
 
 // ── Inventário ────────────────────────────────────────────────
@@ -72,10 +78,11 @@ $myItems   = $invQ->fetchAll();
 $myFrames  = array_values(array_filter($myItems, function($i){ return $i['category']==='frame'; }));
 $myBgs     = array_values(array_filter($myItems, function($i){ return $i['category']==='background'; }));
 $myAccents = array_values(array_filter($myItems, function($i){ return $i['category']==='accent'; }));
+$myBadges  = array_values(array_filter($myItems, function($i){ return $i['category']==='banner' || $i['source'] === 'achievement' || $i['source'] === 'community'; }));
 
 // ── Secção activa (GET) ───────────────────────────────────────
 $section = $_GET['s'] ?? 'avatar';
-$validSections = array('avatar','frame','background','banner','accent');
+$validSections = array('avatar','frame','background','banner','accent','badges');
 if (!in_array($section, $validSections)) $section = 'avatar';
 
 // ── POST: guardar ─────────────────────────────────────────────
@@ -122,6 +129,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
             $db->prepare("UPDATE user_profile_config SET accent_color=? WHERE user_id=?")->execute(array($value,$uid));
             $config['accent_color'] = $value;
             $flash = array('ok', '✅ Cor de destaque atualizada!');
+        } elseif ($field === 'top_badges') {
+            $badges = $_POST['badges'] ?? [];
+            if (!is_array($badges)) $badges = [];
+            $badges = array_slice($badges, 0, 3);
+            // Validar se pertencem ao inventário
+            $validBadges = [];
+            foreach ($badges as $bid) {
+                $chk = $db->prepare("SELECT 1 FROM user_inventory WHERE item_id=? AND user_id=?");
+                $chk->execute(array($bid, $uid));
+                if ($chk->fetch()) $validBadges[] = (int)$bid;
+            }
+            $val = json_encode($validBadges);
+            $db->prepare("UPDATE user_profile_config SET top_badges=? WHERE user_id=?")->execute(array($val, $uid));
+            $config['top_badges'] = $val;
+            $flash = array('ok', '✅ Top 3 Badges atualizados!');
         }
     }
 }
@@ -344,6 +366,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         <?php if (!empty($myAccents)): ?><span class="nav-owned"><?php echo count($myAccents); ?></span><?php endif; ?>
     </a>
 
+    <a href="?s=badges" class="nav-item <?php echo $section==='badges'?'active':''; ?>">
+        <span class="nav-item-icon">🏅</span> Top 3 Badges
+    </a>
+
     <div class="nav-divider2"></div>
     <div class="nav-section-label">Loja</div>
     <a href="loja.php" class="nav-shop-btn">
@@ -525,9 +551,64 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     </div>
     <?php endif; ?>
 
-<?php endif; ?>
+<?php elseif ($section === 'badges'): ?>
+    <div class="content-title">Top 3 Badges</div>
+    <div class="content-sub">Seleciona até 3 badges/insígnias para destacar no teu perfil.</div>
 
-</div><!-- /.content-area -->
+    <?php if (empty($myItems)): ?>
+        <div class="empty-inv"><div class="empty-inv-icon">🏅</div><p>Ainda não tens badges desbloqueados.</p><a href="loja.php" class="goto-shop">🛒 Ir à Loja</a></div>
+    <?php else: ?>
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
+            <input type="hidden" name="action" value="save">
+            <input type="hidden" name="field" value="top_badges">
+
+            <div class="items-grid">
+                <?php
+                $currentBadges = json_decode($config['top_badges'] ?? '[]', true);
+                foreach ($myItems as $item):
+                    $isSelected = in_array((int)$item['id'], $currentBadges);
+                ?>
+                <label class="item-tile <?php echo $isSelected ? 'selected' : ''; ?>" style="cursor:pointer">
+                    <input type="checkbox" name="badges[]" value="<?php echo $item['id']; ?>" <?php echo $isSelected ? 'checked' : ''; ?> style="display:none" onchange="this.parentElement.classList.toggle('selected', this.checked); updateBadgeCount()">
+                    <div class="item-tile-preview">
+                        <?php if($item['category'] === 'frame'): ?>
+                            <div class="tile-av" style="<?php echo htmlspecialchars($item['css_value']); ?>; width:40px; height:40px; font-size:10px"><?php echo $initials; ?></div>
+                        <?php elseif($item['category'] === 'accent'): ?>
+                            <div style="width:30px; height:30px; border-radius:50%; background:<?php echo htmlspecialchars($item['css_value']); ?>"></div>
+                        <?php else: ?>
+                            <span style="font-size:24px">🏅</span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="item-tile-body">
+                        <div class="item-tile-name"><?php echo sanitize($item['name']); ?></div>
+                        <div class="item-tile-desc"><?php echo sanitize($item['category']); ?></div>
+                    </div>
+                </label>
+                <?php endforeach; ?>
+            </div>
+
+            <div style="margin-top:24px; display:flex; align-items:center; gap:20px">
+                <button type="submit" class="save-btn">💾 GUARDAR SELEÇÃO</button>
+                <span id="badgeCount" style="font-family:'Space Mono',monospace; font-size:12px; color:var(--muted)">0 / 3 selecionados</span>
+            </div>
+        </form>
+        <script>
+        function updateBadgeCount() {
+            const checked = document.querySelectorAll('input[name="badges[]"]:checked');
+            document.getElementById('badgeCount').textContent = checked.length + ' / 3 selecionados';
+            if (checked.length > 3) {
+                alert('Podes selecionar no máximo 3 badges.');
+                event.target.checked = false;
+                event.target.parentElement.classList.remove('selected');
+                updateBadgeCount();
+            }
+        }
+        updateBadgeCount();
+        </script>
+    <?php endif; ?>
+
+<?php endif; ?>
 
 <!-- ── Preview sidebar direita ── -->
 <aside class="preview-sidebar">
