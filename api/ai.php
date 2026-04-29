@@ -136,8 +136,8 @@ if (empty(GROK_API_KEY)) {
 $payload = json_encode([
     'model'    => GROK_MODEL,
     'messages' => $messages,
-    'stream'   => false,
-    'temperature' => 0.7
+    'temperature' => 0.7,
+    'stream' => false
 ]);
 
 $ch = curl_init(GROK_API_URL);
@@ -169,12 +169,14 @@ if ($httpCode !== 200 || !isset($data['choices'][0]['message']['content'])) {
         }
     }
 
-    error_log("Grok API Error ($httpCode): " . print_r($data, true));
+    // Adicionar log do payload para debug (CUIDADO: remove isto depois)
+    error_log("Grok API Error ($httpCode). Payload enviado: " . $payload);
+    error_log("Resposta da API: " . $response);
 
     echo json_encode([
         'success' => false,
         'error' => "Erro ($httpCode): $err",
-        'debug' => (empty(GROK_API_KEY)) ? 'API Key em falta' : 'API Key configurada'
+        'debug' => "Modelo: " . GROK_MODEL
     ]);
     exit;
 }
