@@ -1,18 +1,12 @@
 <?php
 /**
- * config/ai_config.php — Configuração da IA (Gemini via OpenAI-compatible endpoint)
+ * config/ai_config.php — Configuração da IA (Grok xAI)
  */
 
-// A API Key deve ser configurada no Render como GEMINI_API_KEY
-$envKey = getenv('GEMINI_API_KEY');
-define('GEMINI_API_KEY', $envKey ?: '');
+// A API Key deve ser configurada no Render como GROK_API_KEY
+$envKey = getenv('GROK_API_KEY');
+define('GROK_API_KEY', $envKey ?: '');
 
-// Usamos o endpoint compatível com OpenAI do Google Gemini
-// Nota: v1beta é necessário para o modelo gemini-2.0-flash
-define('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/v1beta/openai/v1/chat/completions');
-
-// Modelo: gemini-2.0-flash (Versão mais rápida e recente)
-define('GEMINI_MODEL', 'gemini-2.0-flash');
-
-
-
+// Configurações Grok
+define('GROK_MODEL', 'grok-beta'); // ou 'grok-2' se tiveres acesso
+define('GROK_API_URL', 'https://api.x.ai/v1/chat/completions');
