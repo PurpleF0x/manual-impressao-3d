@@ -212,3 +212,37 @@ function hashPassword(string $password): string {
 function verifyPassword(string $password, string $hash): bool {
     return password_verify($password, $hash);
 }
+
+/**
+ * Sistema de XP e Karma
+ */
+function addXP(int $userId, int $amount, string $reason): bool {
+    $db = getDB();
+    try {
+        $db->beginTransaction();
+
+        // Log da transação
+        $stmt = $db->prepare("INSERT INTO xp_log (user_id, xp_amount, reason) VALUES (?, ?, ?)");
+        $stmt->execute([$userId, $amount, $reason]);
+
+        // Atualiza o total no perfil do utilizador
+        $stmt = $db->prepare("UPDATE users SET karma_total = karma_total + ? WHERE id = ?");
+        $stmt->execute([$amount, $userId]);
+
+        $db->commit();
+        return true;
+    } catch (Exception $e) {
+        $db->rollBack();
+        error_log("Erro addXP: " . $e->getMessage());
+        return false;
+    }
+}
+
+function getUserLevel(int $xp): array {
+    if ($xp >= 500) return ['name' => 'Lendário', 'color' => '#ff4500', 'min' => 500];
+    if ($xp >= 200) return ['name' => 'Especialista', 'color' => '#00e5ff', 'min' => 200];
+    if ($xp >= 100) return ['name' => 'Veterano', 'color' => '#ffd700', 'min' => 100];
+    if ($xp >= 50)  return ['name' => 'Ativo', 'color' => '#c0c0c0', 'min' => 50];
+    if ($xp >= 20)  return ['name' => 'Membro', 'color' => '#cd7f32', 'min' => 20];
+    return ['name' => 'Novo', 'color' => '#888', 'min' => 0];
+}

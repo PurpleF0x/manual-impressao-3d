@@ -19,19 +19,26 @@ $mode   = $input['mode']   ?? 'manual';
 $action = $input['action'] ?? 'chat';
 $message = trim($input['message'] ?? '');
 
-// ── ELIMINAR CONVERSA ─────────────────────────────────────────
-if ($action === 'delete') {
+// ── ELIMINAR CONVERSA / LIMPAR HISTÓRICO ──────────────────────
+if ($action === 'delete' || $action === 'clear_all') {
     if (!verifyCSRFToken($input['csrf_token'] ?? null)) {
         echo json_encode(['success' => false, 'error' => 'Token inválido.']); exit;
     }
     $currentUser = isLoggedIn() ? getCurrentUser() : null;
     if (!$currentUser) { echo json_encode(['success' => false, 'error' => 'Sessão expirada.']); exit; }
     $db = getDB();
-    $convId = (int)($input['conversation_id'] ?? 0);
-    $st = $db->prepare("SELECT id FROM ai_conversations WHERE id=? AND user_id=? LIMIT 1");
-    $st->execute([$convId, (int)$currentUser['id']]);
-    if (!$st->fetch()) { echo json_encode(['success' => false, 'error' => 'Conversa não encontrada.']); exit; }
-    $db->prepare("DELETE FROM ai_conversations WHERE id=?")->execute([$convId]);
+
+    if ($action === 'delete') {
+        $convId = (int)($input['conversation_id'] ?? 0);
+        $st = $db->prepare("SELECT id FROM ai_conversations WHERE id=? AND user_id=? LIMIT 1");
+        $st->execute([$convId, (int)$currentUser['id']]);
+        if (!$st->fetch()) { echo json_encode(['success' => false, 'error' => 'Conversa não encontrada.']); exit; }
+        $db->prepare("DELETE FROM ai_conversations WHERE id=?")->execute([$convId]);
+    } else {
+        // Limpar tudo
+        $db->prepare("DELETE FROM ai_conversations WHERE user_id=?")->execute([(int)$currentUser['id']]);
+    }
+
     echo json_encode(['success' => true]); exit;
 }
 

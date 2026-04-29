@@ -375,4 +375,37 @@ if ($action === 'poll_messages') {
     exit;
 }
 
+// ── Fixar resposta ────────────────────────────────────────────
+if ($action === 'toggle_pin_reply') {
+    $replyId = (int)($input['reply_id'] ?? 0);
+    $value   = (int)($input['value']    ?? 0);
+    if ($replyId < 1) { echo json_encode(array('success'=>false,'error'=>'Resposta inválida.')); exit; }
+
+    $rs = $db->prepare("SELECT fr.id, fr.post_id, fr.user_id, fp.user_id as post_author_id, fp.community_id
+                        FROM forum_replies fr
+                        JOIN forum_posts fp ON fp.id = fr.post_id
+                        WHERE fr.id = ?");
+    $rs->execute(array($replyId));
+    $reply = $rs->fetch();
+    if (!$reply) { echo json_encode(array('success'=>false,'error'=>'Resposta não encontrada.')); exit; }
+
+    // Permissão: Autor do post ou Moderador/Admin
+    $isPostAuthor = (int)$reply['post_author_id'] === $uid;
+    $isGlobMod    = isGlobalMod($user);
+    $isCommMod    = false;
+    if (!$isGlobMod && !$isPostAuthor) {
+        $cm = $db->prepare("SELECT role FROM forum_memberships WHERE user_id=? AND community_id=? AND role IN ('owner','admin','moderator')");
+        $cm->execute(array($uid, (int)$reply['community_id']));
+        $isCommMod = (bool)$cm->fetch();
+    }
+
+    if (!$isPostAuthor && !$isGlobMod && !$isCommMod) {
+        echo json_encode(array('success'=>false,'error'=>'Sem permissão para fixar esta resposta.')); exit;
+    }
+
+    $db->prepare("UPDATE forum_replies SET is_pinned=? WHERE id=?")->execute(array($value?1:0, $replyId));
+    echo json_encode(array('success'=>true, 'pinned'=>(bool)$value));
+    exit;
+}
+
 echo json_encode(array('success'=>false,'error'=>'Ação desconhecida.'));

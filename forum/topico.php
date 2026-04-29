@@ -25,6 +25,7 @@ try { $db->exec("CREATE TABLE IF NOT EXISTS forum_replies (
     content    TEXT NOT NULL,
     vote_score INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_pinned  TINYINT(1) DEFAULT 0,
     FOREIGN KEY (post_id)  REFERENCES forum_posts(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id)  REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"); } catch(Exception $e){}
@@ -174,7 +175,7 @@ if ($currentUser && !empty($replies)) {
     } catch(Exception $e){}
 }
 
-// ── Organizar em árvore ───────────────────────────────────────
+// ── Organizar em árvore (Fixados primeiro) ───────────────────
 $topReplies = array();
 $childMap   = array();
 foreach ($replies as $r) {
@@ -184,6 +185,10 @@ foreach ($replies as $r) {
         $childMap[(int)$r['parent_id']][] = $r;
     }
 }
+usort($topReplies, function($a, $b) {
+    if ($a['is_pinned'] != $b['is_pinned']) return $b['is_pinned'] - $a['is_pinned'];
+    return strtotime($a['created_at']) - strtotime($b['created_at']);
+});
 
 // ── Comunidades do utilizador (sidebar) ──────────────────────
 $myCommunities = array();
@@ -373,6 +378,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .reply-author-user{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)}
 .reply-time{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-left:auto}
 .reply-op-badge{font-family:'Space Mono',monospace;font-size:8px;font-weight:700;background:rgba(0,229,255,0.1);color:var(--accent);border:1px solid rgba(0,229,255,0.2);border-radius:4px;padding:2px 6px}
+.reply-pin-badge { font-family: 'Space Mono', monospace; font-size: 8px; font-weight: 700; background: rgba(0,255,136,0.1); color: var(--accent4); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(0,255,136,0.2); display: flex; align-items: center; gap: 3px; }
+.reply-card.pinned { border-left: 2px solid var(--accent4) !important; background: rgba(0,255,136,0.02); }
 .reply-text{font-size:13px;line-height:1.7;color:var(--text);word-break:break-word;white-space:pre-wrap;margin-bottom:10px}
 .reply-actions{display:flex;gap:4px;flex-wrap:wrap}
 .reply-action-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;padding:4px 8px;border-radius:6px;transition:all 0.15s}
@@ -774,7 +781,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     $isOP      = (int)$reply['user_id'] === (int)$post['author_id'];
     $children  = isset($childMap[(int)$reply['id']]) ? $childMap[(int)$reply['id']] : array();
 ?>
-<div class="reply-card" id="reply-<?php echo $reply['id']; ?>">
+<div class="reply-card <?php echo !empty($reply['is_pinned']) ? 'pinned' : ''; ?>" id="reply-<?php echo $reply['id']; ?>">
     <div class="reply-vote-col">
         <button class="rv-btn up <?php echo $rUserVote === 1 ? 'active' : ''; ?>" onclick="voteReply(<?php echo $reply['id']; ?>, 1, this)">▲</button>
         <div class="rv-score <?php echo $rScoreCls; ?>" id="rscore-<?php echo $reply['id']; ?>"><?php echo $rScore; ?></div>
@@ -788,12 +795,19 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                 <span class="reply-author-user">@<?php echo sanitize($reply['username']); ?></span>
             </a>
             <?php if ($isOP): ?><span class="reply-op-badge">OP</span><?php endif; ?>
+            <?php if (!empty($reply['is_pinned'])): ?><span class="reply-pin-badge">📌 FIXADO PELO AUTOR</span><?php endif; ?>
             <span class="reply-time"><?php echo fmtTimeShort($reply['created_at']); ?></span>
         </div>
         <div class="reply-text"><?php echo sanitize($reply['content']); ?></div>
         <div class="reply-actions">
             <?php if (empty($post['is_locked']) && $currentUser): ?>
                 <button class="reply-action-btn" onclick="toggleSubReplyForm(<?php echo $reply['id']; ?>)">↩ Responder</button>
+            <?php endif; ?>
+            <?php
+                $canPinReply = $currentUser && ((int)$currentUser['id'] === (int)$post['author_id'] || $canMod);
+                if ($canPinReply):
+            ?>
+                <button class="reply-action-btn" onclick="togglePinReply(<?php echo $reply['id']; ?>, <?php echo !empty($reply['is_pinned']) ? 1 : 0; ?>)" style="color:var(--accent4)"><?php echo !empty($reply['is_pinned']) ? '📍 Desafixar' : '📌 Fixar'; ?></button>
             <?php endif; ?>
             <?php if ($canMod || ($currentUser && (int)$currentUser['id'] === (int)$reply['user_id'])): ?>
                 <button class="reply-action-btn" onclick="deleteReply(<?php echo $reply['id']; ?>)" style="color:#ff8888">🗑️</button>
@@ -1026,6 +1040,11 @@ async function deletePost(postId) {
 async function togglePin(postId, current) {
     var data = await apiCall({action:'toggle_pin', csrf_token:CSRF, post_id:postId, value:current?0:1});
     if (data.success) window.location.reload();
+}
+async function togglePinReply(replyId, current) {
+    var data = await apiCall({action:'toggle_pin_reply', csrf_token:CSRF, reply_id:replyId, value:current?0:1});
+    if (data.success) window.location.reload();
+    else alert(data.error || 'Erro ao fixar resposta.');
 }
 async function toggleLock(postId, current) {
     var data = await apiCall({action:'toggle_lock', csrf_token:CSRF, post_id:postId, value:current?0:1});
