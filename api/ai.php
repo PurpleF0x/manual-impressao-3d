@@ -134,7 +134,7 @@ if (empty(GROK_API_KEY)) {
 }
 
 $payload = json_encode([
-    'model'    => 'grok-beta',
+    'model'    => GROK_MODEL,
     'messages' => $messages,
     'stream'   => false,
     'temperature' => 0.7
