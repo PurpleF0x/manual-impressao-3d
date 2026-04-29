@@ -8,5 +8,5 @@ $envKey = getenv('GROK_API_KEY') ?: ($_ENV['GROK_API_KEY'] ?? ($_SERVER['GROK_AP
 define('GROK_API_KEY', $envKey);
 
 // Configurações Grok
-define('GROK_MODEL', 'grok-latest');
+define('GROK_MODEL', 'grok-beta');
 define('GROK_API_URL', 'https://api.x.ai/v1/chat/completions');

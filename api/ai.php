@@ -162,14 +162,21 @@ curl_close($ch);
 
 $data = json_decode($response, true);
 if ($httpCode !== 200 || !isset($data['choices'][0]['message']['content'])) {
-    $err = $data['error']['message'] ?? $curlError ?? 'Erro desconhecido na API.';
-    // Log detalhado para o programador (podes ver isto nos logs do Render)
+    $err = 'Erro desconhecido';
+    if (isset($data['error'])) {
+        if (is_array($data['error'])) {
+            $err = $data['error']['message'] ?? $data['error']['error'] ?? json_encode($data['error']);
+        } else {
+            $err = $data['error'];
+        }
+    }
+
     error_log("Grok API Error ($httpCode): " . print_r($data, true));
 
     echo json_encode([
         'success' => false,
         'error' => "Erro ($httpCode): $err",
-        'debug' => (GROK_API_KEY === '') ? 'API Key em falta' : 'API Key presente'
+        'debug' => (empty(GROK_API_KEY)) ? 'API Key em falta' : 'API Key configurada'
     ]);
     exit;
 }
