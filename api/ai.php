@@ -1,6 +1,6 @@
 <?php
 /**
- * api/ai.php — Endpoint da IA (Gemini via OpenAI-compatible endpoint)
+ * api/ai.php — Endpoint da IA (Grok xAI)
  * Modos: 'manual' (bot flutuante), 'forum' (bot fórum), 'assistant' (página completa c/ histórico)
  */
 require_once __DIR__ . '/../includes/functions.php';
@@ -13,8 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
-if (!$input) $input = $_POST;
+$input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
 
 $mode   = $input['mode']   ?? 'manual';
 $action = $input['action'] ?? 'chat';
@@ -36,21 +35,15 @@ if ($action === 'delete') {
     echo json_encode(['success' => true]); exit;
 }
 
-// ── VALIDAÇÃO ─────────────────────────────────────────────────
+// ── VALIDAÇÃO BÁSICA ──────────────────────────────────────────
 if (!$message) {
     echo json_encode(['success' => false, 'error' => 'Mensagem vazia.']); exit;
 }
 
-// ── MODO ASSISTANT ────────────────────────────────────────────
+// ── CONFIGURAÇÃO DE MODO ──────────────────────────────────────
 if ($mode === 'assistant') {
-
     if (!verifyCSRFToken($input['csrf_token'] ?? null)) {
-        $msg = isset($_SESSION['csrf_token']) ? 'Token inválido. Recarrega a página.' : 'Sessão expirada. Recarrega a página.';
-        echo json_encode(['success' => false, 'error' => $msg]); exit;
-    }
-
-    if (mb_strlen($message) > 2000) {
-        echo json_encode(['success' => false, 'error' => 'Mensagem demasiado longa (máx. 2000 caracteres).']); exit;
+        echo json_encode(['success' => false, 'error' => 'Sessão expirada. Recarrega a página.']); exit;
     }
 
     $db          = getDB();
@@ -58,10 +51,6 @@ if ($mode === 'assistant') {
     $convId      = (int)($input['conversation_id'] ?? 0);
     $section     = trim($input['section'] ?? '');
     $aiMode      = in_array($input['ai_mode'] ?? '', ['beginner','advanced']) ? $input['ai_mode'] : 'beginner';
-
-    $validSections = ['o-que-e','como-funciona','tipos-impressoras','iniciantes-vs-pro',
-                      'filamentos','qual-usar','processo','problemas','dicas','software','glossario'];
-    if (!in_array($section, $validSections)) $section = '';
 
     $sectionNames = [
         'o-que-e' => 'O que é Impressão 3D', 'como-funciona' => 'Como Funciona',
@@ -80,8 +69,6 @@ if ($mode === 'assistant') {
     }
 
     $isNewConv = false;
-    $convTitle = null;
-
     if ($currentUser) {
         if ($convId) {
             $st = $db->prepare("SELECT id FROM ai_conversations WHERE id=? AND user_id=? LIMIT 1");
@@ -96,160 +83,92 @@ if ($mode === 'assistant') {
         }
     }
 
-    $history = [];
+    $historyRows = [];
     if ($currentUser && $convId) {
         $st = $db->prepare("SELECT role, content FROM ai_messages WHERE conversation_id=? ORDER BY created_at ASC");
         $st->execute([$convId]);
-        $history = $st->fetchAll(PDO::FETCH_ASSOC);
+        $historyRows = $st->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    $levelDesc   = $aiMode === 'advanced'
-        ? 'Modo AVANÇADO — usa linguagem técnica, parâmetros específicos, termos em inglês quando pertinente.'
-        : 'Modo BÁSICO — usa linguagem acessível, analogias simples, evita jargão desnecessário.';
-    $sectionDesc = $section ? "\nContexto: secção \"" . ($sectionNames[$section] ?? $section) . "\". Prioriza este tema quando relevante." : '';
+    $levelDesc = ($aiMode === 'advanced') ? 'Modo TÉCNICO.' : 'Modo SIMPLES.';
+    $sectionDesc = $section ? "\nContexto: secção \"" . ($sectionNames[$section] ?? $section) . "\"." : '';
 
-    $systemPrompt = "Tu és o Print AI, o assistente digital oficial do Manual de Impressão 3D.
-
-REGRAS DE PERSONALIDADE:
-1. Especialista em impressão 3D (FDM, SLA, SLS).
-2. Falas sempre em português de Portugal (PT-PT).
-3. Sê direto, técnico mas acessível. Usa markdown para clareza.
-
-PROTOCOLOS TÉCNICOS:
-- {$levelDesc}
-- {$sectionDesc}
-- LIMITE: Máximo 400 palavras.
-- VERACIDADE: Nunca inventes informação.
-
-ÂMBITO: Responde apenas sobre impressão 3D e tecnologias associadas.";
+    $systemPrompt = "Tu és o Print AI, o assistente digital oficial do Manual de Impressão 3D. Fala em PT-PT. {$levelDesc}{$sectionDesc}";
 
     $messages = [['role' => 'system', 'content' => $systemPrompt]];
-    foreach (array_slice($history, -20) as $h) {
-        if (isset($h['role'], $h['content']) && in_array($h['role'], ['user','assistant'])) {
-            $messages[] = ['role' => $h['role'], 'content' => mb_substr($h['content'], 0, 800)];
-        }
+    foreach (array_slice($historyRows, -15) as $h) {
+        $messages[] = ['role' => $h['role'], 'content' => $h['content']];
     }
-    $messages[] = ['role' => 'user', 'content' => mb_substr($message, 0, 2000)];
-    $maxTokens  = 700;
+    $messages[] = ['role' => 'user', 'content' => $message];
 
 } else {
-    // ── MODOS MANUAL e FORUM — comportamento original ─────────
+    // MODO MANUAL / FORUM
     if (!isset($_SESSION['ai_count'])) $_SESSION['ai_count'] = 0;
     $_SESSION['ai_count']++;
     if ($_SESSION['ai_count'] > 20) {
-        echo json_encode(['success' => false, 'error' => 'Limite de mensagens atingido para esta sessão. Recarrega a página para continuar.']); exit;
+        echo json_encode(['success' => false, 'error' => 'Limite atingido.']); exit;
     }
 
     $history = $input['history'] ?? [];
-
-    $systemPrompts = [
-        'manual' => "Tu és o Print AI, o assistente digital especializado do Manual de Impressão 3D.
-
-REGRAS DE PERSONALIDADE:
-1. Especialista em impressão 3D (FDM, SLA, SLS, materiais, slicers).
-2. Falas sempre em português de Portugal.
-3. Sê direto, técnico mas acessível.
-
-PROTOCOLOS:
-- Diagnóstico de problemas (stringing, warping, etc.).
-- Recomendações de hardware e software.
-- LIMITE: Máximo 300 palavras.
-
-ÂMBITO: Apenas temas relacionados com impressão 3D.",
-
-        'forum'  => "Tu és o Forum AI, o assistente oficial do Fórum de Impressão 3D.
-
-REGRAS DE PERSONALIDADE:
-1. Especialista em gestão de comunidades e suporte ao utilizador.
-2. Falas sempre em português de Portugal.
-3. Sê amigável, claro e objetivo.
-
-PROTOCOLOS:
-- Suporte técnico sobre posts, comunidades, flairs e moderação.
-- Encaminhamento: Para admins ou sistema de reports se necessário.
-- LIMITE: Máximo 200 palavras.
-
-ÂMBITO: Apenas temas relacionados com o fórum e impressão 3D.",
+    $prompts = [
+        'manual' => "Tu és o Print AI, assistente do Manual de Impressão 3D. Fala em PT-PT. Sê direto e técnico.",
+        'forum'  => "Tu és o Forum AI, assistente do Fórum. Fala em PT-PT. Sê amigável."
     ];
-
-    $systemPrompt = $systemPrompts[$mode] ?? $systemPrompts['manual'];
+    $systemPrompt = $prompts[$mode] ?? $prompts['manual'];
 
     $messages = [['role' => 'system', 'content' => $systemPrompt]];
     foreach (array_slice($history, -6) as $h) {
-        if (isset($h['role'], $h['content']) && in_array($h['role'], ['user','assistant'])) {
-            $messages[] = ['role' => $h['role'], 'content' => mb_substr($h['content'], 0, 500)];
+        if (isset($h['role'], $h['content'])) {
+            $messages[] = ['role' => $h['role'], 'content' => $h['content']];
         }
     }
-    $messages[] = ['role' => 'user', 'content' => mb_substr($message, 0, 1000)];
-    $maxTokens  = 600;
+    $messages[] = ['role' => 'user', 'content' => $message];
 }
 
+// ── CHAMADA À API GROK ────────────────────────────────────────
 $payload = json_encode([
-    'model'       => GEMINI_MODEL,
-    'messages'    => $messages,
-    'max_tokens'  => $maxTokens,
-    'temperature' => 0.5,
-    'stream'      => false,
+    'model'    => GROK_MODEL,
+    'messages' => $messages,
+    'temperature' => 0.7
 ]);
 
-$ch = curl_init(GEMINI_API_URL);
+$ch = curl_init(GROK_API_URL);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST           => true,
     CURLOPT_POSTFIELDS     => $payload,
     CURLOPT_HTTPHEADER     => [
         'Content-Type: application/json',
-        'Authorization: Bearer ' . GEMINI_API_KEY
+        'Authorization: Bearer ' . GROK_API_KEY
     ],
-    CURLOPT_TIMEOUT        => 30,
+    CURLOPT_TIMEOUT => 30,
     CURLOPT_SSL_VERIFYPEER => false,
 ]);
 
-$response  = curl_exec($ch);
-$httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-$curlError = curl_error($ch);
+$response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
-
-if ($curlError) {
-    echo json_encode(['success' => false, 'error' => 'Erro de rede: ' . $curlError]); exit;
-}
-
-if (empty(GEMINI_API_KEY)) {
-    echo json_encode(['success' => false, 'error' => 'Configuração: GEMINI_API_KEY não definida no servidor.']); exit;
-}
 
 $data = json_decode($response, true);
 if ($httpCode !== 200 || !isset($data['choices'][0]['message']['content'])) {
-    $errorDetail = $data['error']['message'] ?? null;
-    if (!$errorDetail && isset($data['error']['code'])) {
-        $errorDetail = "Erro Gemini ({$data['error']['code']}): " . ($data['error']['status'] ?? 'Verificar consola.');
-    }
-    // Se ainda não temos detalhe, mostra os primeiros 150 caracteres da resposta bruta
-    if (!$errorDetail) {
-        $errorDetail = 'Erro HTTP ' . $httpCode . ': ' . mb_substr(strip_tags($response), 0, 150);
-    }
-
-    error_log("Erro Gemini API ($httpCode): " . $response);
-    echo json_encode(['success' => false, 'error' => $errorDetail]); exit;
+    $err = $data['error']['message'] ?? 'Erro na API Grok.';
+    echo json_encode(['success' => false, 'error' => "Erro ($httpCode): $err"]); exit;
 }
 
 $reply = trim($data['choices'][0]['message']['content']);
 
-// ── GUARDAR NA BD (só modo assistant) ────────────────────────
+// Guardar se for assistant
 if ($mode === 'assistant' && isset($currentUser) && $currentUser && $convId) {
-    $ins = $db->prepare("INSERT INTO ai_messages (conversation_id, role, content) VALUES (?,?,?)");
-    $ins->execute([$convId, 'user', $message]);
-    $ins->execute([$convId, 'assistant', $reply]);
-    $db->prepare("UPDATE ai_conversations SET updated_at=NOW(), mode=? WHERE id=?")->execute([$aiMode, $convId]);
-    if ($isNewConv) {
-        $convTitle = mb_substr($message, 0, 60) . (mb_strlen($message) > 60 ? '…' : '');
-        $db->prepare("UPDATE ai_conversations SET title=? WHERE id=?")->execute([$convTitle, $convId]);
+    $db->prepare("INSERT INTO ai_messages (conversation_id, role, content) VALUES (?,?,?)")->execute([$convId, 'user', $message]);
+    $db->prepare("INSERT INTO ai_messages (conversation_id, role, content) VALUES (?,?,?)")->execute([$convId, 'assistant', $reply]);
+    if (isset($isNewConv) && $isNewConv) {
+        $title = mb_substr($message, 0, 60) . '...';
+        $db->prepare("UPDATE ai_conversations SET title=? WHERE id=?")->execute([$title, $convId]);
     }
 }
 
-$out = ['success' => true, 'reply' => $reply, 'tokens' => $data['usage']['total_tokens'] ?? 0];
-if ($mode === 'assistant' && isset($currentUser) && $currentUser && $convId) {
-    $out['conversation_id'] = $convId;
-    if (isset($convTitle) && $convTitle) $out['title'] = $convTitle;
-}
-echo json_encode($out);
+echo json_encode([
+    'success' => true,
+    'reply'   => $reply,
+    'conversation_id' => $convId ?? null
+]);

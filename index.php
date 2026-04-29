@@ -27,10 +27,6 @@ require_once 'includes/user_notices.php';
 <meta property="og:image"       content="https://manual-impressao-3d.free.nf/og-manual.jpg">
 <meta name="twitter:card"       content="summary_large_image">
 <meta name="twitter:image"      content="https://manual-impressao-3d.free.nf/og-manual.jpg">
-
-
-<meta name="twitter:card"       content="summary_large_image">
-<meta name="twitter:image"      content="https://manual-impressao-3d.free.nf/og-forum.jpg">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <!-- ═══════════════════════════════════════════════════════
      IA do Manual — chatbot flutuante
@@ -2930,5 +2926,6 @@ sectionMap.forEach(sec => {
     updateToc();
 })();
 </script>
+<?php require_once 'includes/welcome_popup.php'; ?>
 </body>
 </html>

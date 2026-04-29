@@ -1050,5 +1050,6 @@ async function sendFaiMessage() {
 }
 </script>
 
+<?php require_once '../includes/welcome_popup.php'; ?>
 </body>
 </html>
