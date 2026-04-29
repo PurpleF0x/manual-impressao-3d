@@ -129,18 +129,16 @@ if ($mode === 'assistant') {
 
 // ── CHAMADA À API GROK ────────────────────────────────────────
 if (empty(GROK_API_KEY)) {
-    echo json_encode(['success' => false, 'error' => 'Configuração incompleta: GROK_API_KEY não encontrada no servidor.']);
+    echo json_encode(['success' => false, 'error' => 'Chave da API não configurada no servidor.']);
     exit;
 }
 
 $payload = json_encode([
-    'model'    => GROK_MODEL,
+    'model'    => 'grok-beta',
     'messages' => $messages,
+    'stream'   => false,
     'temperature' => 0.7
 ]);
-
-// LOG DE DEBUG PARA O PAYLOAD
-error_log("Grok Payload: " . $payload);
 
 $ch = curl_init(GROK_API_URL);
 curl_setopt_array($ch, [
