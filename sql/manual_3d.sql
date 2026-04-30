@@ -8,6 +8,7 @@
 -- versão do PHP: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET FOREIGN_KEY_CHECKS = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -16,6 +17,9 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
+
+CREATE DATABASE IF NOT EXISTS `manual_3d`;
+USE `manual_3d`;
 
 --
 -- Banco de dados: `manual_3d`
@@ -160,6 +164,9 @@ CREATE TABLE `users` (
   `website` varchar(255) DEFAULT NULL,
   `experience_level` enum('iniciante','intermedio','avancado','profissional') DEFAULT 'iniciante',
   `role` enum('user','moderator','admin') DEFAULT 'user',
+  `karma_total` int(11) DEFAULT 0,
+  `prefs_show_karma` tinyint(1) DEFAULT 1,
+  `top_badges` text DEFAULT NULL,
   `is_active` tinyint(1) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
@@ -218,6 +225,89 @@ CREATE TABLE `user_sessions` (
   `session_token` varchar(255) NOT NULL,
   `expires_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `forum_communities`
+--
+
+CREATE TABLE `forum_communities` (
+  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name` varchar(100) NOT NULL,
+  `slug` varchar(100) NOT NULL UNIQUE,
+  `description` text DEFAULT NULL,
+  `image_url` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `forum_posts`
+--
+
+CREATE TABLE `forum_posts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `community_id` int(11) DEFAULT NULL,
+  `user_id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `content` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `status` enum('pending','approved','rejected') DEFAULT 'approved',
+  `flair` varchar(50) DEFAULT NULL,
+  `is_pinned` tinyint(1) DEFAULT 0,
+  `views` int(11) DEFAULT 0,
+  FOREIGN KEY (`community_id`) REFERENCES `forum_communities`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `ai_conversations`
+--
+
+CREATE TABLE `ai_conversations` (
+  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` int(11) DEFAULT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  `section_context` varchar(50) DEFAULT NULL,
+  `mode` enum('beginner','advanced') DEFAULT 'beginner',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `ai_messages`
+--
+
+CREATE TABLE `ai_messages` (
+  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `conversation_id` int(11) DEFAULT NULL,
+  `role` enum('system','user','assistant') NOT NULL,
+  `content` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  FOREIGN KEY (`conversation_id`) REFERENCES `ai_conversations`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `xp_log`
+--
+
+CREATE TABLE `xp_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` int(11) NOT NULL,
+  `xp_amount` int(11) NOT NULL,
+  `reason` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -439,6 +529,7 @@ ALTER TABLE `user_sessions`
 --
 ALTER TABLE `user_slicers`
   ADD CONSTRAINT `user_slicers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+SET FOREIGN_KEY_CHECKS = 1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
