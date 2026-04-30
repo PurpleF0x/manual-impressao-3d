@@ -89,9 +89,6 @@ try { $db->exec("CREATE TABLE IF NOT EXISTS private_messages (
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"); } catch(Exception $e){}
 
-// ── Garantir coluna content_labels ───────────────────────────
-try { $db->exec("ALTER TABLE forum_communities ADD COLUMN IF NOT EXISTS content_labels VARCHAR(100) DEFAULT NULL"); } catch(Exception $e){}
-
 // ── Dados ─────────────────────────────────────────────────────
 $feedTab = $_GET['feed'] ?? 'recent';
 $feedOrder = $feedTab === 'popular' ? 'fp.vote_score DESC, fp.reply_count DESC' : 'fp.created_at DESC';
@@ -109,7 +106,6 @@ try {
     $feedPosts = $db->query("
         SELECT fp.*, fc.name as community_name, fc.slug as community_slug,
                fc.icon as community_icon, fc.banner_color,
-               COALESCE(fc.content_labels,'') as content_labels,
                u.full_name, u.username, u.avatar_url
         FROM forum_posts fp
         JOIN forum_communities fc ON fc.id = fp.community_id
@@ -117,19 +113,16 @@ try {
         $mineJoin
         WHERE fc.is_active = 1
         AND (fp.status = 'approved' OR fp.status IS NULL)
-        " . (!$currentUser ? "AND (fc.content_labels IS NULL OR (fc.content_labels NOT LIKE '%18plus%' AND fc.content_labels NOT LIKE '%nsfw%'))" : "") . "
         " . ($feedTab === 'popular' ? "AND fp.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)" : "") . "
         ORDER BY $feedOrder
         LIMIT 40
     ")->fetchAll();
     skip_feed:;
 } catch(Exception $e) {
-    // Fallback sem content_labels caso coluna ainda não exista
     try {
         $feedPosts = $db->query("
             SELECT fp.*, fc.name as community_name, fc.slug as community_slug,
                    fc.icon as community_icon, fc.banner_color,
-                   '' as content_labels,
                    u.full_name, u.username, u.avatar_url
             FROM forum_posts fp
             JOIN forum_communities fc ON fc.id = fp.community_id
@@ -178,7 +171,18 @@ $csrf = generateCSRFToken();
 
 function renderFlairBadgeFeed($flair) {
     if (!$flair) return '';
-    $map = array('pergunta'=>array('❓','PERGUNTA'),'tutorial'=>array('📖','TUTORIAL'),'projeto'=>array('🏗️','PROJETO'),'ajuda'=>array('🆘','AJUDA'),'noticia'=>array('📰','NOTÍCIA'),'discussao_tecnica'=>array('🔬','DISCUSSÃO TÉCNICA'),'showcase'=>array('📸','SHOWCASE'),'debate'=>array('🔬','DISCUSSÃO TÉCNICA'),'humor'=>array('📸','SHOWCASE'));
+    $map = array(
+        'pergunta'=>array('❓','PERGUNTA'),
+        'tutorial'=>array('📖','TUTORIAL'),
+        'projeto'=>array('🏗️','PROJETO'),
+        'ajuda'=>array('🆘','AJUDA'),
+        'noticia'=>array('📰','NOTÍCIA'),
+        'discussao_tecnica'=>array('🔬','DISCUSSÃO TÉCNICA'),
+        'showcase'=>array('📸','SHOWCASE'),
+        'debate'=>array('🔬','DISCUSSÃO TÉCNICA'),
+        'humor'=>array('📸','SHOWCASE'),
+        'spoiler'=>array('⚠️','SPOILER')
+    );
     if (!isset($map[$flair])) return '';
     return '<span class="flair-badge flair-' . $flair . '">' . $map[$flair][0] . ' ' . $map[$flair][1] . '</span>';
 }
@@ -404,6 +408,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .flair-debate{background:rgba(124,58,237,0.08);color:#a78bfa;border:1px solid rgba(124,58,237,0.18)}
 .flair-showcase{background:rgba(0,229,255,0.08);color:#00e5ff;border:1px solid rgba(0,229,255,0.2)}
 .flair-humor{background:rgba(0,229,255,0.08);color:#00e5ff;border:1px solid rgba(0,229,255,0.2)}
+.flair-spoiler{background:rgba(255,204,0,0.1);color:#ffcc00;border:1px solid rgba(255,204,0,0.3)}
 @media(max-width:1100px){.layout{grid-template-columns:1fr 260px}}@media(max-width:900px){.layout{grid-template-columns:1fr}.topbar{padding:0 16px}.layout{padding:16px 20px}}
 
 /* ── Preferências ── */
@@ -538,37 +543,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     transform: translateX(18px);
 }
 
-/* Feed overlay +18 */
-.feed-18-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(10,10,15,0.92);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    z-index: 10;
-    border-radius: inherit;
-}
-.feed-18-overlay span {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: #ff8888;
-}
-.feed-18-overlay button {
-    background: rgba(255,68,68,0.15);
-    border: 1px solid rgba(255,68,68,0.4);
-    border-radius: 6px;
-    padding: 5px 12px;
-    color: #ff8888;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.feed-18-overlay button:hover { background: rgba(255,68,68,0.28); }
-
 .bc-bar{background:var(--surface);border-bottom:1px solid var(--border2);padding:8px 32px;position:relative;z-index:5}
 .bc-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);flex-wrap:wrap}
 .bc-link{color:var(--muted);text-decoration:none;transition:color 0.15s}.bc-link:hover{color:var(--accent)}
@@ -640,14 +614,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                 $scoreCls = $score>0?'positive':($score<0?'negative':'');
                 $initials = mb_substr($post['full_name']??'??',0,2);
             ?>
-            <?php
-                $commLabels = !empty($post['banner_color']) ? '' : '';
-                // buscar labels da comunidade (já vem na query via fc.*)
-                $postCommLabels = $post['content_labels'] ?? '';
-                $cardClasses = 'post-card';
-                $cardLabels  = htmlspecialchars($postCommLabels);
-            ?>
-            <div class="post-card <?php echo $cardClasses; ?>" id="post-<?php echo $post['id']; ?>" data-comm-labels="<?php echo $cardLabels; ?>" data-flair="<?php echo htmlspecialchars($post['flair'] ?? ''); ?>">
+            <div class="post-card" id="post-<?php echo $post['id']; ?>" data-flair="<?php echo htmlspecialchars($post['flair'] ?? ''); ?>">
                 <div class="post-vote">
                     <button class="vote-btn up <?php echo $userVote===1?'active':''; ?>" onclick="votePost(<?php echo $post['id']; ?>,1,this)">▲</button>
                     <div class="vote-score <?php echo $scoreCls; ?>" id="score-<?php echo $post['id']; ?>"><?php echo $score; ?></div>
@@ -909,9 +876,9 @@ document.addEventListener('click', function(e) {
 function getPrefs() {
     try {
         var s = localStorage.getItem('forumPrefs');
-        var d = {hide18: true, hideSpoiler: false};
+        var d = {hideSpoiler: false};
         return s ? Object.assign(d, JSON.parse(s)) : d;
-    } catch(e) { return {hide18: true, hideSpoiler: false}; }
+    } catch(e) { return {hideSpoiler: false}; }
 }
 
 function savePrefs(p) {
@@ -919,67 +886,6 @@ function savePrefs(p) {
 }
 
 function applyPrefs(p) {
-    // Posts no feed — overlay para +18 (flair ou comunidade)
-    document.querySelectorAll('.post-card').forEach(function(card) {
-        var flair18      = card.querySelector('.flair-18plus');
-        var commLabels   = (card.dataset.commLabels || '').split(',');
-        var flair        = card.dataset.flair || '';
-        var is18         = flair === '18plus' || commLabels.indexOf('18plus') >= 0
-                           || !!card.querySelector('.flair-18plus');
-        var isNsfw       = commLabels.indexOf('nsfw') >= 0
-                           || commLabels.indexOf('nsfw') >= 0;
-        // Fallback: detectar badge "+18" ou "NSFW" gerado pelo PHP
-        if (!is18 && !isNsfw) {
-            var badges = card.querySelectorAll('.comm-label-badge, [class*="18plus"], [class*="nsfw"]');
-            badges.forEach(function(b){ if(b.textContent.indexOf('+18')>=0||b.textContent.indexOf('18')>=0) is18=true; if(b.textContent.indexOf('NSFW')>=0) isNsfw=true; });
-        }
-        var isSensivel   = commLabels.indexOf('sensivel') >= 0;
-        var existing     = card.querySelector('.feed-18-overlay');
-        var existingSens = card.querySelector('.feed-sens-overlay');
-
-        if ((is18 || isNsfw) && p.hide18) {
-            if (!existing) {
-                var ov = document.createElement('div');
-                ov.className = 'feed-18-overlay';
-                var lbl = isNsfw ? '🔒 NSFW' : '🔞 Conteúdo +18';
-                ov.innerHTML = '<span>' + lbl + '</span><button onclick="revealCard(this)">Mostrar</button>';
-                card.style.position = 'relative';
-                card.appendChild(ov);
-            }
-        } else if (existing) {
-            existing.remove();
-        }
-
-        // Sensível — overlay quando preferência hide18 está ativa
-        var existingSensBadge = card.querySelector('.comm-sensivel-badge');
-        if (isSensivel && p.hide18) {
-            if (!existingSensBadge) {
-                var badge = document.createElement('div');
-                badge.className = 'comm-sensivel-badge feed-18-overlay';
-                badge.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:10;border-radius:inherit;background:rgba(10,10,15,0.85);backdrop-filter:blur(4px);cursor:pointer';
-                badge.innerHTML = '<span style="background:rgba(255,204,0,0.1);border:1px solid rgba(255,204,0,0.3);border-radius:8px;padding:8px 16px;font-family:Space Mono,monospace;font-size:10px;color:#ffcc00;font-weight:700">⚠️ SENSÍVEL — clica para revelar</span>';
-                badge.onclick = function(){ badge.remove(); };
-                card.style.position = 'relative';
-                card.appendChild(badge);
-            }
-        } else if (existingSensBadge) {
-            existingSensBadge.remove();
-        }
-    });
-
-    // Post aberto — overlay +18
-    var o18 = document.querySelector('.plus18-overlay');
-    var c18 = document.getElementById('content18');
-    if (o18 && c18) {
-        if (p.hide18) {
-            o18.style.display = 'flex';
-            c18.classList.remove('revealed');
-        } else {
-            o18.style.display = 'none';
-            c18.classList.add('revealed');
-        }
-    }
-
     // Spoiler no feed — blur excerpt
     document.querySelectorAll('.post-card[data-flair="spoiler"]').forEach(function(card) {
         var excerpt  = card.querySelector('.post-excerpt');
@@ -1013,11 +919,6 @@ function updatePref(key, value) {
     applyPrefs(p);
 }
 
-function revealCard(btn) {
-    var ov = btn.closest('.feed-18-overlay');
-    if (ov) ov.remove();
-}
-
 function togglePrefsPanel() {
     var panel = document.getElementById('prefsPanel');
     var btn   = document.getElementById('prefsBtn');
@@ -1041,9 +942,7 @@ document.addEventListener('click', function(e) {
 // Inicializar toggles e aplicar preferências
 (function() {
     var p = getPrefs();
-    var t18  = document.getElementById('pref-hide18');
     var tSpo = document.getElementById('pref-hideSpoiler');
-    if (t18)  t18.checked  = p.hide18;
     if (tSpo) tSpo.checked = p.hideSpoiler;
     applyPrefs(p);
 })();

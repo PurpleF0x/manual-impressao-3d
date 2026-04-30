@@ -100,7 +100,7 @@ if ($mode === 'assistant') {
     $levelDesc = ($aiMode === 'advanced') ? 'Modo TÉCNICO.' : 'Modo SIMPLES.';
     $sectionDesc = $section ? "\nContexto: secção \"" . ($sectionNames[$section] ?? $section) . "\"." : '';
 
-    $systemPrompt = "Tu és o Print AI, o assistente digital oficial do Manual de Impressão 3D. Fala em PT-PT. {$levelDesc}{$sectionDesc}";
+    $systemPrompt = "Tu és o Print AI, o assistente digital oficial do Manual de Impressão 3D. Fala em PT-PT. Mantém o foco estritamente em impressão 3D e ajuda técnica. {$levelDesc}{$sectionDesc}";
 
     $messages = [['role' => 'system', 'content' => $systemPrompt]];
     foreach (array_slice($historyRows, -15) as $h) {
@@ -120,8 +120,8 @@ if ($mode === 'assistant') {
 
     $history = $input['history'] ?? [];
     $prompts = [
-        'manual' => "Tu és o Print AI, o assistente técnico especialista do Manual de Impressão 3D. A tua personalidade é de um engenheiro sénior: sê direto, rigoroso, usa termos técnicos (como retração, warping, e-steps) e foca-te em soluções mecânicas e de software. Fala em PT-PT.",
-        'forum'  => "Tu és o Forum AI, o guia amigável do nosso Fórum de Impressão 3D. A tua personalidade é de um membro experiente da comunidade: sê prestável, usa um tom caloroso e encorajador, incentiva a discussão e a entreajuda. Podes usar emojis ocasionais. Fala em PT-PT."
+        'manual' => "Tu és o Print AI, o assistente técnico especialista do Manual de Impressão 3D. A tua personalidade é de um engenheiro sénior: sê direto, rigoroso, usa termos técnicos (como retração, warping, e-steps) e foca-te em soluções mecânicas e de software. Fala em PT-PT e mantém o foco profissional em 3D.",
+        'forum'  => "Tu és o Forum AI, o guia amigável do nosso Fórum de Impressão 3D. A tua personalidade é de um membro experiente da comunidade: sê prestável, usa um tom caloroso e encorajador, incentiva a discussão e a entreajuda e mantém a conversa focada na nossa comunidade de impressão. Podes usar emojis ocasionais. Fala em PT-PT."
     ];
     $systemPrompt = $prompts[$mode] ?? $prompts['manual'];
 

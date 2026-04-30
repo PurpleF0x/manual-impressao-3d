@@ -16,54 +16,10 @@ $db  = getDB();
 $postId = (int)($_GET['id'] ?? 0);
 if ($postId < 1) { header('Location: index.php'); exit; }
 
-// ── Garantir tabelas e colunas ────────────────────────────────
-try { $db->exec("CREATE TABLE IF NOT EXISTS forum_replies (
-    id         INT AUTO_INCREMENT PRIMARY KEY,
-    post_id    INT NOT NULL,
-    parent_id  INT NULL,
-    user_id    INT NOT NULL,
-    content    TEXT NOT NULL,
-    vote_score INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    is_pinned  TINYINT(1) DEFAULT 0,
-    FOREIGN KEY (post_id)  REFERENCES forum_posts(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id)  REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"); } catch(Exception $e){}
+/* Schema migrations moved to maintenance or handled conditionally */
+// try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS flair VARCHAR(20) DEFAULT NULL"); } catch(Exception $e){}
+// ... (Consider moving these to a central migration file)
 
-try { $db->exec("CREATE TABLE IF NOT EXISTS forum_reply_votes (
-    user_id  INT NOT NULL,
-    reply_id INT NOT NULL,
-    value    TINYINT NOT NULL DEFAULT 1,
-    PRIMARY KEY (user_id, reply_id),
-    FOREIGN KEY (user_id)  REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (reply_id) REFERENCES forum_replies(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"); } catch(Exception $e){}
-
-try { $db->exec("CREATE TABLE IF NOT EXISTS forum_post_votes (
-    user_id INT NOT NULL,
-    post_id INT NOT NULL,
-    value   TINYINT NOT NULL DEFAULT 1,
-    PRIMARY KEY (user_id, post_id),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (post_id) REFERENCES forum_posts(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"); } catch(Exception $e){}
-
-try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS flair VARCHAR(20) DEFAULT NULL"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS image_url VARCHAR(500) DEFAULT NULL"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS image_type ENUM('upload','url') DEFAULT NULL"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE forum_communities ADD COLUMN IF NOT EXISTS content_labels VARCHAR(100) DEFAULT NULL"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS is_pinned TINYINT(1) DEFAULT 0"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS is_locked TINYINT(1) DEFAULT 0"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS reply_count INT DEFAULT 0"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'approved'"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS moderated_by INT NULL"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS moderated_at DATETIME NULL"); } catch(Exception $e){}
-// Aprovar posts antigos que não têm status definido (anteriores ao sistema de moderação)
-try { $db->exec("UPDATE forum_posts SET status='approved' WHERE status IS NULL OR status=''"); } catch(Exception $e){}
-// Aprovar posts de admins/masters/moderadores que ficaram pendentes por erro de migração
-try { $db->exec("UPDATE forum_posts fp JOIN users u ON u.id=fp.user_id SET fp.status='approved' WHERE fp.status='pending' AND u.role IN ('master','admin','moderator')"); } catch(Exception $e){}
-// Aprovar posts de owners/admins/moderadores de comunidade que ficaram pendentes
-try { $db->exec("UPDATE forum_posts fp JOIN forum_memberships fm ON fm.user_id=fp.user_id AND fm.community_id=fp.community_id SET fp.status='approved' WHERE fp.status='pending' AND fm.role IN ('owner','admin','moderator')"); } catch(Exception $e){}
 
 // ── Post ──────────────────────────────────────────────────────
 try {
@@ -124,14 +80,8 @@ if ($postStatus === 'pending') {
     }
 }
 
-// Labels de conteúdo: combinar flair do post + labels da comunidade
-$commLabelsRaw  = $post['content_labels'] ?? '';
-$commLabelsList = $commLabelsRaw ? array_map('trim', explode(',', $commLabelsRaw)) : array();
+// Labels de conteúdo
 $postFlair      = $post['flair'] ?? '';
-$isPost18       = $postFlair === '18plus' || in_array('18plus', $commLabelsList);
-$isPostNsfw     = in_array('nsfw', $commLabelsList);
-$isPostSensivel = in_array('sensivel', $commLabelsList);
-$needsOverlay   = $isPost18 || $isPostNsfw;
 
 // Guardar visita recente na sessão
 if (!isset($_SESSION['forum_recent'])) $_SESSION['forum_recent'] = array();
@@ -324,7 +274,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .flair-showcase{background:rgba(0,229,255,0.08);color:#00e5ff;border:1px solid rgba(0,229,255,0.2)}
 .flair-humor{background:rgba(0,229,255,0.08);color:#00e5ff;border:1px solid rgba(0,229,255,0.2)}
 
-/* Spoiler / +18 */
+/* Spoiler */
 .spoiler-content{position:relative}
 .spoiler-mask{position:absolute;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:8px;z-index:2}
 /* Spoiler oculto por defeito — JS revela se preferência estiver desativada */
@@ -334,12 +284,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .spoiler-mask:hover{background:rgba(0,0,0,0.75)}
 .spoiler-mask-label{font-family:'Space Mono',monospace;font-size:12px;color:#ffcc00;letter-spacing:2px;text-transform:uppercase}
 .spoiler-mask-sub{font-size:11px;color:rgba(255,255,255,0.5)}
-.content-18plus{filter:blur(6px);transition:filter 0.3s;user-select:none}
-.content-18plus.revealed{filter:none;user-select:auto}
-.plus18-overlay{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.3);border-radius:10px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
-.plus18-overlay p{font-size:13px;color:#ff8888;margin:0}
-.plus18-reveal-btn{background:rgba(255,68,68,0.15);border:1px solid rgba(255,68,68,0.4);border-radius:7px;padding:8px 16px;color:#ff8888;font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;transition:all 0.2s;white-space:nowrap}
-.plus18-reveal-btn:hover{background:rgba(255,68,68,0.25)}
 
 /* Locked */
 .locked-banner{background:rgba(255,68,68,0.06);border:1px solid rgba(255,68,68,0.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#ff8888;display:flex;align-items:center;gap:8px}
@@ -552,37 +496,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     transform: translateX(18px);
 }
 
-/* Feed overlay +18 */
-.feed-18-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(10,10,15,0.92);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    z-index: 10;
-    border-radius: inherit;
-}
-.feed-18-overlay span {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: #ff8888;
-}
-.feed-18-overlay button {
-    background: rgba(255,68,68,0.15);
-    border: 1px solid rgba(255,68,68,0.4);
-    border-radius: 6px;
-    padding: 5px 12px;
-    color: #ff8888;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.feed-18-overlay button:hover { background: rgba(255,68,68,0.28); }
-
 .bc-bar{background:var(--surface);border-bottom:1px solid var(--border2);padding:8px 32px;position:relative;z-index:5}
 .bc-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);flex-wrap:wrap}
 .bc-link{color:var(--muted);text-decoration:none;transition:color 0.15s}.bc-link:hover{color:var(--accent)}
@@ -613,16 +526,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         <div class="prefs-panel-header">
             <span class="prefs-panel-title">Preferências de Conteúdo</span>
             <button class="prefs-panel-close" onclick="togglePrefsPanel()">×</button>
-        </div>
-        <div class="prefs-item">
-            <div class="prefs-item-info">
-                <div class="prefs-item-label">🔞 Conteúdo +18</div>
-                <div class="prefs-item-desc">Ocultar posts e conteúdo marcado como +18 por defeito</div>
-            </div>
-            <label class="prefs-toggle">
-                <input type="checkbox" id="pref-hide18" onchange="updatePref('hide18', this.checked)">
-                <span class="prefs-toggle-track"></span>
-            </label>
         </div>
         <div class="prefs-item">
             <div class="prefs-item-info">
@@ -679,13 +582,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <?php if (!empty($post['flair'])): ?>
                 <?php echo renderFlairBadge($post['flair']); ?>
             <?php endif; ?>
-            <?php if (!empty($commLabelsList)): ?>
-                <?php foreach($commLabelsList as $lbl): ?>
-                    <?php if($lbl==='18plus'): ?><span class="flair-badge flair-18plus" style="margin-left:4px">🔞 +18 (comunidade)</span><?php endif; ?>
-                    <?php if($lbl==='sensivel'): ?><span class="flair-badge flair-spoiler" style="margin-left:4px">⚠️ Comunidade Sensível</span><?php endif; ?>
-                    <?php if($lbl==='nsfw'): ?><span class="flair-badge flair-ajuda" style="margin-left:4px">🔒 NSFW (comunidade)</span><?php endif; ?>
-                <?php endforeach; ?>
-            <?php endif; ?>
             <?php if (!empty($post['is_pinned'])): ?>
                 <span style="font-family:'Space Mono',monospace;font-size:9px;background:rgba(0,255,136,0.1);color:var(--accent4);border:1px solid rgba(0,255,136,0.2);border-radius:4px;padding:2px 8px;margin-left:6px">📌 FIXADO</span>
             <?php endif; ?>
@@ -701,12 +597,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                         </div>
                         <div class="post-body-text" style="min-height:60px"><?php echo sanitize($post['content']); ?></div>
                     </div>
-                <?php elseif (!empty($post['flair']) && $post['flair'] === '18plus'): ?>
-                    <div class="plus18-overlay">
-                        <p>🔞 <strong>Conteúdo +18</strong> — Este conteúdo pode ser impróprio para menores.</p>
-                        <button class="plus18-reveal-btn" onclick="reveal18()">Tenho +18 anos — Mostrar</button>
-                    </div>
-                    <div class="post-body-text content-18plus" id="content18"><?php echo sanitize($post['content']); ?></div>
                 <?php else: ?>
                     <div class="post-body-text"><?php echo sanitize($post['content']); ?></div>
                 <?php endif; ?>
@@ -949,23 +839,11 @@ var CSRF    = '<?php echo $csrf; ?>';
 var CUR_UID = <?php echo $currentUser ? (int)$currentUser['id'] : 'null'; ?>;
 var POST_ID = <?php echo $postId; ?>;
 
-function revealCommOverlay() {
-    var ov = document.getElementById('commOverlay18');
-    var body = document.querySelector('.post-body-text');
-    if (ov) ov.remove();
-    if (body) body.classList.add('revealed');
-}
 function revealSpoiler() {
     var wrap = document.getElementById('spoilerWrap');
     var mask = document.getElementById('spoilerMask');
     if (wrap) wrap.classList.add('revealed');
     if (mask) mask.style.display = 'none';
-}
-function reveal18() {
-    var el = document.getElementById('content18');
-    if (el) el.classList.add('revealed');
-    var ov = el ? el.previousElementSibling : null;
-    if (ov) ov.style.display = 'none';
 }
 
 async function apiCall(body) {
@@ -1066,9 +944,9 @@ async function toggleJoin(commId, btn) {
 function getPrefs() {
     try {
         var s = localStorage.getItem('forumPrefs');
-        var d = {hide18: true, hideSpoiler: false};
+        var d = {hideSpoiler: false};
         return s ? Object.assign(d, JSON.parse(s)) : d;
-    } catch(e) { return {hide18: true, hideSpoiler: false}; }
+    } catch(e) { return {hideSpoiler: false}; }
 }
 
 function savePrefs(p) {
@@ -1076,49 +954,6 @@ function savePrefs(p) {
 }
 
 function applyPrefs(p) {
-    // Posts no feed com +18 — overlay
-    document.querySelectorAll('.post-card').forEach(function(card) {
-        var flair18 = card.querySelector('.flair-18plus');
-        var existing = card.querySelector('.feed-18-overlay');
-        if (flair18 && p.hide18) {
-            if (!existing) {
-                var ov = document.createElement('div');
-                ov.className = 'feed-18-overlay';
-                ov.innerHTML = '<span>🔞 Conteúdo +18</span><button onclick="revealCard(this)">Mostrar</button>';
-                card.style.position = 'relative';
-                card.appendChild(ov);
-            }
-        } else if (existing) {
-            existing.remove();
-        }
-    });
-
-    // Post aberto — overlay +18 (flair ou comunidade)
-    var is18Comm = <?php echo ($needsOverlay) ? 'true' : 'false'; ?>;
-    var o18 = document.querySelector('.plus18-overlay');
-    var c18 = document.getElementById('content18');
-    if (o18 && c18) {
-        if (p.hide18) {
-            o18.style.display = 'flex';
-            c18.classList.remove('revealed');
-        } else {
-            o18.style.display = 'none';
-            c18.classList.add('revealed');
-        }
-    } else if (is18Comm && p.hide18 && !document.getElementById('commOverlay18')) {
-        // Comunidade marcada +18/NSFW mas post sem flair — adicionar overlay ao conteúdo
-        var postBody = document.querySelector('.post-body-text');
-        if (postBody) {
-            var ov = document.createElement('div');
-            ov.id = 'commOverlay18';
-            ov.className = 'plus18-overlay';
-            var lbl = <?php echo $isPostNsfw ? "'🔒 Comunidade NSFW'" : "'🔞 Comunidade +18'"; ?>;
-            ov.innerHTML = '<p>' + lbl + ' — Este conteúdo pode ser inapropriado.</p><button class="plus18-reveal-btn" onclick="revealCommOverlay()">Mostrar</button>';
-            postBody.parentNode.insertBefore(ov, postBody);
-            postBody.classList.add('content-18plus');
-        }
-    }
-
     // Spoiler — mostrar/esconder mask e conteúdo
     document.querySelectorAll('.spoiler-content').forEach(function(wrap) {
         if (p.hideSpoiler) {
@@ -1140,11 +975,6 @@ function updatePref(key, value) {
     p[key] = value;
     savePrefs(p);
     applyPrefs(p);
-}
-
-function revealCard(btn) {
-    var ov = btn.closest('.feed-18-overlay');
-    if (ov) ov.remove();
 }
 
 function togglePrefsPanel() {
@@ -1170,9 +1000,7 @@ document.addEventListener('click', function(e) {
 // Inicializar toggles e aplicar preferências
 (function() {
     var p = getPrefs();
-    var t18  = document.getElementById('pref-hide18');
     var tSpo = document.getElementById('pref-hideSpoiler');
-    if (t18)  t18.checked  = p.hide18;
     if (tSpo) tSpo.checked = p.hideSpoiler;
     applyPrefs(p);
 })();

@@ -58,13 +58,17 @@ if ($currentUser) {
 // ── Renderizar markdown no lado do servidor ───────────────────
 function renderMarkdown(string $text): string {
     $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    // Blocos de código
     $text = preg_replace('/```\w*\n?([\s\S]*?)```/', '<pre><code>$1</code></pre>', $text);
     $text = preg_replace('/`([^`]+)`/', '<code>$1</code>', $text);
+    // Tipografia
     $text = preg_replace('/\*\*(.+?)\*\*/', '<strong>$1</strong>', $text);
     $text = preg_replace('/\*(.+?)\*/', '<em>$1</em>', $text);
+    // Títulos e Listas
     $text = preg_replace('/^### (.+)$/m', '<h3>$1</h3>', $text);
     $text = preg_replace('/^- (.+)$/m', '<li>$1</li>', $text);
     $text = preg_replace('/(<li>.*<\/li>\n?)+/', '<ul>$0</ul>', $text);
+
     $paras = preg_split('/\n{2,}/', $text);
     $out = [];
     foreach ($paras as $p) {
@@ -94,17 +98,24 @@ $pageTitle = $activeConv ? htmlspecialchars($activeConv['title']) : 'Print AI �
     --surface2: #1c1c28;
     --surface3: #252535;
     --accent:   #00e5ff;
+    --accent-rgb: 0, 229, 255;
     --accent2:  #ff6b35;
+    --accent2-rgb: 255, 107, 53;
     --accent3:  #7c3aed;
     --accent4:  #00ff88;
     --text:     #e8e8f0;
     --muted:    #888899;
-    --border:   rgba(0,229,255,0.12);
+    --border:   rgba(0,229,255,0.15);
     --border2:  rgba(255,255,255,0.06);
+}
+body.orange-mode {
+    --accent: var(--accent2);
+    --accent-rgb: var(--accent2-rgb);
+    --border: rgba(255,107,53,0.25);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; }
-body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; display: flex; flex-direction: column; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; display: flex; flex-direction: column; transition: background 0.3s; }
 
 /* ── LAYOUT ─────────────────────────────────────────────────── */
 .app-layout { display: flex; flex: 1; overflow: hidden; height: 100vh; }
@@ -137,8 +148,13 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
     border-right: 1px solid var(--border2); display: flex; flex-direction: column;
     overflow: hidden; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.sidebar.collapsed { width: 0; border-right: none; }
-.sidebar-header { padding: 22px 18px 14px; border-bottom: 1px solid var(--border2); flex-shrink: 0; min-width: 260px; }
+    .sidebar.collapsed { width: 0; border-right: none; }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 90; }
+    @media (max-width: 768px) {
+        .sidebar { position: fixed; left: -280px; top: 0; bottom: 0; z-index: 100; box-shadow: 20px 0 50px rgba(0,0,0,0.5); width: 280px; }
+        .sidebar.open { left: 0; }
+        .sidebar-overlay.open { display: block; }
+    }
 .sidebar-label { font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
 .new-conv-btn {
     width: 100%; background: var(--surface2); color: var(--text); border: 1px solid var(--border2); border-radius: 10px;
@@ -184,6 +200,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
 
 .msg-body { flex: 1; min-width: 0; }
 .msg-bubble { font-size: 15px; line-height: 1.7; word-break: break-word; color: var(--text); }
+.msg-bubble strong { color: var(--accent); font-weight: 800; text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.2); }
 .msg.user .msg-bubble { background: var(--surface2); padding: 12px 18px; border-radius: 18px; border-top-right-radius: 4px; float: right; max-width: 85%; }
 .msg-time { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 6px; display: block; }
 .msg.user .msg-time { text-align: right; }
@@ -209,10 +226,18 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
 .mode-toggle { display: flex; background: var(--surface2); border-radius: 8px; padding: 3px; gap: 3px; }
 .mode-btn { padding: 5px 10px; border-radius: 6px; border: none; background: none; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); cursor: pointer; transition: all 0.2s; }
 .mode-btn.active { background: var(--surface3); color: var(--accent); }
-#btnA.active { color: #a78bfa; border-color: rgba(167,139,250,0.3); }
+#btnA.active { color: var(--accent2); border-color: rgba(255,107,53,0.3); }
 
-.send-btn { width: 38px; height: 38px; background: var(--accent); color: #000; border: none; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.2s; }
-.send-btn:hover { background: #fff; transform: scale(1.05); }
+.send-btn { width: 38px; height: 38px; background: var(--accent); color: #000; border: none; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.2s; box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.3); }
+    .send-btn:hover { background: #fff; transform: scale(1.05); box-shadow: 0 0 25px rgba(var(--accent-rgb), 0.5); }
+
+    /* Mobile Menu Trigger */
+    .mobile-nav { display: none; position: absolute; top: 16px; left: 16px; z-index: 80; }
+    @media (max-width: 768px) {
+        .mobile-nav { display: block; }
+        .rails-sidebar { display: none; }
+        .chat-area { padding-top: 50px; }
+    }
 
 .input-footer { text-align: center; font-size: 11px; color: var(--muted); margin-top: 10px; font-family: 'Space Mono', monospace; }
 
@@ -243,10 +268,9 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
         <?php endif; ?>
     </nav>
 
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-label">Histórico</div>
-            <a href="ai.php" class="new-conv-btn">Nova Conversa</a>
+    <aside class="sidebar collapsed" id="sidebar">
+        <div class="sidebar-header" style="padding: 20px 16px 12px; border-bottom: 1px solid var(--border2); margin-bottom: 8px;">
+            <div class="sidebar-label" style="margin-bottom: 0;">Histórico</div>
         </div>
         <div class="sidebar-list" id="convList">
             <?php foreach ($conversations as $conv): $isActive = (int)$conv['id'] === $activeConvId; ?>
@@ -260,6 +284,10 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
     </aside>
 
     <main class="chat-area">
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+        <div class="mobile-nav">
+            <button class="rails-btn" onclick="toggleSidebar()" style="background:var(--surface); border:1px solid var(--border2)"><i class="fas fa-bars"></i></button>
+        </div>
         <div class="messages" id="messages">
             <div class="messages-inner" id="messagesInner">
                 <?php if (empty($activeMessages)): ?>
@@ -314,10 +342,20 @@ function setMode(m) {
     MODE = m; localStorage.setItem('ai_mode', m);
     document.getElementById('btnB').classList.toggle('active', m==='beginner');
     document.getElementById('btnA').classList.toggle('active', m==='advanced');
+    document.body.classList.toggle('orange-mode', m==='advanced');
 }
 setMode(MODE);
 
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (window.innerWidth <= 768) {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+    } else {
+        sidebar.classList.toggle('collapsed');
+    }
+}
 function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight, 200)+'px'; }
 function handleKey(e) { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(); } }
 function scrollBot() { const m = document.getElementById('messages'); m.scrollTop = m.scrollHeight; }
@@ -343,11 +381,30 @@ async function deleteConv(e, id) {
 function useSug(btn) { document.getElementById('msgInput').value = btn.textContent; autoResize(document.getElementById('msgInput')); send(); }
 
 function md(text) {
+    // Escape HTML para evitar XSS antes de aplicar markdown
     text = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    text = text.replace(/```[\w]*\n?([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+
+    // Blocos de código
+    text = text.replace(/```\w*\n?([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
     text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // Tipografia (Negrito e Itálico)
     text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    return text.split('\n\n').map(p => `<p>${p.trim().replace(/\n/g, '<br>')}</p>`).join('');
+    text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+    // Títulos e Listas
+    text = text.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    text = text.replace(/^- (.+)$/gm, '<li>$1</li>');
+    text = text.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$0</ul>');
+
+    // Parágrafos e quebras de linha
+    return text.split(/\n{2,}/).map(p => {
+        p = p.trim();
+        if(!p) return '';
+        // Não envolver em <p> se já for um bloco estrutural
+        if(p.match(/^<(ul|pre|h3)/)) return p;
+        return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+    }).join('\n');
 }
 
 function appendMsg(role, content) {

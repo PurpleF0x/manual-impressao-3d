@@ -175,7 +175,7 @@ try {
                fc.name as comm_name, fc.slug as comm_slug, fc.icon as comm_icon
         FROM forum_posts fp
         JOIN forum_communities fc ON fc.id = fp.community_id
-        WHERE fp.user_id=?
+        WHERE fp.user_id=? AND fp.status='approved'
         ORDER BY fp.created_at DESC LIMIT 10
     ");
     $pq->execute(array($targetId));
@@ -192,11 +192,19 @@ try {
         FROM forum_replies fr
         JOIN forum_posts fp ON fp.id = fr.post_id
         JOIN forum_communities fc ON fc.id = fp.community_id
-        WHERE fr.user_id=?
+        WHERE fr.user_id=? AND fp.status='approved'
         ORDER BY fr.created_at DESC LIMIT 8
     ");
     $rq->execute(array($targetId));
     $recentReplies = $rq->fetchAll();
+} catch(Exception $e){}
+
+// Buscar Inventário completo para "Conquistas"
+$inventoryBadges = [];
+try {
+    $iq = $db->prepare("SELECT si.* FROM shop_items si JOIN user_inventory ui ON ui.item_id=si.id WHERE ui.user_id=? AND si.category IN ('badge','medal','accent') ORDER BY si.name ASC");
+    $iq->execute(array($targetId));
+    $inventoryBadges = $iq->fetchAll();
 } catch(Exception $e){}
 
 // ── Mensagens não lidas (topbar) ──────────────────────────────
@@ -569,6 +577,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <div class="stat-num"><?php echo $stats['owned']; ?></div>
             <div class="stat-lbl">Criadas</div>
         </div>
+        <div class="stat-item">
+            <div class="stat-num" style="color:#ffcc00">🪙 <?php echo number_format($customConfig['coins'] ?? 0); ?></div>
+            <div class="stat-lbl">Moedas</div>
+        </div>
     </div>
 </div>
 
@@ -688,6 +700,24 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         <?php endforeach; ?>
         <?php endif; ?>
     </div>
+
+    <!-- Conquistas / Inventário -->
+    <?php if (!empty($inventoryBadges)): ?>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:14px 16px;margin-top:14px">
+        <div class="xp-legend-title">🏆 Conquistas e Itens</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(40px, 1fr));gap:8px;margin-top:10px">
+            <?php foreach($inventoryBadges as $ib): ?>
+                <div class="inventory-badge-box" title="<?php echo sanitize($ib['name']); ?>" style="aspect-ratio:1;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:help;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='scale(1.1)'" onmouseout="this.style.borderColor='var(--border2)';this.style.transform='scale(1)'">
+                    <?php if($ib['category'] === 'accent'): ?>
+                        <div style="width:16px;height:16px;border-radius:50%;background:<?php echo $ib['css_value']; ?>;box-shadow:0 0 10px <?php echo $ib['css_value']; ?>66"></div>
+                    <?php else: ?>
+                        🏅
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- Legenda XP -->
     <div class="xp-legend">

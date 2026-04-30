@@ -9,8 +9,7 @@ $currentUser = getCurrentUser();
 $uid = (int)$currentUser['id'];
 $db  = getDB();
 
-// Garantir coluna content_labels
-try { $db->exec("ALTER TABLE forum_communities ADD COLUMN IF NOT EXISTS content_labels VARCHAR(100) DEFAULT NULL"); } catch(Exception $e){}
+// Garantir colunas necessárias
 try { $db->exec("ALTER TABLE forum_communities ADD COLUMN IF NOT EXISTS description VARCHAR(500) DEFAULT NULL"); } catch(Exception $e){}
 
 $commId = (int)($_GET['id'] ?? 0);
@@ -41,18 +40,6 @@ $flashType = 'success';
 // ── POST ──────────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'] ?? null)) {
     $action = $_POST['action'] ?? '';
-
-    if ($action === 'update_labels') {
-        $labels = array();
-        if (!empty($_POST['label_18plus']))    $labels[] = '18plus';
-        if (!empty($_POST['label_sensivel']))  $labels[] = 'sensivel';
-        if (!empty($_POST['label_nsfw']))      $labels[] = 'nsfw';
-        $labelsStr = !empty($labels) ? implode(',', $labels) : null;
-        $db->prepare("UPDATE forum_communities SET content_labels=? WHERE id=?")
-           ->execute(array($labelsStr, $commId));
-        $comm['content_labels'] = $labelsStr;
-        $flash = 'Etiquetas de conteúdo atualizadas.';
-    }
 
     // ── Gestão de roles de membros (apenas owner) ─────────────
     if ($action === 'set_member_role' && $isOwner) {
@@ -121,7 +108,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
     }
 }
 
-$currentLabels = !empty($comm['content_labels']) ? explode(',', $comm['content_labels']) : array();
 $csrf = generateCSRFToken();
 $bannerColor = $comm['banner_color'] ?: '#00e5ff';
 
@@ -185,23 +171,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .flash{padding:12px 18px;border-radius:10px;font-size:13px;margin-bottom:20px;display:flex;align-items:center;gap:8px}
 .flash.success{background:rgba(0,255,136,0.07);border:1px solid rgba(0,255,136,0.25);color:var(--accent4)}
 .flash.error{background:rgba(255,68,68,0.07);border:1px solid rgba(255,68,68,0.25);color:#ff8888}
-
-/* Label cards */
-.label-grid{display:flex;flex-direction:column;gap:10px}
-.label-card{display:flex;align-items:center;gap:16px;padding:16px 18px;background:var(--surface2);border:2px solid var(--border2);border-radius:12px;cursor:pointer;transition:all 0.2s;user-select:none}
-.label-card:hover{border-color:rgba(255,255,255,0.12)}
-.label-card.selected-18plus{border-color:#ff4444;background:rgba(255,68,68,0.06)}
-.label-card.selected-sensivel{border-color:#ffcc00;background:rgba(255,204,0,0.05)}
-.label-card.selected-nsfw{border-color:#ff6b35;background:rgba(255,107,53,0.06)}
-.label-card input[type="checkbox"]{width:18px;height:18px;accent-color:var(--accent2);flex-shrink:0;cursor:pointer}
-.label-icon{font-size:24px;flex-shrink:0}
-.label-info{flex:1}
-.label-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
-.label-desc{font-size:12px;color:var(--muted);line-height:1.4}
-.label-badge{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;flex-shrink:0}
-.badge-18plus{background:rgba(255,68,68,0.15);color:#ff8888;border:1px solid rgba(255,68,68,0.3)}
-.badge-sensivel{background:rgba(255,204,0,0.1);color:#ffcc00;border:1px solid rgba(255,204,0,0.25)}
-.badge-nsfw{background:rgba(255,107,53,0.12);color:var(--accent2);border:1px solid rgba(255,107,53,0.25)}
 
 /* Form */
 .form-group{margin-bottom:16px}
@@ -268,61 +237,13 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 
 <div class="page">
     <div class="page-header">
-        <div class="page-label">Gestão de Comunidade</div>
         <div class="page-title"><?php echo $comm['icon']; ?> <?php echo sanitize($comm['name']); ?></div>
-        <div class="page-sub">Configura as definições e etiquetas de conteúdo da tua comunidade</div>
+        <div class="page-sub">Configura as definições da tua comunidade</div>
     </div>
 
     <?php if ($flash): ?>
     <div class="flash <?php echo $flashType; ?>"><?php echo $flashType === 'success' ? '✓' : '⚠️'; ?> <?php echo sanitize($flash); ?></div>
     <?php endif; ?>
-
-    <!-- Etiquetas de conteúdo -->
-    <div class="card">
-        <div class="card-header">
-            <div class="card-header-icon" style="background:rgba(255,68,68,0.1)">🏷️</div>
-            <div>
-                <div class="card-header-title">Etiquetas de Conteúdo</div>
-                <div class="card-header-sub">Define o tipo de conteúdo desta comunidade — afeta como os posts aparecem no feed</div>
-            </div>
-        </div>
-        <div class="card-body">
-            <form method="POST">
-                <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
-                <input type="hidden" name="action" value="update_labels">
-                <div class="label-grid">
-
-                    <label class="label-card <?php echo in_array('sensivel',$currentLabels)?'selected-sensivel':''; ?>" id="lcard-sensivel">
-                        <input type="checkbox" name="label_sensivel" id="lblSens"
-                               onchange="toggleLabelCard('sensivel',this.checked)"
-                               <?php echo in_array('sensivel',$currentLabels)?'checked':''; ?>>
-                        <span class="label-icon">⚠️</span>
-                        <div class="label-info">
-                            <div class="label-name">Conteúdo Sensível</div>
-                            <div class="label-desc">Conteúdo potencialmente perturbador — violência, temas difíceis, etc. Será avisado antes de mostrar.</div>
-                        </div>
-                        <span class="label-badge badge-sensivel">SENSÍVEL</span>
-                    </label>
-
-                    <label class="label-card <?php echo in_array('nsfw',$currentLabels)?'selected-nsfw':''; ?>" id="lcard-nsfw">
-                        <input type="checkbox" name="label_nsfw" id="lblNsfw"
-                               onchange="toggleLabelCard('nsfw',this.checked)"
-                               <?php echo in_array('nsfw',$currentLabels)?'checked':''; ?>>
-                        <span class="label-icon">🔒</span>
-                        <div class="label-info">
-                            <div class="label-name">NSFW</div>
-                            <div class="label-desc">Not Safe For Work — conteúdo inapropriado para ambientes profissionais ou públicos.</div>
-                        </div>
-                        <span class="label-badge badge-nsfw">NSFW</span>
-                    </label>
-
-                </div>
-                <div style="margin-top:18px">
-                    <button type="submit" class="btn btn-primary">💾 GUARDAR ETIQUETAS</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <!-- Informações da comunidade -->
     <div class="card">
@@ -527,13 +448,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 </div>
 
 <script>
-function toggleLabelCard(type, checked) {
-    var card = document.getElementById('lcard-' + type);
-    if (!card) return;
-    card.classList.remove('selected-18plus','selected-sensivel','selected-nsfw');
-    if (checked) card.classList.add('selected-' + type);
-}
-
 function selIcon(icon, el) {
     document.querySelectorAll('.icon-opt').forEach(function(x){ x.classList.remove('selected'); });
     el.classList.add('selected');

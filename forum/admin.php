@@ -128,12 +128,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
         } elseif ($action === 'coins' && amMaster($currentUser)) {
             $amount = (int)($_POST['coins_amount'] ?? 0);
             try {
-                $db->exec("CREATE TABLE IF NOT EXISTS user_profile_config (user_id INT PRIMARY KEY, coins INT DEFAULT 0, frame_key VARCHAR(50) NULL, background_key VARCHAR(50) NULL, banner_url VARCHAR(500) NULL, accent_color VARCHAR(20) NULL, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-                $db->prepare("INSERT INTO user_profile_config (user_id,coins) VALUES (?,?) ON DUPLICATE KEY UPDATE coins=coins+?")->execute(array($targetId,$amount,$amount));
+                // Garantir que a tabela existe
+                $db->exec("CREATE TABLE IF NOT EXISTS user_profile_config (
+                    user_id INT PRIMARY KEY,
+                    coins INT DEFAULT 0,
+                    frame_key VARCHAR(50) NULL,
+                    background_key VARCHAR(50) NULL,
+                    banner_url VARCHAR(500) NULL,
+                    accent_color VARCHAR(20) NULL,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+                // Verificar se o utilizador já tem perfil, senão cria com o balanço inicial
+                $stmt = $db->prepare("SELECT user_id FROM user_profile_config WHERE user_id = ?");
+                $stmt->execute([$targetId]);
+                if (!$stmt->fetch()) {
+                    // Cálculo de moedas herdado de loja.php para consistência
+                    $stats = $db->prepare("
+                        SELECT
+                            (SELECT COUNT(*) FROM forum_posts WHERE user_id = ? AND status='approved') as posts,
+                            (SELECT COUNT(*) FROM forum_replies WHERE user_id = ?) as replies,
+                            (SELECT IFNULL(SUM(value),0) FROM forum_votes v JOIN forum_posts p ON p.id=v.post_id WHERE p.user_id = ? AND v.value > 0) as karma
+                    ");
+                    $stats->execute([$targetId, $targetId, $targetId]);
+                    $s = $stats->fetch();
+                    $initialCoins = ($s['posts'] * 10) + ($s['replies'] * 3) + ($s['karma'] * 2);
+
+                    $db->prepare("INSERT INTO user_profile_config (user_id, coins) VALUES (?, ?)")
+                       ->execute([$targetId, $initialCoins]);
+                }
+
+                // Ajustar o balanço
+                $db->prepare("UPDATE user_profile_config SET coins = coins + ? WHERE user_id = ?")
+                   ->execute([$amount, $targetId]);
+
                 $sign = $amount >= 0 ? "+$amount" : "$amount";
-                addLog($db,$uid,$targetId,'coins',"$sign moedas");
-                $flash = array('ok', "🪙 {$sign} moedas em {$target['full_name']}");
-            } catch(Exception $e) { $flash = array('err','Erro: '.$e->getMessage()); }
+                addLog($db, $uid, $targetId, 'coins', "$sign moedas");
+                $flash = array('ok', "🪙 Balanço de {$target['full_name']} ajustado em {$sign} moedas.");
+            } catch(Exception $e) {
+                $flash = array('err', 'Erro ao ajustar moedas: ' . $e->getMessage());
+            }
 
         } elseif ($action === 'delete_post') {
             $postId = (int)($_POST['post_id'] ?? 0);

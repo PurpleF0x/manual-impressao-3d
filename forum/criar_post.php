@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
         $imageUrl  = $imgUrlInput;
         $imageType = 'url';
     }
-    $validFlairs = array('','showcase','tutorial','noticia','pergunta','projeto','ajuda','discussao_tecnica');
+    $validFlairs = array('','showcase','tutorial','noticia','pergunta','projeto','ajuda','discussao_tecnica','spoiler');
     if (!in_array($flair, $validFlairs)) $flair = '';
 
     try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS image_url VARCHAR(500) DEFAULT NULL"); } catch(Exception $e){}
@@ -229,8 +229,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
 .flair-opt.selected { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.08); font-weight: 600; }
 .flair-spoiler { }
 .flair-spoiler.selected { border-color: #ffcc00; color: #ffcc00; background: rgba(255,204,0,0.08); }
-.flair-18 { }
-.flair-18.selected { border-color: #ff4444; color: #ff4444; background: rgba(255,68,68,0.08); }
 
 </style>
 </head>
@@ -336,6 +334,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
                     </button>
                     <button type="button" class="flair-opt" data-flair="showcase" onclick="selectFlair('showcase',this)">
                         <span>📸</span> Showcase
+                    </button>
+                    <button type="button" class="flair-opt flair-spoiler" data-flair="spoiler" onclick="selectFlair('spoiler',this)">
+                        <span>⚠️</span> Spoiler
                     </button>
                 </div>
                 <div id="flairWarning" style="display:none;margin-top:8px;padding:10px 14px;border-radius:8px;font-size:12px"></div>
@@ -479,14 +480,12 @@ function selectFlair(flair, el) {
     document.getElementById('flairInput').value = flair;
     var warn = document.getElementById('flairWarning');
     if (!warn) return;
-    if (flair === 204,0,0.07)';
+    if (flair === 'spoiler') {
+        warn.style.display  = 'block';
+        warn.style.background = 'rgba(255,204,0,0.07)';
         warn.style.border   = '1px solid rgba(255,204,0,0.3)';
         warn.style.color    = '#ffcc00';
         warn.innerHTML = '⚠️ <strong>Spoiler</strong> — O conteúdo ficará oculto até o leitor clicar para revelar.';
-    } else if (flair === 68,68,0.07)';
-        warn.style.border   = '1px solid rgba(255,68,68,0.3)';
-        warn.style.color    = '#ff8888';
-        warn.innerHTML = '🔞 <strong>Conteúdo +18</strong> — Este post ficará ocultado por defeito.';
     } else {
         warn.style.display = 'none';
     }

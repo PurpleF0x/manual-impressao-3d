@@ -16,8 +16,6 @@ $slug = trim($_GET['slug'] ?? '');
 
 if (!$slug) { header('Location: index.php'); exit; }
 
-try { $db->exec("ALTER TABLE forum_communities ADD COLUMN IF NOT EXISTS content_labels VARCHAR(100) DEFAULT NULL"); } catch(Exception $e){}
-
 $stmt = $db->prepare("SELECT fc.*, u.username as owner_name, u.full_name as owner_full
     FROM forum_communities fc JOIN users u ON u.id=fc.created_by
     WHERE fc.slug=? AND fc.is_active=1");
@@ -88,7 +86,6 @@ function renderFlairBadgeComm($flair) {
         'debate'   => array('💬', 'DEBATE'),
         'humor'    => array('😄', 'HUMOR'),
         'spoiler'  => array('⚠️', 'SPOILER'),
-        '18plus'   => array('🔞', '+18'),
     );
     if (!isset($map[$flair])) return '';
     // Usar concatenação sem aspas simples dentro da string
@@ -327,37 +324,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
     transform: translateX(18px);
 }
 
-/* Feed overlay +18 */
-.feed-18-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(10,10,15,0.92);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    z-index: 10;
-    border-radius: inherit;
-}
-.feed-18-overlay span {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: #ff8888;
-}
-.feed-18-overlay button {
-    background: rgba(255,68,68,0.15);
-    border: 1px solid rgba(255,68,68,0.4);
-    border-radius: 6px;
-    padding: 5px 12px;
-    color: #ff8888;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.feed-18-overlay button:hover { background: rgba(255,68,68,0.28); }
-
 .bc-bar{background:var(--surface);border-bottom:1px solid var(--border2);padding:8px 32px;position:relative;z-index:5}
 .bc-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);flex-wrap:wrap}
 .bc-link{color:var(--muted);text-decoration:none;transition:color 0.15s}.bc-link:hover{color:var(--accent)}
@@ -383,16 +349,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
         <div class="prefs-panel-header">
             <span class="prefs-panel-title">Preferências de Conteúdo</span>
             <button class="prefs-panel-close" onclick="togglePrefsPanel()">×</button>
-        </div>
-        <div class="prefs-item">
-            <div class="prefs-item-info">
-                <div class="prefs-item-label">🔞 Conteúdo +18</div>
-                <div class="prefs-item-desc">Ocultar posts e conteúdo marcado como +18 por defeito</div>
-            </div>
-            <label class="prefs-toggle">
-                <input type="checkbox" id="pref-hide18" onchange="updatePref('hide18', this.checked)">
-                <span class="prefs-toggle-track"></span>
-            </label>
         </div>
         <div class="prefs-item">
             <div class="prefs-item-info">
@@ -644,9 +600,9 @@ async function toggleJoin(commId, btn) {
 function getPrefs() {
     try {
         var s = localStorage.getItem('forumPrefs');
-        var d = {hide18: true, hideSpoiler: false};
+        var d = {hideSpoiler: false};
         return s ? Object.assign(d, JSON.parse(s)) : d;
-    } catch(e) { return {hide18: true, hideSpoiler: false}; }
+    } catch(e) { return {hideSpoiler: false}; }
 }
 
 function savePrefs(p) {
@@ -654,36 +610,6 @@ function savePrefs(p) {
 }
 
 function applyPrefs(p) {
-    // Posts no feed com +18 — overlay
-    document.querySelectorAll('.post-card').forEach(function(card) {
-        var flair18 = card.querySelector('.flair-18plus');
-        var existing = card.querySelector('.feed-18-overlay');
-        if (flair18 && p.hide18) {
-            if (!existing) {
-                var ov = document.createElement('div');
-                ov.className = 'feed-18-overlay';
-                ov.innerHTML = '<span>🔞 Conteúdo +18</span><button onclick="revealCard(this)">Mostrar</button>';
-                card.style.position = 'relative';
-                card.appendChild(ov);
-            }
-        } else if (existing) {
-            existing.remove();
-        }
-    });
-
-    // Post aberto — overlay +18
-    var o18 = document.querySelector('.plus18-overlay');
-    var c18 = document.getElementById('content18');
-    if (o18 && c18) {
-        if (p.hide18) {
-            o18.style.display = 'flex';
-            c18.classList.remove('revealed');
-        } else {
-            o18.style.display = 'none';
-            c18.classList.add('revealed');
-        }
-    }
-
     // Spoiler mask
     document.querySelectorAll('.spoiler-mask').forEach(function(mask) {
         mask.style.display = p.hideSpoiler ? 'flex' : 'none';
@@ -695,11 +621,6 @@ function updatePref(key, value) {
     p[key] = value;
     savePrefs(p);
     applyPrefs(p);
-}
-
-function revealCard(btn) {
-    var ov = btn.closest('.feed-18-overlay');
-    if (ov) ov.remove();
 }
 
 function togglePrefsPanel() {
@@ -725,9 +646,7 @@ document.addEventListener('click', function(e) {
 // Inicializar toggles e aplicar preferências
 (function() {
     var p = getPrefs();
-    var t18  = document.getElementById('pref-hide18');
     var tSpo = document.getElementById('pref-hideSpoiler');
-    if (t18)  t18.checked  = p.hide18;
     if (tSpo) tSpo.checked = p.hideSpoiler;
     applyPrefs(p);
 })();
