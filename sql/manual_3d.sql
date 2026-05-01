@@ -18,11 +18,11 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
-CREATE DATABASE IF NOT EXISTS `manual_3d`;
-USE `manual_3d`;
+CREATE DATABASE IF NOT EXISTS `PAP`;
+USE `PAP`;
 
 --
--- Banco de dados: `manual_3d`
+-- Banco de dados: `PAP`
 --
 
 -- --------------------------------------------------------
