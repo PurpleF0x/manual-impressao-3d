@@ -1,6 +1,7 @@
 <?php
 /**
  * Configuração da Base de Dados — Manual de Impressão 3D
+ * Otimizado para TiDB Cloud e Render
  */
 
 // Configurações de ligação
@@ -8,11 +9,10 @@ define('DB_HOST',    getenv('DB_HOST')    ?: 'gateway01.eu-central-1.prod.aws.ti
 define('DB_PORT',    getenv('DB_PORT')    ?: 4000);
 define('DB_NAME',    getenv('DB_NAME')    ?: 'manual_3d');
 define('DB_USER',    getenv('DB_USER')    ?: '3VKDTpnqS1VYkC2.root');
-define('DB_PASS',    getenv('DB_PASS')    ?: ''); // Se testares local, coloca a pass aqui. No Render, usa Env Vars.
+define('DB_PASS',    getenv('DB_PASS')    ?: ''); // No Render, preenche no Dashboard (Environment)
 define('DB_CHARSET', 'utf8mb4');
 
 // Caminho do certificado CA para SSL (Obrigatório para TiDB Cloud)
-// No Render (Linux), o caminho padrão é este:
 $ca_bundle = '/etc/ssl/certs/ca-certificates.crt';
 
 define('DB_OPTIONS', [
@@ -20,11 +20,10 @@ define('DB_OPTIONS', [
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     PDO::ATTR_EMULATE_PREPARES   => false,
     PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4",
-    // TiDB Cloud Serverless EXIGE SSL.
-    // Se o ficheiro de certificados existir (Ambiente Render/Linux), usamos.
-    // Se não existir (Local Windows), o TiDB vai recusar a ligação a menos que instales o certificado.
     PDO::MYSQL_ATTR_SSL_CA       => file_exists($ca_bundle) ? $ca_bundle : null,
     PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
+    // PERMITE EXECUTAR O FICHEIRO SQL INTEIRO DE UMA VEZ
+    PDO::MYSQL_ATTR_MULTI_STATEMENTS => true,
 ]);
 
 /**
@@ -38,9 +37,19 @@ function getDB(): PDO {
 
     try {
         $pdo = new PDO($dsn, DB_USER, DB_PASS, DB_OPTIONS);
+
+        // Verificação: se a ligação deu OK mas a tabela principal não existe, tenta inicializar
+        try {
+            $pdo->query("SELECT 1 FROM users LIMIT 1");
+        } catch (Exception $e) {
+            if (initializeDatabase()) {
+                // Reconecta para assumir as novas tabelas
+                return new PDO($dsn, DB_USER, DB_PASS, DB_OPTIONS);
+            }
+        }
     } catch (PDOException $e) {
-        // Se a BD não existir, tenta inicializar com o script SQL
-        if (str_contains($e->getMessage(), 'Unknown database') || str_contains($e->getMessage(), "doesn't exist")) {
+        // Se a BD não existir (Erro 1049), tenta criar e inicializar
+        if ($e->getCode() == 1049 || str_contains($e->getMessage(), "doesn't exist")) {
             if (initializeDatabase()) {
                 return new PDO($dsn, DB_USER, DB_PASS, DB_OPTIONS);
             }
@@ -58,7 +67,7 @@ function initializeDatabase(): bool {
     if (!is_readable($sqlFile)) return false;
 
     try {
-        // Liga sem selecionar DB primeiro
+        // Liga sem selecionar DB primeiro para garantir que a pode criar
         $tmp_dsn = 'mysql:host=' . DB_HOST . ';port=' . DB_PORT . ';charset=' . DB_CHARSET;
         $tmp_pdo = new PDO($tmp_dsn, DB_USER, DB_PASS, DB_OPTIONS);
 
@@ -66,7 +75,8 @@ function initializeDatabase(): bool {
         $tmp_pdo->exec("USE `" . DB_NAME . "`;");
 
         $query = file_get_contents($sqlFile);
-        // Limpa comandos que podem causar erro no Cloud
+
+        // Remove comandos que podem conflitar se a BD já existir parcialmente
         $query = preg_replace('/CREATE DATABASE IF NOT EXISTS `.*?`;/i', '', $query);
         $query = preg_replace('/USE `.*?`;/i', '', $query);
 
