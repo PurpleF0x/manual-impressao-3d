@@ -3,8 +3,13 @@
  * Funções Auxiliares — Manual de Impressão 3D
  */
 
+// Segurança de Sessão
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_samesite', 'Lax');
+
 if (session_status() === PHP_SESSION_NONE) {
-    session_start(['cookie_httponly' => true, 'cookie_secure' => false]);
+    session_start();
 }
 
 require_once __DIR__ . '/../config/database.php';
@@ -45,9 +50,77 @@ function getCurrentUser(): ?array {
 
         $stmt = $db->prepare('SELECT * FROM users WHERE id = ? AND is_active = TRUE LIMIT 1');
         $stmt->execute([$_SESSION['user_id']]);
-        $_CACHE['current_user'] = $stmt->fetch() ?: false;
+        $user = $stmt->fetch();
+        if ($user) {
+            checkDailyStreak((int)$user['id']);
+            $_CACHE['current_user'] = $user;
+        } else {
+            $_CACHE['current_user'] = false;
+        }
     }
     return $_CACHE['current_user'] ?: null;
+}
+
+/**
+ * Sistema de Streak e Recompensas Diárias
+ */
+function checkDailyStreak(int $userId): void {
+    if (isset($_SESSION['streak_checked_today'])) return;
+
+    $db = getDB();
+    try {
+        $stmt = $db->prepare("SELECT streak_count, last_streak_date, growth_points FROM user_profile_config WHERE user_id = ?");
+        $stmt->execute([$userId]);
+        $config = $stmt->fetch();
+
+        if (!$config) {
+            $db->prepare("INSERT IGNORE INTO user_profile_config (user_id, streak_count, last_streak_date, growth_points) VALUES (?, 1, CURDATE(), 10)")->execute([$userId]);
+            addXP($userId, 10, "Bónus de primeiro acesso", 5);
+            $_SESSION['streak_checked_today'] = true;
+            return;
+        }
+
+        $lastDate = $config['last_streak_date'];
+        $today    = date('Y-m-d');
+        $yesterday = date('Y-m-d', strtotime('-1 day'));
+
+        if ($lastDate === $today) {
+            $_SESSION['streak_checked_today'] = true;
+            return;
+        }
+
+        if ($lastDate === $yesterday) {
+            // Continua a streak
+            $newStreak = (int)$config['streak_count'] + 1;
+            $db->prepare("UPDATE user_profile_config SET streak_count = ?, last_streak_date = ?, growth_points = growth_points + 10 WHERE user_id = ?")
+               ->execute([$newStreak, $today, $userId]);
+            addXP($userId, 10 + min($newStreak, 20), "Bónus diário (Streak: $newStreak)", 5 + min($newStreak, 10));
+
+            // Recompensa de Badge por Streak (7 dias)
+            if ($newStreak >= 7) {
+                awardItem($userId, 'badge_streak_7');
+            }
+        } else {
+            // Perdeu a streak
+            $db->prepare("UPDATE user_profile_config SET streak_count = 1, last_streak_date = ?, growth_points = growth_points + 5 WHERE user_id = ?")
+               ->execute([$today, $userId]);
+            addXP($userId, 10, "Bónus diário (Streak reiniciada)", 5);
+        }
+
+        $_SESSION['streak_checked_today'] = true;
+    } catch (Exception $e) {
+        error_log("Erro checkDailyStreak: " . $e->getMessage());
+    }
+}
+
+function getStreakColor(int $days): string {
+    if ($days >= 366) return '#a855f7'; // Roxo (+365)
+    if ($days >= 291) return '#000000'; // Preto (291-365)
+    if ($days >= 221) return '#ffffff'; // Branco (221-290)
+    if ($days >= 151) return '#ef4444'; // Vermelho (151-220)
+    if ($days >= 91)  return '#f97316'; // Laranja (91-150)
+    if ($days >= 31)  return '#22c55e'; // Verde (31-90)
+    return '#eab308'; // Amarelo (1-30)
 }
 
 function isAdmin(): bool {
@@ -265,6 +338,7 @@ function addXP(int $userId, int $xpAmount, string $reason, int $coinAmount = 0):
                     background_key VARCHAR(50) NULL,
                     banner_url VARCHAR(500) NULL,
                     accent_color VARCHAR(20) NULL,
+                    top_badges TEXT NULL,
                     coins INT DEFAULT 0,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -304,65 +378,114 @@ function getUserLevel(int $xp): array {
 }
 
 /**
- * Retorna os emblemas disponíveis para o utilizador com base nas suas conquistas.
+ * Atribui um item ao inventário do utilizador.
+ */
+function awardItem(int $userId, string $itemKey): bool {
+    $db = getDB();
+    try {
+        $stmt = $db->prepare("SELECT id FROM shop_items WHERE item_key = ? LIMIT 1");
+        $stmt->execute([$itemKey]);
+        $itemId = $stmt->fetchColumn();
+        if (!$itemId) return false;
+
+        $stmt = $db->prepare("INSERT IGNORE INTO user_inventory (user_id, item_id) VALUES (?, ?)");
+        return $stmt->execute([$userId, $itemId]);
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+/**
+ * Retorna os emblemas disponíveis para o utilizador com base no seu inventário (loja/conquistas).
  */
 function getAvailableBadges(int $userId): array {
     $db = getDB();
     $badges = [];
 
-    // Buscar dados do utilizador
-    $stmt = $db->prepare("SELECT karma_total, created_at FROM users WHERE id = ?");
-    $stmt->execute([$userId]);
-    $u = $stmt->fetch();
-    if (!$u) return [];
-
-    $xp = (int)$u['karma_total'];
-
-    // Emblemas por Nível/XP
-    if ($xp >= 20)  $badges[] = ['id' => 'lvl_membro', 'name' => 'Membro Ativo', 'icon' => '🛡️', 'desc' => 'Alcançou o nível de Membro'];
-    if ($xp >= 100) $badges[] = ['id' => 'lvl_veterano', 'name' => 'Veterano', 'icon' => '🎖️', 'desc' => 'Alcançou o nível de Veterano'];
-    if ($xp >= 500) $badges[] = ['id' => 'lvl_lendario', 'name' => 'Lenda do Fórum', 'icon' => '👑', 'desc' => 'Alcançou o nível Lendário'];
-
-    // Emblemas por Atividade (Exemplos)
+    // Garantir que o utilizador tem os emblemas de nível básicos (Auto-grant)
     try {
+        $stmt = $db->prepare("SELECT karma_total FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $xp = (int)$stmt->fetchColumn();
+
+        if ($xp >= 500) awardItem($userId, 'lvl_lendario');
+        if ($xp >= 100) awardItem($userId, 'lvl_veterano');
+        if ($xp >= 20)  awardItem($userId, 'lvl_membro');
+
+        // Outras conquistas automáticas (ex: Pioneiro se tiver posts)
         $posts = (int)$db->query("SELECT COUNT(*) FROM forum_posts WHERE user_id = $userId")->fetchColumn();
-        if ($posts >= 10) $badges[] = ['id' => 'act_pioneer', 'name' => 'Pioneiro', 'icon' => '🚀', 'desc' => 'Publicou mais de 10 tópicos'];
-
-        $replies = (int)$db->query("SELECT COUNT(*) FROM forum_replies WHERE user_id = $userId")->fetchColumn();
-        if ($replies >= 50) $badges[] = ['id' => 'act_helper', 'name' => 'Ajudante', 'icon' => '🤝', 'desc' => 'Deu mais de 50 respostas'];
-
-        $printers = (int)$db->query("SELECT COUNT(*) FROM user_printers WHERE user_id = $userId")->fetchColumn();
-        if ($printers >= 3) $badges[] = ['id' => 'eqp_collector', 'name' => 'Colecionador', 'icon' => '🖨️', 'desc' => 'Tem 3 ou mais impressoras'];
+        if ($posts >= 1) awardItem($userId, 'badge_pioneer');
     } catch (Exception $e) {}
 
-    // Emblema de Antiguidade
-    $years = (time() - strtotime($u['created_at'])) / (365 * 24 * 3600);
-    if ($years >= 1) $badges[] = ['id' => 'time_1year', 'name' => '1 Ano de Casa', 'icon' => '🎂', 'desc' => 'Membro há mais de um ano'];
+    try {
+        $stmt = $db->prepare("
+            SELECT si.id, si.name, si.description as `desc`, si.css_value as icon
+            FROM user_inventory ui
+            JOIN shop_items si ON ui.item_id = si.id
+            WHERE ui.user_id = ? AND si.category IN ('badge', 'medal')
+        ");
+        $stmt->execute([$userId]);
+        $rows = $stmt->fetchAll();
+        foreach ($rows as $r) {
+            $badges[] = [
+                'id'   => $r['id'],
+                'name' => $r['name'],
+                'icon' => $r['icon'],
+                'desc' => $r['desc']
+            ];
+        }
+    } catch (Exception $e) {}
 
     return $badges;
 }
 
 /**
- * Retorna os Top 3 emblemas selecionados pelo utilizador.
+ * Retorna os Top 3 emblemas selecionados pelo utilizador (Sincronizado com Personalização).
  */
 function getTopBadges(int $userId): array {
     $db = getDB();
+
+    // 1. Tentar obter da tabela de personalização (Novo Sistema)
+    try {
+        $stmt = $db->prepare("SELECT top_badges FROM user_profile_config WHERE user_id = ?");
+        $stmt->execute([$userId]);
+        $val = $stmt->fetchColumn();
+        if ($val) {
+            $ids = json_decode($val, true) ?: [];
+            if (!empty($ids)) {
+                $placeholders = implode(',', array_fill(0, count($ids), '?'));
+                $stmt = $db->prepare("SELECT id, name, description, category, css_value FROM shop_items WHERE id IN ($placeholders)");
+                $stmt->execute($ids);
+                $items = $stmt->fetchAll();
+
+                $top = [];
+                foreach ($ids as $id) {
+                    foreach ($items as $item) {
+                        if ((int)$item['id'] === (int)$id) {
+                            $top[] = $item;
+                            break;
+                        }
+                    }
+                }
+                return array_slice($top, 0, 3);
+            }
+        }
+    } catch (Exception $e) {}
+
+    // 2. Fallback para a tabela users (Sistema Legado)
     $stmt = $db->prepare("SELECT top_badges FROM users WHERE id = ?");
     $stmt->execute([$userId]);
     $val = $stmt->fetchColumn();
     if (!$val) return [];
 
-    $selectedIds = json_decode($val, true) ?: [];
-    $allAvailable = getAvailableBadges($userId);
-
+    $selectedKeys = json_decode($val, true) ?: [];
     $top = [];
-    foreach ($selectedIds as $id) {
-        foreach ($allAvailable as $badge) {
-            if ($badge['id'] === $id) {
-                $top[] = $badge;
-                break;
-            }
-        }
+    foreach ($selectedKeys as $key) {
+        $stmt = $db->prepare("SELECT id, name, description, category, css_value FROM shop_items WHERE item_key = ? LIMIT 1");
+        $stmt->execute([$key]);
+        $item = $stmt->fetch();
+        if ($item) $top[] = $item;
     }
+
     return array_slice($top, 0, 3);
 }

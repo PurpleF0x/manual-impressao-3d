@@ -158,7 +158,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             if (count($selected) > 3) {
                 $errors[] = "Só podes selecionar até 3 emblemas.";
             } else {
-                $db->prepare("UPDATE users SET top_badges=? WHERE id=?")->execute([json_encode(array_values($selected)), $user['id']]);
+                // Sincronizar com o novo sistema de personalização
+                $val = json_encode(array_values(array_map('intval', $selected)));
+
+                // Garantir que a config existe
+                $stmt = $db->prepare("SELECT 1 FROM user_profile_config WHERE user_id = ?");
+                $stmt->execute([$user['id']]);
+                if ($stmt->fetch()) {
+                    $db->prepare("UPDATE user_profile_config SET top_badges=? WHERE user_id=?")->execute([$val, $user['id']]);
+                } else {
+                    $db->prepare("INSERT INTO user_profile_config (user_id, top_badges) VALUES (?, ?)")->execute([$user['id'], $val]);
+                }
+
+                // Manter legado por segurança (opcional, mas bom para transição)
+                $db->prepare("UPDATE users SET top_badges=? WHERE id=?")->execute([$val, $user['id']]);
+
                 $success[] = "Emblemas em destaque atualizados!";
             }
         }
@@ -166,6 +180,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 
 $user      = getCurrentUser();
+$stmtConfig = $db->prepare("SELECT streak_count, growth_points FROM user_profile_config WHERE user_id = ?");
+$stmtConfig->execute([$user['id']]);
+$userConfig = $stmtConfig->fetch() ?: ['streak_count' => 0, 'growth_points' => 0];
+$streakCount = (int)$userConfig['streak_count'];
+$growthPoints = (int)$userConfig['growth_points'];
+$streakColor = getStreakColor($streakCount);
+
 $printers  = $db->prepare("SELECT * FROM user_printers WHERE user_id=? ORDER BY created_at DESC");  $printers->execute([$user['id']]);  $printers=$printers->fetchAll();
 $slicers   = $db->prepare("SELECT * FROM user_slicers WHERE user_id=? ORDER BY created_at DESC");   $slicers->execute([$user['id']]);   $slicers=$slicers->fetchAll();
 $materials = $db->prepare("SELECT * FROM user_materials WHERE user_id=? ORDER BY created_at DESC"); $materials->execute([$user['id']]); $materials=$materials->fetchAll();
@@ -448,6 +469,38 @@ if (!empty($_POST['action'])) {
   .xp-bar-fill{height:100%;transition:width 0.5s ease-out;box-shadow:0 0 10px rgba(0,229,255,0.3)}
   .xp-next{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);margin-top:6px;text-align:right}
 
+  /* STREAK & GROWTH */
+  .streak-fire {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 800;
+    font-family: 'Syne', sans-serif;
+    filter: drop-shadow(0 0 5px currentColor);
+    vertical-align: middle;
+  }
+  .growth-widget {
+    background: rgba(0, 255, 136, 0.05);
+    border: 1px solid rgba(0, 255, 136, 0.1);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-top: 12px;
+  }
+  .growth-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    color: var(--accent4);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .growth-bar-bg { height: 6px; background: rgba(0, 255, 136, 0.1); border-radius: 10px; overflow: hidden; }
+  .growth-bar-fill { height: 100%; background: var(--accent4); transition: width 0.5s ease-out; box-shadow: 0 0 10px rgba(0, 255, 136, 0.3); }
+  .growth-footer { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 6px; text-align: right; }
+
   .badges-row{display:flex;gap:8px;margin-top:12px}
   .badge-slot{width:32px;height:32px;border-radius:8px;background:var(--surface3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;transition:all 0.2s}
   .badge-slot:hover{transform:scale(1.1);border-color:var(--accent)}
@@ -554,7 +607,14 @@ if (!empty($_POST['action'])) {
   </div>
 
   <div class="hero-info">
-    <h1><?php echo sanitize($user['full_name']); ?></h1>
+    <h1>
+        <?php echo sanitize($user['full_name']); ?>
+        <?php if ($streakCount > 0): ?>
+            <span class="streak-fire" style="color: <?php echo $streakColor; ?>" title="Streak de <?php echo $streakCount; ?> dias!">
+                🔥 <?php echo $streakCount; ?>
+            </span>
+        <?php endif; ?>
+    </h1>
     <div class="username">@<?php echo sanitize($user['username']); ?></div>
     <div class="hero-meta">
       <span class="badge-exp" style="background:<?php echo $currentLevel['color']; ?>22; color:<?php echo $currentLevel['color']; ?>; border:1px solid <?php echo $currentLevel['color']; ?>55">
@@ -590,6 +650,22 @@ if (!empty($_POST['action'])) {
             <div class="xp-next">Nível máximo atingido!</div>
         <?php endif; ?>
     </div>
+
+    <div class="growth-widget">
+        <div class="growth-header">
+            <span>🌱 Crescimento</span>
+            <span><?php echo $growthPoints; ?> GP</span>
+        </div>
+        <div class="growth-bar-bg">
+            <?php
+                $growthLevel = floor($growthPoints / 100);
+                $growthProgress = $growthPoints % 100;
+            ?>
+            <div class="growth-bar-fill" style="width: <?php echo $growthProgress; ?>%"></div>
+        </div>
+        <div class="growth-footer">Nível da Planta: <?php echo $growthLevel; ?></div>
+    </div>
+
     <div style="display:flex; gap:16px; margin-top:8px">
         <div class="stat-box"><div class="stat-num"><?php echo count($printers); ?></div><div class="stat-lbl">Impressoras</div></div>
         <div class="stat-box"><div class="stat-num"><?php echo count($slicers); ?></div><div class="stat-lbl">Slicers</div></div>

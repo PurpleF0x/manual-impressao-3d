@@ -6,6 +6,7 @@
 
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/comments.php';
+require_once __DIR__ . '/../includes/missions.php';
 require_once __DIR__ . '/../includes/mail_config.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -151,6 +152,9 @@ switch ($action) {
             exit;
         }
 
+        // Regista progresso na missão diária
+        updateMissionProgress((int)$user['id'], 'post_comment');
+
         // Atribuição de Recompensa se aprovado automaticamente pela IA
         if ($toxResult === 'aprovado') {
             addXP((int)$user['id'], 5, "Comentário aprovado automaticamente: #$id", 3);
@@ -249,6 +253,9 @@ switch ($action) {
 
         // Atribuição de Recompensa ao autor do comentário por receber um like
         if ($result['liked']) {
+            // Regista progresso na missão diária
+            updateMissionProgress((int)$user['id'], 'like_comment');
+
             $db = getDB();
             $stmt = $db->prepare("SELECT user_id FROM comments WHERE id = ?");
             $stmt->execute([$cid]);

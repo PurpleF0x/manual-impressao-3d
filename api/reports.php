@@ -153,6 +153,71 @@ switch ($action) {
         ]);
         break;
 
+    case 'report_comment':
+        $commentId   = (int)($input['comment_id']   ?? 0);
+        $reason      = trim($input['reason']        ?? '');
+        $description = trim($input['description']   ?? '');
+
+        if ($commentId < 1) {
+            echo json_encode(['success' => false, 'error' => 'Comentário inválido.']);
+            exit;
+        }
+
+        // Verificar se comentário existe e não é do próprio user
+        $stmt = $db->prepare("SELECT user_id, content FROM comments WHERE id = ?");
+        $stmt->execute([$commentId]);
+        $comment = $stmt->fetch();
+
+        if (!$comment) {
+            echo json_encode(['success' => false, 'error' => 'Comentário não encontrado.']);
+            exit;
+        }
+        if ((int)$user['id'] === (int)$comment['user_id']) {
+            echo json_encode(['success' => false, 'error' => 'Não podes reportar o teu próprio comentário.']);
+            exit;
+        }
+
+        $validReasons = ['spam', 'ofensivo', 'inapropriado', 'desinformacao', 'outro'];
+        if (!in_array($reason, $validReasons)) {
+            echo json_encode(['success' => false, 'error' => 'Seleciona um motivo válido.']);
+            exit;
+        }
+
+        // Bloquear reports duplicados
+        $check = $db->prepare(
+            "SELECT id FROM reported_comments
+             WHERE reporter_id = ? AND comment_id = ?"
+        );
+        $check->execute([(int)$user['id'], $commentId]);
+        if ($check->fetch()) {
+            echo json_encode(['success' => false, 'error' => 'Já reportaste este comentário.']);
+            exit;
+        }
+
+        $reasonLabels = [
+            'spam'           => 'Spam ou publicidade',
+            'ofensivo'       => 'Conteúdo ofensivo ou insultos',
+            'inapropriado'   => 'Conteúdo inapropriado',
+            'desinformacao'  => 'Desinformação',
+            'outro'          => 'Outro',
+        ];
+        $reasonLabel = $reasonLabels[$reason] ?? $reason;
+
+        // Inserir
+        $db->prepare(
+            "INSERT INTO reported_comments (comment_id, reporter_id, reason, description)
+             VALUES (?, ?, ?, ?)"
+        )->execute([$commentId, (int)$user['id'], $reasonLabel, $description ?: null]);
+
+        logActivity((int)$user['id'], 'comment_reported', "comment_id={$commentId},reason={$reason}");
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Obrigado pelo reporte. Iremos analisar o comentário.'
+        ]);
+        break;
+
+
     default:
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Ação desconhecida.']);

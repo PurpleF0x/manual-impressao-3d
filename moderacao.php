@@ -85,8 +85,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
     $reason    = trim($_POST['reason'] ?? '');
 
     if ($action === 'resolve_report') {
-        $db->prepare("UPDATE reported_comments SET status='resolvido', resolved_at=NOW() WHERE id=?")
-           ->execute(array((int)$_POST['report_id']));
+        $db->prepare("UPDATE reported_comments SET status='resolvido', resolved_at=NOW(), resolved_by=? WHERE id=?")
+           ->execute(array((int)$user['id'], (int)$_POST['report_id']));
+
+        logAdminAction((int)$user['id'], null, 'resolve_comment_report', "report_id=" . $_POST['report_id']);
         $flash = array('type'=>'success','msg'=>'Reporte de comentario resolvido.');
 
     } elseif ($action === 'resolve_user_report') {
@@ -146,6 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
         } else {
             $flash = array('type'=>'success','msg'=>'Report resolvido sem acao.');
         }
+        logAdminAction((int)$user['id'], $targetId, 'resolve_user_report', "report_id={$reportId}, action={$actionTaken}, msg={$adminMessage}");
         logActivity((int)$user['id'], "user_{$actionTaken}", "target={$targetId}");
 
     } elseif ($action === 'approve' && $commentId > 0) {
@@ -158,6 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
             sendEmailNotificationMod((int)$r['user_id'], 'O teu comentario foi aprovado!', 'O teu comentario foi aprovado e ja esta visivel na comunidade.');
         }
         $flash = array('type'=>'success','msg'=>'Comentario aprovado.');
+        logAdminAction((int)$user['id'], (int)$r['user_id'], 'approve_comment', "comment_id={$commentId}");
 
     } elseif ($action === 'reject' && $commentId > 0) {
         $db->prepare("UPDATE comments SET status='rejeitado', reviewed_at=NOW(), reviewed_by=?, reject_reason=? WHERE id=?")
@@ -170,11 +174,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
             sendEmailNotificationMod((int)$r['user_id'], 'O teu comentario foi rejeitado', $msg);
         }
         $flash = array('type'=>'warning','msg'=>'Comentario rejeitado.');
+        logAdminAction((int)$user['id'], (int)$r['user_id'], 'reject_comment', "comment_id={$commentId}, reason={$reason}");
 
     } elseif ($action === 'block' && $commentId > 0) {
         $db->prepare("UPDATE comments SET status='bloqueado', reviewed_at=NOW(), reviewed_by=?, reject_reason=? WHERE id=?")
            ->execute(array((int)$user['id'], $reason ?: 'Bloqueado pelo administrador', $commentId));
         $flash = array('type'=>'danger','msg'=>'Comentario bloqueado.');
+        logAdminAction((int)$user['id'], null, 'block_comment', "comment_id={$commentId}, reason={$reason}");
     }
 }
 

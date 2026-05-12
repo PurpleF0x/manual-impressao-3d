@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if (empty($errors)) {
             $db = getDB();
-            $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+            $passwordHash = hashPassword($password);
             $avatar = generateAvatar($fullName);
             
             $stmt = $db->prepare("INSERT INTO users (username, email, password_hash, full_name, avatar) VALUES (?, ?, ?, ?, ?)");

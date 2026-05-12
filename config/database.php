@@ -46,3 +46,16 @@ function logActivity(?int $userId, string $action, string $details = null): void
            ->execute([$userId, $action, $details, $ip]);
     } catch (Exception $e) {}
 }
+
+/**
+ * Regista ações administrativas (Auditoria)
+ */
+function logAdminAction(int $actorId, ?int $targetId, string $action, ?string $detail = null): void {
+    try {
+        $db = getDB();
+        $db->prepare('INSERT INTO admin_logs (actor_id, target_id, action, detail) VALUES (?,?,?,?)')
+           ->execute([$actorId, $targetId, $action, $detail]);
+    } catch (Exception $e) {
+        error_log("Erro logAdminAction: " . $e->getMessage());
+    }
+}

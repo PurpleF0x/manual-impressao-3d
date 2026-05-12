@@ -54,17 +54,8 @@ try {
     }
 } catch(Exception $e){}
 
-// Buscar Badges
-$topBadges = [];
-if (!empty($customConfig['top_badges'])) {
-    $badgeIds = json_decode($customConfig['top_badges'], true);
-    if (is_array($badgeIds) && count($badgeIds) > 0) {
-        $placeholders = implode(',', array_fill(0, count($badgeIds), '?'));
-        $bq = $db->prepare("SELECT * FROM shop_items WHERE id IN ($placeholders)");
-        $bq->execute($badgeIds);
-        $topBadges = $bq->fetchAll();
-    }
-}
+// Buscar Badges (Usando a lógica centralizada com fallback)
+$badgeData = getTopBadges($targetId);
 
 // Buscar CSS do frame e background
 $frameCSS = '';
@@ -197,6 +188,19 @@ try {
     ");
     $rq->execute(array($targetId));
     $recentReplies = $rq->fetchAll();
+} catch(Exception $e){}
+
+// ── Equipamento (Printers, Slicers, Materials) ────────────────
+$printers = []; $slicers = []; $materials = [];
+try {
+    $pq = $db->prepare("SELECT * FROM user_printers WHERE user_id=? ORDER BY created_at DESC");
+    $pq->execute([$targetId]); $printers = $pq->fetchAll();
+
+    $sq = $db->prepare("SELECT * FROM user_slicers WHERE user_id=? ORDER BY created_at DESC");
+    $sq->execute([$targetId]); $slicers = $sq->fetchAll();
+
+    $mq = $db->prepare("SELECT * FROM user_materials WHERE user_id=? ORDER BY created_at DESC");
+    $mq->execute([$targetId]); $materials = $mq->fetchAll();
 } catch(Exception $e){}
 
 // Buscar Inventário completo para "Conquistas"
@@ -372,6 +376,15 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 /* Layout */
 .layout{max-width:1100px;margin:0 auto;padding:28px 40px;display:grid;grid-template-columns:1fr 300px;gap:24px;position:relative;z-index:1}
 
+/* Tabs Bar (Estilo Perfil) */
+.tabs-bar{display:flex;gap:0;border-bottom:1px solid var(--border2);margin-bottom:24px;overflow-x:auto}
+.tab-btn{padding:14px 20px;border:none;background:transparent;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-panel{display:none;animation:fadeIn 0.3s ease}
+.tab-panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
 /* Secções */
 .section-title{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .section-title span{background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:2px 10px;color:var(--text);font-size:10px}
@@ -432,6 +445,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 /* XP legend */
 .xp-legend{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:14px 16px;margin-top:14px}
 .xp-legend-title{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+
+/* Equipment Cards */
+.item-card{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;margin-bottom:12px;transition:all 0.2s}
+.item-card:hover{border-color:rgba(0,229,255,0.2);transform:translateX(4px)}
+.item-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:#fff;margin-bottom:4px}
+.item-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-family:'Space Mono',monospace;font-size:9px;background:var(--surface2);color:var(--muted);border:1px solid var(--border2);margin-top:8px;text-transform:uppercase}
+.tag.fdm{background:rgba(0,229,255,0.06);color:var(--accent);border-color:rgba(0,229,255,0.15)}
+.tag.sla{background:rgba(124,58,237,0.06);color:#a78bfa;border-color:rgba(124,58,237,0.15)}
+.tag.sls{background:rgba(255,107,53,0.06);color:var(--accent2);border-color:rgba(255,107,53,0.15)}
+.tag.msla{background:rgba(0,255,136,0.06);color:var(--accent4);border-color:rgba(0,255,136,0.15)}
+
 .xp-rule{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border2);font-size:12px;color:var(--muted)}
 .xp-rule:last-child{border-bottom:none}
 .xp-rule-val{font-family:'Space Mono',monospace;font-size:10px;font-weight:700}
@@ -525,11 +550,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <div style="padding:14px 0 20px">
         <div style="display:flex;align-items:center;gap:15px;margin-bottom:4px">
             <div class="hero-name"><?php echo sanitize($user['full_name']); ?></div>
-            <?php if (!empty($topBadges)): ?>
+            <?php if (!empty($badgeData)): ?>
             <div class="top-badges-row" style="display:flex;gap:6px">
-                <?php foreach($topBadges as $badge): ?>
+                <?php foreach($badgeData as $badge): ?>
                     <div class="badge-mini" title="<?php echo sanitize($badge['name']); ?>" style="width:24px;height:24px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:help">
-                        <?php if($badge['category'] === 'frame'): ?>
+                        <?php if($badge['category'] === 'badge' || $badge['category'] === 'medal'): ?>
+                            <?php echo htmlspecialchars($badge['css_value']); ?>
+                        <?php elseif($badge['category'] === 'frame'): ?>
                             <div style="width:14px;height:14px;border-radius:50%;<?php echo $badge['css_value']; ?>"></div>
                         <?php elseif($badge['category'] === 'accent'): ?>
                             <div style="width:12px;height:12px;border-radius:50%;background:<?php echo $badge['css_value']; ?>"></div>
@@ -588,77 +615,142 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 <div class="layout">
 <main>
 
-    <!-- Posts recentes -->
-    <div style="margin-bottom:28px">
-        <div class="section-title">📝 Posts publicados <span><?php echo count($recentPosts); ?></span></div>
-        <?php if (empty($recentPosts)): ?>
-        <div class="empty-state"><div class="empty-state-icon">📝</div><p>Ainda sem posts publicados.</p></div>
-        <?php else: ?>
-        <?php foreach ($recentPosts as $p):
-            $vs = (int)$p['vote_score'];
-            $vCls = $vs>0?'pos':($vs<0?'neg':'');
-        ?>
-        <div class="post-card">
-            <div class="post-vote <?php echo $vCls; ?>"><?php echo ($vs>0?'+':'').$vs; ?></div>
-            <div class="post-content">
-                <div class="post-comm">
-                    <span><?php echo $p['comm_icon']; ?></span>
-                    <a href="comunidade.php?slug=<?php echo urlencode($p['comm_slug']); ?>" style="color:var(--muted);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'"><?php echo sanitize($p['comm_name']); ?></a>
-                </div>
-                <a href="topico.php?id=<?php echo $p['id']; ?>" class="post-title-link"><?php echo sanitize($p['title']); ?></a>
-                <div class="post-footer-row">
-                    <?php if (!empty($p['flair'])): ?>
-                    <span class="flair-mini flair-<?php echo $p['flair']; ?>"><?php
-                        $fi=array('pergunta'=>'❓','tutorial'=>'📖','projeto'=>'🏗️','discussao_tecnica'=>'🔬','showcase'=>'📸','debate'=>'🔬','humor'=>'📸','ajuda'=>'🆘','noticia'=>'📰');
-                        echo $fi[$p['flair']]??$p['flair'];
-                    ?></span>
-                    <?php endif; ?>
-                    <span class="post-meta-tag">💬 <?php echo (int)$p['reply_count']; ?></span>
-                    <span class="post-meta-tag"><?php echo fmtTime($p['created_at']); ?></span>
-                </div>
-            </div>
-        </div>
-        <?php endforeach; ?>
-        <?php endif; ?>
-        <?php if (count($recentPosts) >= 10): ?>
-        <div id="loadMorePosts" style="text-align:center;padding:16px">
-            <button onclick="loadMore('posts')" style="background:var(--surface);border:1px solid var(--border2);border-radius:9px;padding:10px 22px;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;transition:all 0.2s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">Carregar mais posts ↓</button>
-        </div>
-        <?php endif; ?>
+    <div class="tabs-bar">
+        <button class="tab-btn active" onclick="switchTab('atividade', this)">Atividade</button>
+        <button class="tab-btn" onclick="switchTab('equipamento', this)">Equipamento</button>
+        <button class="tab-btn" onclick="switchTab('comunidades', this)">Comunidades</button>
     </div>
 
-    <!-- Respostas recentes -->
-    <div>
-        <div class="section-title">💬 Respostas dadas <span><?php echo count($recentReplies); ?></span></div>
-        <?php if (empty($recentReplies)): ?>
-        <div class="empty-state"><div class="empty-state-icon">💬</div><p>Ainda sem respostas.</p></div>
-        <?php else: ?>
-        <?php foreach ($recentReplies as $r):
-            $vs = (int)$r['vote_score'];
-            $vCls = $vs>0?'karma-pos':($vs<0?'karma-neg':'');
-        ?>
-        <div class="reply-card">
-            <a href="topico.php?id=<?php echo $r['post_id']; ?>" class="reply-post-link">
-                ↩ Em: <strong style="color:var(--text)"><?php echo sanitize(mb_substr($r['post_title'],0,60)).(mb_strlen($r['post_title'])>60?'…':''); ?></strong>
-                <span style="color:var(--border2)">·</span> <?php echo sanitize($r['comm_name']); ?>
-            </a>
-            <div class="reply-text"><?php echo nl2br(sanitize(mb_substr($r['content'],0,200))).(mb_strlen($r['content'])>200?'…':''); ?></div>
-            <div class="reply-footer">
-                <span class="post-meta-tag <?php echo $vCls; ?>" style="font-family:'Space Mono',monospace;font-size:10px"><?php echo ($vs>0?'+':'').$vs; ?> votos</span>
-                <span class="post-meta-tag"><?php echo fmtTime($r['created_at']); ?></span>
+    <!-- TAB: ATIVIDADE -->
+    <div class="tab-panel active" id="tab-atividade">
+        <!-- Posts recentes -->
+        <div style="margin-bottom:28px">
+            <div class="section-title">📝 Posts publicados <span><?php echo count($recentPosts); ?></span></div>
+            <?php if (empty($recentPosts)): ?>
+            <div class="empty-state"><div class="empty-state-icon">📝</div><p>Ainda sem posts publicados.</p></div>
+            <?php else: ?>
+            <?php foreach ($recentPosts as $p):
+                $vs = (int)$p['vote_score'];
+                $vCls = $vs>0?'pos':($vs<0?'neg':'');
+            ?>
+            <div class="post-card">
+                <div class="post-vote <?php echo $vCls; ?>"><?php echo ($vs>0?'+':'').$vs; ?></div>
+                <div class="post-content">
+                    <div class="post-comm">
+                        <span><?php echo $p['comm_icon']; ?></span>
+                        <a href="comunidade.php?slug=<?php echo urlencode($p['comm_slug']); ?>" style="color:var(--muted);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'"><?php echo sanitize($p['comm_name']); ?></a>
+                    </div>
+                    <a href="topico.php?id=<?php echo $p['id']; ?>" class="post-title-link"><?php echo sanitize($p['title']); ?></a>
+                    <div class="post-footer-row">
+                        <?php if (!empty($p['flair'])): ?>
+                        <span class="flair-mini flair-<?php echo $p['flair']; ?>"><?php
+                            $fi=array('pergunta'=>'❓','tutorial'=>'📖','projeto'=>'🏗️','discussao_tecnica'=>'🔬','showcase'=>'📸','debate'=>'🔬','humor'=>'📸','ajuda'=>'🆘','noticia'=>'📰');
+                            echo $fi[$p['flair']]??$p['flair'];
+                        ?></span>
+                        <?php endif; ?>
+                        <span class="post-meta-tag">💬 <?php echo (int)$p['reply_count']; ?></span>
+                        <span class="post-meta-tag"><?php echo fmtTime($p['created_at']); ?></span>
+                    </div>
+                </div>
             </div>
+            <?php endforeach; ?>
+            <?php endif; ?>
+            <?php if (count($recentPosts) >= 10): ?>
+            <div id="loadMorePosts" style="text-align:center;padding:16px">
+                <button onclick="loadMore('posts')" style="background:var(--surface);border:1px solid var(--border2);border-radius:9px;padding:10px 22px;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;transition:all 0.2s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">Carregar mais posts ↓</button>
+            </div>
+            <?php endif; ?>
         </div>
-        <?php endforeach; ?>
-        <?php endif; ?>
+
+        <!-- Respostas recentes -->
+        <div>
+            <div class="section-title">💬 Respostas dadas <span><?php echo count($recentReplies); ?></span></div>
+            <?php if (empty($recentReplies)): ?>
+            <div class="empty-state"><div class="empty-state-icon">💬</div><p>Ainda sem respostas.</p></div>
+            <?php else: ?>
+            <?php foreach ($recentReplies as $r):
+                $vs = (int)$r['vote_score'];
+                $vCls = $vs>0?'karma-pos':($vs<0?'karma-neg':'');
+            ?>
+            <div class="reply-card">
+                <a href="topico.php?id=<?php echo $r['post_id']; ?>" class="reply-post-link">
+                    ↩ Em: <strong style="color:var(--text)"><?php echo sanitize(mb_substr($r['post_title'],0,60)).(mb_strlen($r['post_title'])>60?'…':''); ?></strong>
+                    <span style="color:var(--border2)">·</span> <?php echo sanitize($r['comm_name']); ?>
+                </a>
+                <div class="reply-text"><?php echo nl2br(sanitize(mb_substr($r['content'],0,200))).(mb_strlen($r['content'])>200?'…':''); ?></div>
+                <div class="reply-footer">
+                    <span class="post-meta-tag <?php echo $vCls; ?>" style="font-family:'Space Mono',monospace;font-size:10px"><?php echo ($vs>0?'+':'').$vs; ?> votos</span>
+                    <span class="post-meta-tag"><?php echo fmtTime($r['created_at']); ?></span>
+                </div>
+            </div>
+            <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
     </div>
 
+    <!-- TAB: EQUIPAMENTO -->
+    <div class="tab-panel" id="tab-equipamento">
+        <div style="margin-bottom:28px">
+            <div class="section-title">🖨️ Impressoras <span><?php echo count($printers); ?></span></div>
+            <?php if (empty($printers)): ?>
+                <div class="empty-state">Nenhuma impressora registada.</div>
+            <?php else: ?>
+                <?php foreach($printers as $p): ?>
+                <div class="item-card">
+                    <div class="item-title"><?php echo sanitize($p['brand']); ?> <?php echo sanitize($p['model']); ?></div>
+                    <?php if(!empty($p['bed_size'])): ?><div class="item-sub">📐 <?php echo sanitize($p['bed_size']); ?></div><?php endif; ?>
+                    <?php if(!empty($p['notes'])): ?><div class="item-sub">💬 <?php echo sanitize($p['notes']); ?></div><?php endif; ?>
+                    <span class="tag <?php echo strtolower($p['type']); ?>"><?php echo $p['type']; ?></span>
+                </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+
+        <div style="margin-bottom:28px">
+            <div class="section-title">⚙️ Slicers <span><?php echo count($slicers); ?></span></div>
+            <?php if (empty($slicers)): ?>
+                <div class="empty-state">Nenhum slicer registado.</div>
+            <?php else: ?>
+                <?php foreach($slicers as $s): ?>
+                <div class="item-card">
+                    <div class="item-title"><?php echo sanitize($s['name']); ?></div>
+                    <?php if(!empty($s['version'])): ?><div class="item-sub">v<?php echo sanitize($s['version']); ?></div><?php endif; ?>
+                    <?php if(!empty($s['notes'])): ?><div class="item-sub">💬 <?php echo sanitize($s['notes']); ?></div><?php endif; ?>
+                </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+
+        <div>
+            <div class="section-title">🧵 Materiais <span><?php echo count($materials); ?></span></div>
+            <?php if (empty($materials)): ?>
+                <div class="empty-state">Nenhum material registado.</div>
+            <?php else: ?>
+                <?php foreach($materials as $m): ?>
+                <div class="item-card">
+                    <div class="item-title"><?php echo sanitize($m['material']); ?></div>
+                    <?php if(!empty($m['brand'])): ?><div class="item-sub">🏷️ <?php echo sanitize($m['brand']); ?></div><?php endif; ?>
+                    <?php if(!empty($m['notes'])): ?><div class="item-sub">💬 <?php echo sanitize($m['notes']); ?></div><?php endif; ?>
+                </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- TAB: COMUNIDADES (Mobile Friendly) -->
+    <div class="tab-panel" id="tab-comunidades">
+        <div class="section-title">🏘️ Comunidades Participantes</div>
+        <div id="comunidades-tab-content">
+            <!-- Injetado via JS ou carregado aqui -->
+        </div>
+    </div>
 
 </main>
 
 <!-- Sidebar -->
 <aside>
     <!-- Comunidades com XP -->
-    <div style="margin-bottom:20px">
+    <div id="sidebar-comms" style="margin-bottom:20px">
         <div class="section-title">🏘️ Comunidades <span><?php echo count($communities); ?></span></div>
         <?php if (empty($communities)): ?>
         <div class="empty-state" style="padding:20px"><div class="empty-state-icon">🏘️</div><p style="font-size:12px">Ainda sem comunidades.</p></div>
@@ -710,6 +802,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                 <div class="inventory-badge-box" title="<?php echo sanitize($ib['name']); ?>" style="aspect-ratio:1;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:help;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='scale(1.1)'" onmouseout="this.style.borderColor='var(--border2)';this.style.transform='scale(1)'">
                     <?php if($ib['category'] === 'accent'): ?>
                         <div style="width:16px;height:16px;border-radius:50%;background:<?php echo $ib['css_value']; ?>;box-shadow:0 0 10px <?php echo $ib['css_value']; ?>66"></div>
+                    <?php elseif($ib['category'] === 'badge' || $ib['category'] === 'medal'): ?>
+                        <?php echo htmlspecialchars($ib['css_value']); ?>
                     <?php else: ?>
                         🏅
                     <?php endif; ?>
@@ -765,6 +859,25 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </div>
 
 <script>
+// TABS
+function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    if (btn) btn.classList.add('active');
+
+    // Se for a tab de comunidades, clonar o conteúdo do sidebar se estiver vazio
+    if (tab === 'comunidades') {
+        const container = document.getElementById('comunidades-tab-content');
+        if (container && container.innerHTML.trim() === '') {
+            const sidebarComms = document.getElementById('sidebar-comms');
+            if (sidebarComms) {
+                container.innerHTML = sidebarComms.innerHTML;
+            }
+        }
+    }
+}
+
 // Preview do banner
 function previewBanner(url) {
     var wrap = document.getElementById('bannerPreviewWrap');

@@ -4,6 +4,12 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 require_once 'includes/functions.php';
 require_once 'includes/user_notices.php';
+require_once 'includes/missions.php';
+
+if (isLoggedIn()) {
+    $userId = (int)$_SESSION['user_id'];
+    updateMissionProgress($userId, 'read_sections');
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -28,12 +34,77 @@ require_once 'includes/user_notices.php';
 <meta name="twitter:card"       content="summary_large_image">
 <meta name="twitter:image"      content="https://manual-impressao-3d.free.nf/og-manual.jpg">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <!-- ═══════════════════════════════════════════════════════
      IA do Manual — chatbot flutuante
      Colar antes do </body> no manual-impressao-3d.html
      ═══════════════════════════════════════════════════ -->
 
 <style>
+<style>
+/* ── Missions Widget ── */
+#missionsWidget { position: fixed; bottom: 24px; left: 24px; z-index: 9999; font-family: 'Inter', sans-serif; }
+
+#missions-btn {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, #ff6b35, #7c3aed);
+    border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(255,107,53,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; transition: all 0.3s; position: relative;
+}
+#missions-btn:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(255,107,53,0.55); }
+#missions-btn .mission-notif {
+    position: absolute; top: -2px; right: -2px; width: 14px; height: 14px;
+    background: #00ff88; border: 1px solid #0a0a0f; border-radius: 50%;
+    display: none; animation: aiBounce 2s infinite;
+}
+
+#missions-panel {
+    display: none; position: absolute; bottom: 68px; left: 0;
+    width: 340px; max-height: 480px;
+    background: #111118; border: 1px solid rgba(255,107,53,0.2);
+    border-radius: 18px; box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+    flex-direction: column; overflow: hidden;
+    animation: aiSlideUp 0.2s ease;
+}
+#missions-panel.open { display: flex; }
+
+.missions-header {
+    padding: 14px 18px; background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(124,58,237,0.08));
+    border-bottom: 1px solid rgba(255,107,53,0.1);
+    display: flex; align-items: center; justify-content: space-between;
+}
+.missions-header h3 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: #fff; margin: 0; }
+
+.missions-list { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.mission-card {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; padding: 12px; display: flex; gap: 12px; align-items: center;
+    transition: all 0.2s;
+}
+.mission-card.completed { border-color: rgba(0,255,136,0.3); background: rgba(0,255,136,0.03); }
+.mission-icon { font-size: 20px; width: 40px; height: 40px; background: rgba(255,255,255,0.05); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.mission-info { flex: 1; }
+.mission-title { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 2px; }
+.mission-desc { font-size: 11px; color: var(--muted); line-height: 1.3; }
+.mission-progress-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.mission-progress-fill { height: 100%; background: var(--accent2); width: 0%; transition: width 0.3s; }
+.mission-card.completed .mission-progress-fill { background: #00ff88; }
+
+.mission-reward {
+    font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent2);
+    display: flex; gap: 8px; margin-top: 4px;
+}
+.mission-reward span { color: #00ff88; }
+
+.claim-btn {
+    background: #00ff88; border: none; border-radius: 6px; padding: 6px 10px;
+    font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; color: #000;
+    cursor: pointer; transition: all 0.2s;
+}
+.claim-btn:hover { transform: scale(1.05); }
+.claim-btn:disabled { background: rgba(255,255,255,0.1); color: var(--muted); cursor: not-allowed; }
+
 /* ── Print AI Widget ── */
 #printAI { position: fixed; bottom: 24px; right: 24px; z-index: 9999; font-family: 'Inter', sans-serif; }
 
@@ -160,6 +231,26 @@ require_once 'includes/user_notices.php';
 }
 </style>
 
+<!-- Botão flutuante Missões -->
+<?php if (isLoggedIn()): ?>
+<div id="missionsWidget">
+    <button id="missions-btn" onclick="toggleMissions()" title="Missões Diárias">
+        🎯
+        <span class="mission-notif" id="missionNotif"></span>
+    </button>
+
+    <div id="missions-panel">
+        <div class="missions-header">
+            <h3>Missões Diárias</h3>
+            <button class="ai-close" onclick="toggleMissions()">×</button>
+        </div>
+        <div class="missions-list" id="missionsList">
+            <!-- JS dynamic -->
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 <!-- Botão flutuante -->
 <div id="printAI">
     <button id="printAI-btn" onclick="toggleAI()" title="Assistente de Impressão 3D">
@@ -261,59 +352,148 @@ function appendMsg(role, text) {
 var aiConversationId = null;
 
 async function sendAIMessage() {
-    if (aiLoading) return;
-    var input = document.getElementById('aiInput');
-    var msg   = input.value.trim();
-    if (!msg) return;
+    // ... rest of the function ...
+}
 
-    input.value = '';
-    input.style.height = 'auto';
-    aiLoading = true;
-    document.getElementById('aiSendBtn').disabled = true;
+// ── Daily Missions Logic ──
+var missionsOpen = false;
 
-    appendMsg('user', msg);
-    aiHistory.push({role:'user', content:msg});
+function toggleMissions() {
+    missionsOpen = !missionsOpen;
+    var panel = document.getElementById('missions-panel');
+    panel.classList.toggle('open', missionsOpen);
+    if (missionsOpen) {
+        loadMissions();
+        document.getElementById('missionNotif').style.display = 'none';
+    }
+}
 
-    var typing = document.getElementById('aiTyping');
-    typing.classList.add('show');
-    document.getElementById('aiMessages').scrollTop = 99999;
-
-    // Ler CSRF do meta tag
-    var csrf = document.querySelector('meta[name="csrf"]')
-                       ? document.querySelector('meta[name="csrf"]').content
-                       : '';
-
+async function loadMissions() {
     try {
-        var res = await fetch('api/ai.php', {
+        const res = await fetch('api/missions.php', {
             method: 'POST',
             headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({
-                mode: 'manual',
-                ai_mode: 'beginner',
-                csrf_token: csrf,
-                message: msg,
-                history: aiHistory.slice(-6)
-            })
+            body: JSON.stringify({ action: 'list' })
         });
-        var data = await res.json();
-        typing.classList.remove('show');
-
+        const data = await res.json();
         if (data.success) {
-            appendMsg('bot', data.reply);
-            aiHistory.push({role:'assistant', content:data.reply});
-            // Guardar o ID da conversa para mensagens seguintes
-            if (data.conversation_id) aiConversationId = data.conversation_id;
-        } else {
-            appendMsg('bot', '⚠️ ' + (data.error || 'Erro ao contactar a IA.'));
+            renderMissions(data.missions, data.definitions);
+            checkPendingClaims(data.missions);
         }
-    } catch(e) {
-        typing.classList.remove('show');
-        appendMsg('bot', '⚠️ Erro de ligação. Tenta novamente.');
+    } catch(e) { console.error(e); }
+}
+
+function renderMissions(userMissions, definitions) {
+    const list = document.getElementById('missionsList');
+    let html = '';
+
+    const dailyKeys = Object.keys(definitions).filter(k => !definitions[k].type || definitions[k].type === 'daily');
+    const weeklyKeys = Object.keys(definitions).filter(k => definitions[k].type === 'weekly');
+
+    html += '<div style="font-family:Syne; font-size:11px; color:var(--accent); margin-bottom:8px; opacity:0.8; text-transform:uppercase; letter-spacing:1px;">Diárias</div>';
+
+    dailyKeys.forEach(key => {
+        const def = definitions[key];
+        const progress = userMissions.list[key] || { current: 0, completed: false, claimed: false };
+        html += createMissionCardHtml(key, def, progress);
+    });
+
+    if (weeklyKeys.length > 0) {
+        html += '<div style="font-family:Syne; font-size:11px; color:var(--accent3); margin:16px 0 8px; opacity:0.8; text-transform:uppercase; letter-spacing:1px;">Semanais</div>';
+        weeklyKeys.forEach(key => {
+            const def = definitions[key];
+            const progress = userMissions.weekly_list[key] || { current: 0, completed: false, claimed: false };
+            html += createMissionCardHtml(key, def, progress);
+        });
     }
 
-    aiLoading = false;
-    document.getElementById('aiSendBtn').disabled = false;
-    document.getElementById('aiMessages').scrollTop = 99999;
+    list.innerHTML = html;
+}
+
+function createMissionCardHtml(key, def, progress) {
+    const percent = Math.min(100, (progress.current / def.goal) * 100);
+    return `
+        <div class="mission-card ${progress.completed ? 'completed' : ''}">
+            <div class="mission-icon">${def.icon}</div>
+            <div class="mission-info">
+                <div class="mission-title">${def.title}</div>
+                <div class="mission-desc">${def.desc}</div>
+                <div class="mission-reward">+${def.xp} XP <span>+${def.gp} GP</span></div>
+                <div class="mission-progress-bar">
+                    <div class="mission-progress-fill" style="width: ${percent}%; background: ${def.type === 'weekly' ? 'var(--accent3)' : 'var(--accent2)'}"></div>
+                </div>
+            </div>
+            ${progress.completed && !progress.claimed ?
+                `<button class="claim-btn" onclick="claimReward('${key}')">Reclamar</button>` :
+                (progress.claimed ? '✅' : `<div style="font-size:10px; color:var(--muted)">${progress.current}/${def.goal}</div>`)
+            }
+        </div>
+    `;
+}
+
+function checkPendingClaims(userMissions) {
+    let pending = false;
+    for (const key in userMissions.list) {
+        if (userMissions.list[key].completed && !userMissions.list[key].claimed) {
+            pending = true;
+            break;
+        }
+    }
+    if (!pending && userMissions.weekly_list) {
+        for (const key in userMissions.weekly_list) {
+            if (userMissions.weekly_list[key].completed && !userMissions.weekly_list[key].claimed) {
+                pending = true;
+                break;
+            }
+        }
+    }
+    document.getElementById('missionNotif').style.display = pending ? 'block' : 'none';
+}
+
+async function claimReward(key) {
+    try {
+        const res = await fetch('api/missions.php', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ action: 'claim', mission_key: key })
+        });
+        const data = await res.json();
+        if (data.success) {
+            // Efeito de Confetti
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#00ff88', '#ff6b35', '#7c3aed', '#00e5ff']
+            });
+
+            // Som de sucesso
+            new Audio('assets/audio/success.mp3').play();
+
+            loadMissions();
+
+            if (typeof showFloatingNotice === 'function') {
+                showFloatingNotice(`+${data.xp} XP e +${data.gp} GP ganhos!`);
+            } else {
+                // Fallback para uma notificação simples se showFloatingNotice não existir
+                const notification = document.createElement('div');
+                notification.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#00ff88; color:#000; padding:12px 24px; border-radius:30px; font-weight:700; z-index:10002; animation:aiSlideUp 0.3s ease;';
+                notification.innerHTML = `✨ +${data.xp} XP e +${data.gp} GP Reclamados!`;
+                document.body.appendChild(notification);
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    notification.style.transition = 'opacity 0.5s';
+                    setTimeout(() => notification.remove(), 500);
+                }, 3000);
+            }
+        }
+    } catch(e) { console.error(e); }
+}
+
+// Auto load missions check every 30s
+if (document.getElementById('missionsWidget')) {
+    setInterval(loadMissions, 30000);
+    setTimeout(loadMissions, 1000);
 }
 </script>
 <style>

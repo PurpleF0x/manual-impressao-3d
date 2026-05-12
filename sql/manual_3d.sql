@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 09-Mar-2026 às 11:56
+-- Tempo de geração: 10-Abr-2026 às 15:00
 -- Versão do servidor: 10.4.32-MariaDB
 -- versão do PHP: 8.2.12
 
@@ -18,141 +18,14 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
-CREATE DATABASE IF NOT EXISTS `PAP`;
-USE `PAP`;
-
---
--- Banco de dados: `PAP`
---
-
--- --------------------------------------------------------
-
---
--- Estrutura da tabela `activity_logs`
---
-
-CREATE TABLE `activity_logs` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) DEFAULT NULL,
-  `action` varchar(50) NOT NULL,
-  `details` text DEFAULT NULL,
-  `ip_address` varchar(45) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Extraindo dados da tabela `activity_logs`
---
-
-INSERT INTO `activity_logs` (`id`, `user_id`, `action`, `details`, `ip_address`, `created_at`) VALUES
-(1, 1, 'login', 'Login efetuado: admin', '::1', '2026-03-05 15:47:55'),
-(2, 1, 'logout', 'Logout efetuado', '::1', '2026-03-05 15:49:34'),
-(3, 2, 'register', 'Novo registo: Martim', '::1', '2026-03-05 15:49:49'),
-(4, 2, 'login', 'Login efetuado: Martim', '::1', '2026-03-05 15:50:00'),
-(5, 2, 'comment_created', 'comment_id=4', '::1', '2026-03-05 15:50:25'),
-(6, 2, 'logout', 'Logout efetuado', '::1', '2026-03-05 15:50:29'),
-(7, 1, 'login', 'Login efetuado: admin', '::1', '2026-03-05 15:50:40');
-
--- --------------------------------------------------------
-
---
--- Estrutura da tabela `comments`
---
-
-CREATE TABLE `comments` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `parent_id` int(11) DEFAULT NULL,
-  `section` varchar(100) DEFAULT 'geral',
-  `category` enum('duvida','problema','dica','geral') DEFAULT 'geral',
-  `title` varchar(200) DEFAULT NULL,
-  `content` text NOT NULL,
-  `status` enum('pendente','aprovado','rejeitado') DEFAULT 'pendente',
-  `likes` int(11) DEFAULT 0,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `reviewed_at` timestamp NULL DEFAULT NULL,
-  `reviewed_by` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Extraindo dados da tabela `comments`
---
-
-INSERT INTO `comments` (`id`, `user_id`, `parent_id`, `section`, `category`, `title`, `content`, `status`, `likes`, `created_at`, `updated_at`, `reviewed_at`, `reviewed_by`) VALUES
-(1, 1, NULL, 'geral', 'duvida', 'Problema com stringing no PETG', 'Olá! Estou com dificuldade em imprimir com PETG. As minhas peças ficam com muitos fios (stringing). Já tentei aumentar a retraction mas não resolveu. Alguém tem dicas?', 'aprovado', 0, '2026-03-05 15:47:29', '2026-03-05 15:47:29', NULL, NULL),
-(2, 1, NULL, 'geral', 'dica', 'Dica: Primeira camada é fundamental', 'Dica para iniciantes: invistam numa boa primeira camada! Verifiquem sempre o nivelamento da cama antes de começar uma impressão longa.', 'aprovado', 0, '2026-03-05 15:47:29', '2026-03-05 15:47:29', NULL, NULL),
-(3, 1, NULL, 'geral', 'problema', 'Ruído estranho no eixo Z', 'A minha impressora está a fazer um ruído estranho no eixo Z. Parece rangido. Já lubrifiquei mas continua.', 'aprovado', 0, '2026-03-05 15:47:29', '2026-03-05 15:47:29', NULL, NULL),
-(4, 2, 1, 'geral', 'geral', NULL, 'A sério? Como?', 'aprovado', 0, '2026-03-05 15:50:21', '2026-03-05 15:51:07', '2026-03-05 15:51:07', 1);
-
--- --------------------------------------------------------
-
---
--- Estrutura da tabela `comment_likes`
---
-
-CREATE TABLE `comment_likes` (
-  `id` int(11) NOT NULL,
-  `comment_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Extraindo dados da tabela `comment_likes`
---
-
-INSERT INTO `comment_likes` (`id`, `comment_id`, `user_id`, `created_at`) VALUES
-(1, 1, 2, '2026-03-05 15:50:12'),
-(2, 1, 1, '2026-03-05 15:51:24');
-
--- --------------------------------------------------------
-
---
--- Estrutura da tabela `notifications`
---
-
-CREATE TABLE `notifications` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `type` enum('comment_approved','comment_rejected','comment_reply') NOT NULL,
-  `comment_id` int(11) NOT NULL,
-  `message` text DEFAULT NULL,
-  `is_read` tinyint(1) DEFAULT 0,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Extraindo dados da tabela `notifications`
---
-
-INSERT INTO `notifications` (`id`, `user_id`, `type`, `comment_id`, `message`, `is_read`, `created_at`) VALUES
-(1, 1, 'comment_reply', 4, 'Sá respondeu ao teu comentário. A resposta aguarda moderação.', 0, '2026-03-05 15:50:23'),
-(2, 2, 'comment_approved', 4, 'O teu comentário foi aprovado e já está visível.', 0, '2026-03-05 15:51:07');
-
--- --------------------------------------------------------
-
---
--- Estrutura da tabela `password_resets`
---
-
-CREATE TABLE `password_resets` (
-  `id` int(11) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `token` varchar(64) NOT NULL,
-  `expires_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `used` tinyint(1) DEFAULT 0,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- --------------------------------------------------------
 
 --
 -- Estrutura da tabela `users`
 --
 
-CREATE TABLE `users` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL,
   `email` varchar(100) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
@@ -163,136 +36,219 @@ CREATE TABLE `users` (
   `location` varchar(100) DEFAULT NULL,
   `website` varchar(255) DEFAULT NULL,
   `experience_level` enum('iniciante','intermedio','avancado','profissional') DEFAULT 'iniciante',
-  `role` enum('user','moderator','admin') DEFAULT 'user',
+  `role` enum('master','admin','moderator','user') DEFAULT 'user',
   `karma_total` int(11) DEFAULT 0,
   `prefs_show_karma` tinyint(1) DEFAULT 1,
-  `top_badges` text DEFAULT NULL,
   `is_active` tinyint(1) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `last_login` timestamp NULL DEFAULT NULL
+  `last_login` timestamp NULL DEFAULT NULL,
+  `warning_message` text DEFAULT NULL,
+  `warning_at` timestamp NULL DEFAULT NULL,
+  `suspension_message` text DEFAULT NULL,
+  `suspension_until` timestamp NULL DEFAULT NULL,
+  `suspended_until` datetime DEFAULT NULL,
+  `coins` int(11) DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Extraindo dados da tabela `users`
---
-
-INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `full_name`, `avatar`, `avatar_url`, `bio`, `location`, `website`, `experience_level`, `role`, `is_active`, `created_at`, `updated_at`, `last_login`) VALUES
-(1, 'admin', 'admin@exemplo.pt', '$2y$10$dlQhEu1F572M4Nb95HRUduscfderuwFaMFOrlYYLcNQ8lRuyR7xTy', 'Administrador', 'AD', NULL, NULL, NULL, NULL, 'iniciante', 'admin', 1, '2026-03-05 15:47:29', '2026-03-05 15:50:40', '2026-03-05 15:50:40'),
-(2, 'Martim', 'martimsa.28473@ae-smfeira.pt', '$2y$10$Zk47vFeMHhxOeuFzfDmVfeDqvWD09L.yZKIHyaO6kRpy7StLF3fHW', 'Sá', 'S', NULL, NULL, NULL, NULL, 'iniciante', 'user', 1, '2026-03-05 15:49:49', '2026-03-05 15:50:00', '2026-03-05 15:50:00');
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `user_materials`
+-- Estrutura da tabela `admin_logs`
 --
 
-CREATE TABLE `user_materials` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `admin_logs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `actor_id` int(11) NOT NULL,
+  `target_id` int(11) DEFAULT NULL,
+  `action` varchar(50) NOT NULL,
+  `detail` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `actor_id` (`actor_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `reported_users`
+--
+
+CREATE TABLE IF NOT EXISTS `reported_users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
-  `material` varchar(100) NOT NULL,
-  `brand` varchar(100) DEFAULT NULL,
-  `notes` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Estrutura da tabela `user_printers`
---
-
-CREATE TABLE `user_printers` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `brand` varchar(100) NOT NULL,
-  `model` varchar(100) NOT NULL,
-  `type` enum('FDM','SLA','SLS','MSLA','Outro') DEFAULT 'FDM',
-  `bed_size` varchar(50) DEFAULT NULL,
-  `notes` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Estrutura da tabela `user_sessions`
---
-
-CREATE TABLE `user_sessions` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `session_token` varchar(255) NOT NULL,
-  `expires_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Estrutura da tabela `forum_communities`
---
-
-CREATE TABLE `forum_communities` (
-  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name` varchar(100) NOT NULL,
-  `slug` varchar(100) NOT NULL UNIQUE,
+  `reported_by` int(11) NOT NULL,
+  `reason` varchar(255) DEFAULT NULL,
   `description` text DEFAULT NULL,
-  `image_url` varchar(255) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `status` enum('pendente','analisado','resolvido') DEFAULT 'pendente',
+  `action_taken` enum('none','warning','suspension','ban') DEFAULT 'none',
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `resolved_at` timestamp NULL DEFAULT NULL,
+  `resolved_by` int(11) DEFAULT NULL,
+  `admin_message` text DEFAULT NULL,
+  `suspension_days` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `reported_by` (`reported_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `forum_posts`
+-- Estrutura da tabela `reported_comments`
 --
 
-CREATE TABLE `forum_posts` (
-  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS `reported_comments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `comment_id` int(11) NOT NULL,
+  `reporter_id` int(11) NOT NULL,
+  `reason` varchar(255) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `status` enum('pendente','analisado','resolvido') DEFAULT 'pendente',
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `resolved_at` timestamp NULL DEFAULT NULL,
+  `resolved_by` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `comment_id` (`comment_id`),
+  KEY `reporter_id` (`reporter_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `shop_items`
+--
+
+CREATE TABLE IF NOT EXISTS `shop_items` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `category` enum('frame','background','banner','accent','badge','medal') NOT NULL,
+  `item_key` varchar(50) NOT NULL,
+  `css_value` text NOT NULL,
+  `preview_css` text DEFAULT NULL,
+  `price` int(11) DEFAULT 100,
+  `source` enum('shop','community','achievement') DEFAULT 'shop',
   `community_id` int(11) DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `item_key` (`item_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `user_inventory`
+--
+
+CREATE TABLE IF NOT EXISTS `user_inventory` (
   `user_id` int(11) NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `content` text NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `obtained_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`user_id`,`item_id`),
+  KEY `item_id` (`item_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `user_profile_config`
+--
+
+CREATE TABLE IF NOT EXISTS `user_profile_config` (
+  `user_id` int(11) NOT NULL,
+  `frame_key` varchar(50) DEFAULT NULL,
+  `background_key` varchar(50) DEFAULT NULL,
+  `banner_url` varchar(500) DEFAULT NULL,
+  `accent_color` varchar(20) DEFAULT NULL,
+  `top_badges` text DEFAULT NULL,
+  `coins` int(11) DEFAULT 0,
+  `streak_count` int(11) DEFAULT 0,
+  `last_streak_date` date DEFAULT NULL,
+  `daily_missions_data` text DEFAULT NULL,
+  `growth_points` int(11) DEFAULT 0,
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `activity_logs`
+--
+
+CREATE TABLE IF NOT EXISTS `activity_logs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL,
+  `action` varchar(50) NOT NULL,
+  `details` text DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `status` enum('pending','approved','rejected') DEFAULT 'approved',
-  `flair` varchar(50) DEFAULT NULL,
-  `is_pinned` tinyint(1) DEFAULT 0,
-  `views` int(11) DEFAULT 0,
-  FOREIGN KEY (`community_id`) REFERENCES `forum_communities`(`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `ai_conversations`
+-- Estrutura da tabela `comments`
 --
 
-CREATE TABLE `ai_conversations` (
-  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `user_id` int(11) DEFAULT NULL,
-  `title` varchar(255) DEFAULT NULL,
-  `section_context` varchar(50) DEFAULT NULL,
-  `mode` enum('beginner','advanced') DEFAULT 'beginner',
+CREATE TABLE IF NOT EXISTS `comments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `parent_id` int(11) DEFAULT NULL,
+  `section` varchar(100) DEFAULT 'geral',
+  `category` enum('duvida','problema','dica','geral') DEFAULT 'geral',
+  `title` varchar(200) DEFAULT NULL,
+  `content` text NOT NULL,
+  `status` enum('pendente','aprovado','rejeitado','bloqueado') DEFAULT 'pendente',
+  `likes` int(11) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+  `reviewed_at` timestamp NULL DEFAULT NULL,
+  `reviewed_by` int(11) DEFAULT NULL,
+  `reject_reason` varchar(500) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `parent_id` (`parent_id`),
+  KEY `reviewed_by` (`reviewed_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `ai_messages`
+-- Estrutura da tabela `comment_likes`
 --
 
-CREATE TABLE `ai_messages` (
-  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `conversation_id` int(11) DEFAULT NULL,
-  `role` enum('system','user','assistant') NOT NULL,
-  `content` text NOT NULL,
+CREATE TABLE IF NOT EXISTS `comment_likes` (
+  `comment_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  FOREIGN KEY (`conversation_id`) REFERENCES `ai_conversations`(`id`) ON DELETE CASCADE
+  PRIMARY KEY (`comment_id`,`user_id`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `notifications`
+--
+
+CREATE TABLE IF NOT EXISTS `notifications` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `type` varchar(50) NOT NULL,
+  `comment_id` int(11) DEFAULT NULL,
+  `message` text NOT NULL,
+  `is_read` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -301,234 +257,186 @@ CREATE TABLE `ai_messages` (
 -- Estrutura da tabela `xp_log`
 --
 
-CREATE TABLE `xp_log` (
-  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS `xp_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `xp_amount` int(11) NOT NULL,
   `reason` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `user_slicers`
+-- Estrutura da tabela `ai_conversations`
 --
 
-CREATE TABLE `user_slicers` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `ai_conversations` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `version` varchar(50) DEFAULT NULL,
-  `notes` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `title` varchar(255) DEFAULT 'Nova conversa',
+  `section_context` varchar(100) DEFAULT NULL,
+  `mode` enum('beginner','advanced') DEFAULT 'beginner',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Índices para tabelas despejadas
---
+-- --------------------------------------------------------
 
 --
--- Índices para tabela `activity_logs`
---
-ALTER TABLE `activity_logs`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
-
---
--- Índices para tabela `comments`
---
-ALTER TABLE `comments`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `reviewed_by` (`reviewed_by`),
-  ADD KEY `idx_status` (`status`),
-  ADD KEY `idx_user_id` (`user_id`),
-  ADD KEY `idx_parent_id` (`parent_id`),
-  ADD KEY `idx_section` (`section`),
-  ADD KEY `idx_created_at` (`created_at`);
-
---
--- Índices para tabela `comment_likes`
---
-ALTER TABLE `comment_likes`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uniq_like` (`comment_id`,`user_id`),
-  ADD KEY `user_id` (`user_id`);
-
---
--- Índices para tabela `notifications`
---
-ALTER TABLE `notifications`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `comment_id` (`comment_id`),
-  ADD KEY `idx_user_unread` (`user_id`,`is_read`);
-
---
--- Índices para tabela `password_resets`
---
-ALTER TABLE `password_resets`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `token` (`token`),
-  ADD KEY `idx_token` (`token`),
-  ADD KEY `idx_email` (`email`);
-
---
--- Índices para tabela `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `username` (`username`),
-  ADD UNIQUE KEY `email` (`email`);
-
---
--- Índices para tabela `user_materials`
---
-ALTER TABLE `user_materials`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
-
---
--- Índices para tabela `user_printers`
---
-ALTER TABLE `user_printers`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
-
---
--- Índices para tabela `user_sessions`
---
-ALTER TABLE `user_sessions`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `session_token` (`session_token`),
-  ADD KEY `user_id` (`user_id`);
-
---
--- Índices para tabela `user_slicers`
---
-ALTER TABLE `user_slicers`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
-
---
--- AUTO_INCREMENT de tabelas despejadas
+-- Estrutura da tabela `ai_messages`
 --
 
---
--- AUTO_INCREMENT de tabela `activity_logs`
---
-ALTER TABLE `activity_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+CREATE TABLE IF NOT EXISTS `ai_messages` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `conversation_id` int(11) NOT NULL,
+  `role` enum('system','user','assistant') NOT NULL,
+  `content` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `conversation_id` (`conversation_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 
 --
--- AUTO_INCREMENT de tabela `comments`
---
-ALTER TABLE `comments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT de tabela `comment_likes`
---
-ALTER TABLE `comment_likes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de tabela `notifications`
---
-ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de tabela `password_resets`
---
-ALTER TABLE `password_resets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de tabela `users`
---
-ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de tabela `user_materials`
---
-ALTER TABLE `user_materials`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de tabela `user_printers`
---
-ALTER TABLE `user_printers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de tabela `user_sessions`
---
-ALTER TABLE `user_sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de tabela `user_slicers`
---
-ALTER TABLE `user_slicers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- Restrições para despejos de tabelas
+-- Estrutura da tabela `forum_communities`
 --
 
---
--- Limitadores para a tabela `activity_logs`
---
-ALTER TABLE `activity_logs`
-  ADD CONSTRAINT `activity_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+CREATE TABLE IF NOT EXISTS `forum_communities` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `slug` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  `icon` varchar(10) DEFAULT '?',
+  `banner_color` varchar(20) DEFAULT '#00e5ff',
+  `created_by` int(11) NOT NULL,
+  `member_count` int(11) DEFAULT 0,
+  `post_count` int(11) DEFAULT 0,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `slug` (`slug`),
+  KEY `created_by` (`created_by`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 
 --
--- Limitadores para a tabela `comments`
+-- Estrutura da tabela `forum_memberships`
 --
-ALTER TABLE `comments`
-  ADD CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `comments_ibfk_2` FOREIGN KEY (`parent_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `comments_ibfk_3` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+CREATE TABLE IF NOT EXISTS `forum_memberships` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `community_id` int(11) NOT NULL,
+  `role` enum('owner','admin','moderator','member') NOT NULL DEFAULT 'member',
+  `joined_at?` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_member` (`user_id`,`community_id`),
+  KEY `community_id` (`community_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 
 --
--- Limitadores para a tabela `comment_likes`
+-- Estrutura da tabela `forum_posts`
 --
-ALTER TABLE `comment_likes`
-  ADD CONSTRAINT `comment_likes_ibfk_1` FOREIGN KEY (`comment_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `comment_likes_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+CREATE TABLE IF NOT EXISTS `forum_posts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `community_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `title` varchar(300) NOT NULL,
+  `content` text DEFAULT NULL,
+  `type` enum('text','link','image') DEFAULT 'text',
+  `vote_score` int(11) DEFAULT 0,
+  `reply_count` int(11) DEFAULT 0,
+  `is_pinned` tinyint(1) DEFAULT 0,
+  `is_locked` tinyint(1) DEFAULT 0,
+  `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'approved',
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `flair` varchar(20) DEFAULT NULL,
+  `image_url` varchar(500) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `community_id` (`community_id`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 
 --
--- Limitadores para a tabela `notifications`
+-- Estrutura da tabela `forum_replies`
 --
-ALTER TABLE `notifications`
-  ADD CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `notifications_ibfk_2` FOREIGN KEY (`comment_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE;
+
+CREATE TABLE IF NOT EXISTS `forum_replies` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `post_id` int(11) NOT NULL,
+  `parent_id` int(11) DEFAULT NULL,
+  `user_id` int(11) NOT NULL,
+  `content?` text NOT NULL,
+  `vote_score` int(11) DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `post_id` (`post_id`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 
 --
--- Limitadores para a tabela `user_materials`
+-- Estrutura da tabela `forum_user_xp`
 --
-ALTER TABLE `user_materials`
-  ADD CONSTRAINT `user_materials_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+CREATE TABLE IF NOT EXISTS `forum_user_xp` (
+  `user_id` int(11) NOT NULL,
+  `community_id` int(11) NOT NULL,
+  `xp` int(11) DEFAULT 0,
+  PRIMARY KEY (`user_id`,`community_id`),
+  KEY `community_id` (`community_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
 
 --
--- Limitadores para a tabela `user_printers`
+-- Estrutura da tabela `user_notices`
 --
-ALTER TABLE `user_printers`
-  ADD CONSTRAINT `user_printers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+CREATE TABLE IF NOT EXISTS `user_notices` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `type` enum('warning','suspension','ban','info') DEFAULT 'info',
+  `message` text NOT NULL,
+  `is_read` tinyint(1) DEFAULT 0,
+  `created_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
 
 --
--- Limitadores para a tabela `user_sessions`
+-- Estrutura da tabela `private_messages`
 --
-ALTER TABLE `user_sessions`
-  ADD CONSTRAINT `user_sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
---
--- Limitadores para a tabela `user_slicers`
---
-ALTER TABLE `user_slicers`
-  ADD CONSTRAINT `user_slicers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+CREATE TABLE IF NOT EXISTS `private_messages` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sender_id` int(11) NOT NULL,
+  `receiver_id` int(11) NOT NULL,
+  `content` text NOT NULL,
+  `read_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `sender_id` (`sender_id`),
+  KEY `receiver_id` (`receiver_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
 COMMIT;
 

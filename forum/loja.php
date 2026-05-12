@@ -19,7 +19,7 @@ try { $db->exec("CREATE TABLE IF NOT EXISTS shop_items (
     id           INT AUTO_INCREMENT PRIMARY KEY,
     name         VARCHAR(100) NOT NULL,
     description  VARCHAR(255),
-    category     ENUM('frame','background','banner','accent') NOT NULL,
+    category     ENUM('frame','background','banner','accent','badge','medal') NOT NULL,
     item_key     VARCHAR(50) NOT NULL UNIQUE,
     css_value    TEXT NOT NULL,
     preview_css  TEXT,
@@ -45,11 +45,14 @@ try { $db->exec("CREATE TABLE IF NOT EXISTS user_profile_config (
     background_key VARCHAR(50) NULL,
     banner_url    VARCHAR(500) NULL,
     accent_color  VARCHAR(20) NULL,
+    top_badges    TEXT NULL,
     coins         INT DEFAULT 0,
     updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"); } catch(Exception $e){}
 
+try { $db->exec("ALTER TABLE shop_items MODIFY COLUMN category ENUM('frame','background','banner','accent','badge','medal') NOT NULL"); } catch(Exception $e){}
+try { $db->exec("ALTER TABLE user_profile_config ADD COLUMN IF NOT EXISTS top_badges TEXT NULL"); } catch(Exception $e){}
 try { $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS coins INT DEFAULT 0"); } catch(Exception $e){}
 
 // ── Seed de items ─────────────────────────────────────────────
@@ -108,6 +111,21 @@ if (true) { // Sempre verificar novos items (INSERT IGNORE protege duplicados
             '#ff2244','background:#ff2244;border-radius:50%;width:24px;height:24px',60,'shop',null),
         array('Violet','Cor de destaque violeta','accent','accent_violet',
             '#aa44ff','background:#aa44ff;border-radius:50%;width:24px;height:24px',60,'shop',null),
+        // Badges
+        array('Ajudante','Atribuído a quem ajuda a comunidade','badge','badge_helper',
+            '🤝','',0,'achievement',null),
+        array('Pioneiro','Membro fundador do fórum','badge','badge_pioneer',
+            '🚀','',0,'achievement',null),
+        array('Membro de Elite','Reconhecimento por contribuições excepcionais','badge','badge_elite',
+            '💎','',0,'achievement',null),
+        array('Mestre 3D','Conhecimento técnico profundo demonstrado','badge','badge_master',
+            '⚙️','',0,'achievement',null),
+        array('Cliente VIP','Completou a missão Entusiasta da Loja','badge','badge_shop_enthusiast',
+            '🛒','',0,'achievement',null),
+        array('Chama Constante','Alcançou uma streak de 7 dias','badge','badge_streak_7',
+            '🔥','',0,'achievement',null),
+        array('Mestre da Semana','Completou a maratona semanal de missões','badge','badge_weekly_master',
+            '🌟','',0,'achievement',null),
     );
     $ins = $db->prepare("INSERT INTO shop_items (name,description,category,item_key,css_value,preview_css,price,source,community_id) VALUES (?,?,?,?,?,?,?,?,?)");
     foreach ($items as $i) { try { $ins->execute($i); } catch(Exception $e){} }
@@ -155,13 +173,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
             $coins = $newCoins;
             $inventory[] = $itemId;
             $flash = '🎉 ' . $item['name'] . ' adicionado ao teu inventário!';
+
+            // Missão: Entusiasta da Loja
+            updateMissionProgress($uid, 'shop_enthusiast');
         }
     }
 }
 
 // ── Buscar items por categoria ────────────────────────────────
 $allItems = $db->query("SELECT * FROM shop_items WHERE is_active=1 ORDER BY category, price ASC")->fetchAll();
-$byCategory = array('frame'=>array(),'background'=>array(),'accent'=>array());
+$byCategory = array('frame'=>array(),'background'=>array(),'accent'=>array(),'badge'=>array(),'medal'=>array());
 foreach ($allItems as $i) { $byCategory[$i['category']][] = $i; }
 
 $csrf = generateCSRFToken();
@@ -323,6 +344,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <button class="shop-tab active" onclick="switchTab('frames',this)">🖼️ Frames</button>
     <button class="shop-tab" onclick="switchTab('backgrounds',this)">🌌 Fundos</button>
     <button class="shop-tab" onclick="switchTab('accents',this)">🎨 Cores</button>
+    <button class="shop-tab" onclick="switchTab('badges',this)">🏅 Emblemas</button>
 </div>
 
 <div class="shop-content">
@@ -433,6 +455,42 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                                 <input type="hidden" name="item_id" value="<?php echo $item['id']; ?>">
                                 <button type="submit" class="buy-btn" <?php echo !$canAfford?'disabled title="Moedas insuficientes"':''; ?>>COMPRAR</button>
                             </form>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <!-- Badges -->
+    <div class="items-section" id="tab-badges">
+        <div class="items-grid">
+            <?php foreach ($byCategory['badge'] as $item):
+                $owned = in_array((int)$item['id'], $inventory);
+                $canAfford = $coins >= (int)$item['price'];
+            ?>
+            <div class="item-card <?php echo $owned?'owned':''; ?>">
+                <span class="cat-badge cat-accent" style="background:rgba(167,139,250,0.1);color:#a78bfa">EMBLEMA</span>
+                <div class="item-preview">
+                    <div style="font-size:48px"><?php echo htmlspecialchars($item['css_value']); ?></div>
+                </div>
+                <div class="item-body">
+                    <div class="item-name"><?php echo sanitize($item['name']); ?></div>
+                    <div class="item-desc"><?php echo sanitize($item['description']); ?></div>
+                    <div class="item-footer">
+                        <div class="item-price"><?php echo $item['source']==='achievement' ? '🏆 Conquista' : '🪙 '.number_format((int)$item['price']); ?></div>
+                        <?php if ($owned): ?>
+                            <span class="owned-badge">✓ TENS</span>
+                        <?php elseif ($item['source'] === 'shop'): ?>
+                            <form method="POST" style="margin:0">
+                                <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
+                                <input type="hidden" name="action" value="buy">
+                                <input type="hidden" name="item_id" value="<?php echo $item['id']; ?>">
+                                <button type="submit" class="buy-btn" <?php echo !$canAfford?'disabled title="Moedas insuficientes"':''; ?>>COMPRAR</button>
+                            </form>
+                        <?php else: ?>
+                            <span class="owned-badge" style="background:rgba(255,255,255,0.05);color:var(--muted)">DESBLOQUEÁVEL</span>
                         <?php endif; ?>
                     </div>
                 </div>

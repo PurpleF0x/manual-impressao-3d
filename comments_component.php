@@ -45,6 +45,14 @@ $isModUser     = $currentUser && canModerate($currentUser);
 .cmt-author-sub { font-size: 11px; color: var(--muted); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
 .cmt-author-sub a { color: var(--accent); text-decoration: none; font-size: 10px; }
 
+.cmt-streak-fire {
+    font-weight: 800;
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    margin-left: 4px;
+    filter: drop-shadow(0 0 3px currentColor);
+}
+
 /* Category badge */
 .cmt-cat { font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 3px 8px; border-radius: 5px; text-transform: uppercase; margin-left: auto; flex-shrink: 0; }
 .cmt-cat.duvida   { background: rgba(0,229,255,0.12);  color: var(--accent); }
@@ -264,7 +272,18 @@ $isModUser     = $currentUser && canModerate($currentUser);
   var CUR_UID = <?php echo $currentUser ? (int)$currentUser['id'] : 'null'; ?>;
   var IS_MOD  = <?php echo $isModUser ? 'true' : 'false'; ?>;
   var CAT_LBL = {duvida:'DÚVIDA',problema:'PROBLEMA',dica:'DICA',geral:'GERAL'};
+  var STREAK_COLORS = { 0: '#eab308', 31: '#22c55e', 91: '#f97316', 151: '#ef4444', 221: '#ffffff', 291: '#000000', 366: '#a855f7' };
   var allComments=[], currentFilter='all', currentSort='likes', offset=0, LIMIT=20;
+
+  function getStreakColor(days) {
+      if (days >= 366) return STREAK_COLORS[366];
+      if (days >= 291) return STREAK_COLORS[291];
+      if (days >= 221) return STREAK_COLORS[221];
+      if (days >= 151) return STREAK_COLORS[151];
+      if (days >= 91)  return STREAK_COLORS[91];
+      if (days >= 31)  return STREAK_COLORS[31];
+      return STREAK_COLORS[0];
+  }
 
   // ── Carregar ─────────────────────────────────────────────────
   async function loadComments(reset) {
@@ -369,6 +388,7 @@ $isModUser     = $currentUser && canModerate($currentUser);
           +avatarHtml(c,42,15)
           +'<div class="cmt-author-meta" style="flex:1;min-width:0">'
             +'<a class="name-link" href="perfil_publico.php?id='+c.user_id+'">'+esc(c.full_name)+'</a>'
+            +(c.streak_count > 0 ? '<span class="cmt-streak-fire" style="color:'+getStreakColor(c.streak_count)+'" title="Streak de '+c.streak_count+' dias">🔥'+c.streak_count+'</span>' : '')
             +'<div class="cmt-author-sub">'
               +'<a href="perfil_publico.php?id='+c.user_id+'">@'+esc(c.username)+'</a>'
               +'<span>·</span><span>'+formatDate(c.created_at)+'</span>'
@@ -394,6 +414,7 @@ $isModUser     = $currentUser && canModerate($currentUser);
         +avatarHtml(r,32,11)
         +'<div class="cmt-author-meta" style="flex:1">'
           +'<a class="name-link" href="perfil_publico.php?id='+r.user_id+'" style="font-size:13px">'+esc(r.full_name)+'</a>'
+          +(r.streak_count > 0 ? '<span class="cmt-streak-fire" style="color:'+getStreakColor(r.streak_count)+'" title="Streak de '+r.streak_count+' dias">🔥'+r.streak_count+'</span>' : '')
           +'<div class="cmt-author-sub">'
             +'<a href="perfil_publico.php?id='+r.user_id+'">@'+esc(r.username)+'</a>'
             +'<span>·</span><span>'+formatDate(r.created_at)+'</span>'
@@ -537,7 +558,7 @@ $isModUser     = $currentUser && canModerate($currentUser);
     if(!reasonEl){statusEl.style.color='#ff6b35';statusEl.textContent='⚠️ Seleciona um motivo.';return;}
     statusEl.style.color='var(--muted)';statusEl.textContent='A enviar…';
     try {
-      var res=await fetch('api/report_comment.php',{method:'POST',headers:{'Content-Type':'application/json'},
+      var res=await fetch('api/reports.php',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({action:'report_comment',csrf_token:CSRF,comment_id:parseInt(commentId),reason:reasonEl.value,description:description})});
       var data=await res.json();
       if(data.success){statusEl.style.color='var(--success)';statusEl.textContent='✓ '+data.message;setTimeout(window.closeReportModal,1800);}

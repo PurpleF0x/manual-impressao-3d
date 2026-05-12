@@ -15,9 +15,11 @@ $uid = (int)$currentUser['id'];
 $db  = getDB();
 
 // ── Garantir tabelas ──────────────────────────────────────────
-try { $db->exec("CREATE TABLE IF NOT EXISTS shop_items (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100) NOT NULL, description VARCHAR(255), category ENUM('frame','background','banner','accent') NOT NULL, item_key VARCHAR(50) NOT NULL UNIQUE, css_value TEXT NOT NULL, preview_css TEXT, price INT DEFAULT 100, source ENUM('shop','community','achievement') DEFAULT 'shop', community_id INT NULL, is_active TINYINT(1) DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"); } catch(Exception $e){}
+try { $db->exec("CREATE TABLE IF NOT EXISTS shop_items (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100) NOT NULL, description VARCHAR(255), category ENUM('frame','background','banner','accent','badge','medal') NOT NULL, item_key VARCHAR(50) NOT NULL UNIQUE, css_value TEXT NOT NULL, preview_css TEXT, price INT DEFAULT 100, source ENUM('shop','community','achievement') DEFAULT 'shop', community_id INT NULL, is_active TINYINT(1) DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"); } catch(Exception $e){}
 try { $db->exec("CREATE TABLE IF NOT EXISTS user_inventory (user_id INT NOT NULL, item_id INT NOT NULL, obtained_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (user_id, item_id), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (item_id) REFERENCES shop_items(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"); } catch(Exception $e){}
-try { $db->exec("CREATE TABLE IF NOT EXISTS user_profile_config (user_id INT PRIMARY KEY, frame_key VARCHAR(50) NULL, background_key VARCHAR(50) NULL, banner_url VARCHAR(500) NULL, accent_color VARCHAR(20) NULL, top_badges TEXT NULL, coins INT DEFAULT 0, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"); } catch(Exception $e){}
+try { $db->exec("ALTER TABLE shop_items MODIFY COLUMN category ENUM('frame','background','banner','accent','badge','medal') NOT NULL"); } catch(Exception $e){}
+try { $db->exec("ALTER TABLE user_profile_config ADD COLUMN IF NOT EXISTS top_badges TEXT NULL"); } catch(Exception $e){}
+try { $db->exec("ALTER TABLE user_profile_config ADD COLUMN IF NOT EXISTS coins INT DEFAULT 0"); } catch(Exception $e){}
 
 // ── Seed items se vazio ───────────────────────────────────────
 if ((int)$db->query("SELECT COUNT(*) FROM shop_items")->fetchColumn() === 0) {
@@ -40,6 +42,13 @@ if ((int)$db->query("SELECT COUNT(*) FROM shop_items")->fetchColumn() === 0) {
         array('Solar Gold','Cor destaque dourada','accent','accent_gold','#ffcc00','',60),
         array('Crimson','Cor destaque carmesim','accent','accent_crimson','#ff2244','',60),
         array('Violet','Cor destaque violeta','accent','accent_violet','#aa44ff','',60),
+        array('Membro Ativo','Atribuído ao atingir 20 XP','badge','lvl_membro','🛡️','',0),
+        array('Veterano','Atribuído ao atingir 100 XP','badge','lvl_veterano','🎖️','',0),
+        array('Lenda do Fórum','Atribuído ao atingir 500 XP','badge','lvl_lendario','👑','',0),
+        array('Ajudante','Atribuído a quem ajuda a comunidade','badge','badge_helper','🤝','',0),
+        array('Pioneiro','Membro fundador do fórum','badge','badge_pioneer','🚀','',0),
+        array('Membro de Elite','Reconhecimento por contribuições excepcionais','badge','badge_elite','💎','',0),
+        array('Mestre 3D','Conhecimento técnico profundo demonstrado','badge','badge_master','⚙️','',0),
     );
     $ins = $db->prepare("INSERT IGNORE INTO shop_items (name,description,category,item_key,css_value,preview_css,price) VALUES (?,?,?,?,?,?,?)");
     foreach ($items as $i) { try { $ins->execute($i); } catch(Exception $e){} }
@@ -78,7 +87,7 @@ $myItems   = $invQ->fetchAll();
 $myFrames  = array_values(array_filter($myItems, function($i){ return $i['category']==='frame'; }));
 $myBgs     = array_values(array_filter($myItems, function($i){ return $i['category']==='background'; }));
 $myAccents = array_values(array_filter($myItems, function($i){ return $i['category']==='accent'; }));
-$myBadges  = array_values(array_filter($myItems, function($i){ return $i['category']==='banner' || $i['source'] === 'achievement' || $i['source'] === 'community'; }));
+$myBadges  = array_values(array_filter($myItems, function($i){ return in_array($i['category'], ['badge', 'medal']); }));
 
 // ── Secção activa (GET) ───────────────────────────────────────
 $section = $_GET['s'] ?? 'avatar';
@@ -566,23 +575,17 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <div class="items-grid">
                 <?php
                 $currentBadges = json_decode($config['top_badges'] ?? '[]', true);
-                foreach ($myItems as $item):
+                foreach ($myBadges as $item):
                     $isSelected = in_array((int)$item['id'], $currentBadges);
                 ?>
                 <label class="item-tile <?php echo $isSelected ? 'selected' : ''; ?>" style="cursor:pointer">
                     <input type="checkbox" name="badges[]" value="<?php echo $item['id']; ?>" <?php echo $isSelected ? 'checked' : ''; ?> style="display:none" onchange="this.parentElement.classList.toggle('selected', this.checked); updateBadgeCount()">
                     <div class="item-tile-preview">
-                        <?php if($item['category'] === 'frame'): ?>
-                            <div class="tile-av" style="<?php echo htmlspecialchars($item['css_value']); ?>; width:40px; height:40px; font-size:10px"><?php echo $initials; ?></div>
-                        <?php elseif($item['category'] === 'accent'): ?>
-                            <div style="width:30px; height:30px; border-radius:50%; background:<?php echo htmlspecialchars($item['css_value']); ?>"></div>
-                        <?php else: ?>
-                            <span style="font-size:24px">🏅</span>
-                        <?php endif; ?>
+                        <span style="font-size:32px"><?php echo htmlspecialchars($item['css_value']); ?></span>
                     </div>
                     <div class="item-tile-body">
                         <div class="item-tile-name"><?php echo sanitize($item['name']); ?></div>
-                        <div class="item-tile-desc"><?php echo sanitize($item['category']); ?></div>
+                        <div class="item-tile-desc"><?php echo sanitize($item['description']); ?></div>
                     </div>
                 </label>
                 <?php endforeach; ?>

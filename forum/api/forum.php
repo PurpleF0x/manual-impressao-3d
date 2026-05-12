@@ -93,6 +93,11 @@ if ($action === 'vote_post') {
         $coins = ($userVote === 1) ? 2 : 0;
         $reason = ($userVote === 1) ? "Recebeu Like no post #$postId" : "Recebeu Dislike no post #$postId";
         addXP((int)$post['user_id'], $xp, $reason, $coins);
+
+        if ($userVote === 1) {
+            require_once dirname(__DIR__) . '/../includes/missions.php';
+            updateMissionProgress($uid, 'forum_upvotes');
+        }
     }
 
     echo json_encode(array('success'=>true,'score'=>$newScore,'user_vote'=>$userVote));
@@ -151,6 +156,9 @@ if ($action === 'create_reply') {
     // Atribuição de Karma/XP (+5 por resposta) e Moedas (+3)
     addXP($uid, 5, "Publicou resposta no post #$postId", 3);
 
+    require_once dirname(__DIR__) . '/../includes/missions.php';
+    updateMissionProgress($uid, 'forum_replies');
+
     echo json_encode(array('success'=>true,'reply_id'=>$replyId));
     exit;
 }
@@ -180,6 +188,11 @@ if ($action === 'vote_reply') {
         $coins = ($userVote === 1) ? 2 : 0;
         $reason = ($userVote === 1) ? "Recebeu Like na resposta #$replyId" : "Recebeu Dislike na resposta #$replyId";
         addXP((int)$reply['user_id'], $xp, $reason, $coins);
+
+        if ($userVote === 1) {
+            require_once dirname(__DIR__) . '/../includes/missions.php';
+            updateMissionProgress($uid, 'forum_upvotes');
+        }
     }
 
     echo json_encode(array('success'=>true,'score'=>$newScore,'user_vote'=>$userVote));

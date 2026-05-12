@@ -65,9 +65,11 @@ function getApprovedComments(string $section = 'geral', int $limit = 50, int $of
     try {
         $stmt = $db->prepare(
             "SELECT c.*, u.full_name, u.username, u.avatar_url, u.avatar,
+                    upc.streak_count,
                     (SELECT COUNT(*) FROM comment_likes cl WHERE cl.comment_id = c.id) AS like_count
              FROM comments c
              JOIN users u ON u.id = c.user_id
+             LEFT JOIN user_profile_config upc ON upc.user_id = u.id
              WHERE c.status = 'aprovado' AND c.parent_id IS NULL AND c.section = ?
              ORDER BY c.created_at DESC
              LIMIT ? OFFSET ?"
@@ -78,9 +80,11 @@ function getApprovedComments(string $section = 'geral', int $limit = 50, int $of
         if (strpos($e->getMessage(), 'Unknown column') !== false) {
             $stmt = $db->prepare(
                 "SELECT c.*, u.full_name, u.username, u.avatar_url, u.avatar,
+                        upc.streak_count,
                         (SELECT COUNT(*) FROM comment_likes cl WHERE cl.comment_id = c.id) AS like_count
                  FROM comments c
                  JOIN users u ON u.id = c.user_id
+                 LEFT JOIN user_profile_config upc ON upc.user_id = u.id
                  WHERE c.status = 'aprovado' AND c.section = ?
                  ORDER BY c.created_at DESC
                  LIMIT ? OFFSET ?"
@@ -95,9 +99,11 @@ function getApprovedComments(string $section = 'geral', int $limit = 50, int $of
         try {
             $rStmt = $db->prepare(
                 "SELECT c.*, u.full_name, u.username, u.avatar_url, u.avatar,
+                        upc.streak_count,
                         (SELECT COUNT(*) FROM comment_likes cl WHERE cl.comment_id = c.id) AS like_count
                  FROM comments c
                  JOIN users u ON u.id = c.user_id
+                 LEFT JOIN user_profile_config upc ON upc.user_id = u.id
                  WHERE c.status = 'aprovado' AND c.parent_id = ?
                  ORDER BY c.created_at ASC"
             );
