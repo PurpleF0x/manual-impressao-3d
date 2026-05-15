@@ -1,63 +1,70 @@
 <?php
 /**
- * recuperar_password.php
+ * reset_password.php
  */
 require_once 'includes/functions.php';
-require_once 'includes/mail_config.php';
 
 if (isLoggedIn()) redirect('index.php');
 
 $db = getDB();
-
-try {
-    $db->exec("CREATE TABLE IF NOT EXISTS password_resets (
-        id         INT AUTO_INCREMENT PRIMARY KEY,
-        email      VARCHAR(100) NOT NULL,
-        token      VARCHAR(64)  NOT NULL UNIQUE,
-        expires_at TIMESTAMP    NOT NULL,
-        used       TINYINT(1)   DEFAULT 0,
-        created_at TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
-        INDEX idx_token (token),
-        INDEX idx_email (email)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-} catch (Exception $e) {}
-
-$errors  = [];
+$token = $_GET['token'] ?? $_POST['token'] ?? '';
+$errors = [];
 $success = false;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (empty($token)) {
+    redirect('login.php');
+}
+
+// Verificar validade do token
+$stmt = $db->prepare("SELECT * FROM password_resets WHERE token = ? AND used = 0 AND expires_at > NOW() LIMIT 1");
+$stmt->execute([$token]);
+$reset = $stmt->fetch();
+
+if (!$reset) {
+    $errors[] = "O link de recuperação é inválido ou já expirou.";
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $reset) {
     if (!verifyCSRFToken($_POST['csrf_token'] ?? null)) {
-        $errors[] = 'Token de segurança inválido. Recarrega a página.';
+        $errors[] = 'Token de segurança inválido.';
     } else {
-        $email = trim(strtolower($_POST['email'] ?? ''));
+        $password = $_POST['password'] ?? '';
+        $confirm  = $_POST['confirm_password'] ?? '';
 
-        if (empty($email) || !isValidEmail($email)) {
-            $errors[] = 'Indica um endereço de email válido.';
+        if (strlen($password) < 8) {
+            $errors[] = "A nova palavra-passe deve ter pelo menos 8 caracteres.";
+        } elseif ($password !== $confirm) {
+            $errors[] = "As palavras-passe não coincidem.";
         } else {
-            $stmt = $db->prepare("SELECT id, full_name, email FROM users WHERE email = ? AND is_active = TRUE LIMIT 1");
-            $stmt->execute([$email]);
-            $user = $stmt->fetch();
+            $db->beginTransaction();
+            try {
+                $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 10]);
 
-            if ($user) {
-                $db->prepare("DELETE FROM password_resets WHERE email = ?")->execute([$email]);
+                // Atualizar password do utilizador
+                $db->prepare("UPDATE users SET password_hash = ? WHERE email = ?")
+                   ->execute([$hash, $reset['email']]);
 
-                $token     = bin2hex(random_bytes(32));
-                $expiresAt = date('Y-m-d H:i:s', strtotime('+1 hour'));
+                // Obter ID do utilizador para limpar sessões
+                $stmtUser = $db->prepare("SELECT id FROM users WHERE email = ?");
+                $stmtUser->execute([$reset['email']]);
+                $userFound = $stmtUser->fetch();
+                if ($userFound) {
+                    // Invalidar sessões de "lembrar-me" antigas
+                    $db->prepare("DELETE FROM user_sessions WHERE user_id = ?")->execute([$userFound['id']]);
+                }
 
-                $db->prepare("INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)")
-                   ->execute([$email, $token, $expiresAt]);
+                // Marcar token como usado
+                $db->prepare("UPDATE password_resets SET used = 1 WHERE token = ?")
+                   ->execute([$token]);
 
-                logActivity(null, 'password_reset_requested', "email={$email}");
+                logActivity(null, 'password_reset_success', "email={$reset['email']}");
 
-                $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-                $host     = $_SERVER['HTTP_HOST'] ?? 'localhost';
-                $dir      = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
-                $resetUrl = "{$protocol}://{$host}{$dir}/reset_password.php?token={$token}";
-
-                sendPasswordResetEmail($user['email'], $user['full_name'], $token, $resetUrl);
+                $db->commit();
+                $success = true;
+            } catch (Exception $e) {
+                $db->rollBack();
+                $errors[] = "Erro ao processar o pedido. Tenta novamente.";
             }
-
-            $success = true;
         }
     }
 }
@@ -66,11 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/x-icon"  href="/favicons/favicon-login.ico">
-    <link rel="icon" type="image/svg+xml" href="/favicons/favicon-login.svg">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-login-32.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recuperar Palavra-passe — Manual de Impressão 3D</title>
+    <title>Nova Palavra-passe — Manual de Impressão 3D</title>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -95,12 +99,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border: 1px solid var(--border); border-radius: 20px;
             padding: 40px; position: relative; z-index: 1;
         }
-        .back-link {
-            display: inline-flex; align-items: center; gap: 8px;
-            color: var(--muted); text-decoration: none; font-size: 13px;
-            margin-bottom: 24px; transition: color 0.2s;
-        }
-        .back-link:hover { color: var(--accent); }
         .header { text-align: center; margin-bottom: 32px; }
         .header .logo { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; }
         .header h1 { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; color: #fff; }
@@ -110,7 +108,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .form-group label { display: block; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
         .form-group input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 15px; transition: all 0.2s; }
         .form-group input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 20px rgba(0,229,255,0.1); }
-        .form-group input::placeholder { color: var(--muted); opacity: 0.6; }
         .btn { width: 100%; background: linear-gradient(135deg, var(--accent), var(--accent3)); border: none; border-radius: 12px; padding: 16px; color: #000; font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; letter-spacing: 1px; cursor: pointer; transition: all 0.3s; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,229,255,0.3); }
         .alert { padding: 14px 18px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; }
@@ -118,17 +115,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .alert-error   { background: rgba(255,68,68,0.08); border: 1px solid rgba(255,68,68,0.25); color: #ff8888; }
         .footer { text-align: center; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 14px; }
         .footer a { color: var(--accent); text-decoration: none; }
-        .footer a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
 <div class="container">
-    <a href="login.php" class="back-link">← Voltar ao login</a>
-
     <div class="header">
         <div class="logo">Manual Educativo</div>
-        <h1>Recuperar <span>Acesso</span></h1>
-        <p>Indica o email da tua conta e enviamos um link para criares uma nova palavra-passe.</p>
+        <h1>Nova <span>Senha</span></h1>
+        <p>Define a tua nova palavra-passe de acesso.</p>
     </div>
 
     <?php if (!empty($errors)): ?>
@@ -137,26 +131,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <?php if ($success): ?>
         <div class="alert alert-success">
-            &#x2705; Se o email estiver registado, receberás em breve um link para redefinir a palavra-passe.<br>
-            <small style="margin-top:6px;display:block;opacity:0.8">Verifica também a pasta de spam. O link é válido por 1 hora.</small>
+            &#x2705; Palavra-passe alterada com sucesso! Já podes iniciar sessão.
         </div>
-        <div class="footer">
-            <a href="login.php">← Voltar ao login</a>
-        </div>
-    <?php else: ?>
+        <a href="login.php" class="btn" style="text-align:center;text-decoration:none;display:block">IR PARA LOGIN</a>
+    <?php elseif ($reset): ?>
         <form method="POST" action="">
             <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
+            <input type="hidden" name="token" value="<?php echo sanitize($token); ?>">
+
             <div class="form-group">
-                <label for="email">Email da conta</label>
-                <input type="email" id="email" name="email"
-                       placeholder="o-teu@email.pt"
-                       value="<?php echo sanitize($_POST['email'] ?? ''); ?>"
-                       required autofocus>
+                <label for="password">Nova Palavra-passe</label>
+                <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres" required autofocus>
             </div>
-            <button type="submit" class="btn">ENVIAR LINK DE RECUPERAÇÃO</button>
+
+            <div class="form-group">
+                <label for="confirm_password">Confirmar Palavra-passe</label>
+                <input type="password" id="confirm_password" name="confirm_password" placeholder="Repete a palavra-passe" required>
+            </div>
+
+            <button type="submit" class="btn">ALTERAR PALAVRA-PASSE</button>
         </form>
+    <?php else: ?>
         <div class="footer">
-            Já tens acesso? <a href="login.php">Fazer login</a>
+            <a href="login.php">Voltar ao login</a>
         </div>
     <?php endif; ?>
 </div>

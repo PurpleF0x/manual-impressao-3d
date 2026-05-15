@@ -74,30 +74,37 @@ if ($action === 'vote_post') {
 
     if ($current) {
         if ((int)$current['value'] === $value) {
+            // Unlike
             $db->prepare("DELETE FROM forum_post_votes WHERE user_id=? AND post_id=?")->execute(array($uid,$postId));
-            $newScore -= $value; $userVote = 0;
+            $newScore -= $value;
+            $userVote = 0;
+            $xpC = ($value === 1) ? -3 : 2;
+            $coC = ($value === 1) ? -2 : 0;
+            addXP((int)$post['user_id'], $xpC, "Removeu voto no post #$postId", $coC);
         } else {
+            // Alterar voto
             $db->prepare("UPDATE forum_post_votes SET value=? WHERE user_id=? AND post_id=?")->execute(array($value,$uid,$postId));
-            $newScore += $value * 2; $userVote = $value;
+            $newScore += $value * 2;
+            $userVote = $value;
+            $xpC = ($value === 1) ? 5 : -5;
+            $coC = ($value === 1) ? 2 : -2;
+            addXP((int)$post['user_id'], $xpC, "Alterou voto no post #$postId", $coC);
         }
     } else {
+        // Novo voto
         $db->prepare("INSERT INTO forum_post_votes (user_id,post_id,value) VALUES (?,?,?)")->execute(array($uid,$postId,$value));
-        $newScore += $value; $userVote = $value;
+        $newScore += $value;
+        $userVote = $value;
+        $xpC = ($value === 1) ? 3 : -2;
+        $coC = ($value === 1) ? 2 : 0;
+        addXP((int)$post['user_id'], $xpC, "Voto recebido no post #$postId", $coC);
     }
 
     $db->prepare("UPDATE forum_posts SET vote_score=? WHERE id=?")->execute(array($newScore,$postId));
 
-    // Atribuição de Karma/XP ao autor do post (+3 Like, -2 Dislike) e Moedas (+2 por Like)
-    if ($userVote !== 0) {
-        $xp = ($userVote === 1) ? 3 : -2;
-        $coins = ($userVote === 1) ? 2 : 0;
-        $reason = ($userVote === 1) ? "Recebeu Like no post #$postId" : "Recebeu Dislike no post #$postId";
-        addXP((int)$post['user_id'], $xp, $reason, $coins);
-
-        if ($userVote === 1) {
-            require_once dirname(__DIR__) . '/../includes/missions.php';
-            updateMissionProgress($uid, 'forum_upvotes');
-        }
+    if ($userVote === 1) {
+        require_once dirname(__DIR__) . '/../includes/missions.php';
+        updateMissionProgress($uid, 'forum_upvotes');
     }
 
     echo json_encode(array('success'=>true,'score'=>$newScore,'user_vote'=>$userVote));
@@ -177,22 +184,34 @@ if ($action === 'vote_reply') {
     $cv->execute(array($uid,$replyId)); $current=$cv->fetch();
     $newScore=(int)$reply['vote_score']; $userVote=0;
     if ($current) {
-        if ((int)$current['value']===$value) { $db->prepare("DELETE FROM forum_reply_votes WHERE user_id=? AND reply_id=?")->execute(array($uid,$replyId)); $newScore-=$value; $userVote=0; }
-        else { $db->prepare("UPDATE forum_reply_votes SET value=? WHERE user_id=? AND reply_id=?")->execute(array($value,$uid,$replyId)); $newScore+=$value*2; $userVote=$value; }
-    } else { $db->prepare("INSERT INTO forum_reply_votes (user_id,reply_id,value) VALUES (?,?,?)")->execute(array($uid,$replyId,$value)); $newScore+=$value; $userVote=$value; }
+        if ((int)$current['value']===$value) {
+            $db->prepare("DELETE FROM forum_reply_votes WHERE user_id=? AND reply_id=?")->execute(array($uid,$replyId));
+            $newScore-=$value; $userVote=0;
+            // Retirar XP/Coins
+            $xpC = ($value === 1) ? -3 : 2;
+            $coC = ($value === 1) ? -2 : 0;
+            addXP((int)$reply['user_id'], $xpC, "Removeu voto na resposta #$replyId", $coC);
+        } else {
+            $db->prepare("UPDATE forum_reply_votes SET value=? WHERE user_id=? AND reply_id=?")->execute(array($value,$uid,$replyId));
+            $newScore+=$value*2; $userVote=$value;
+            // Ajustar XP/Coins
+            $xpC = ($value === 1) ? 5 : -5;
+            $coC = ($value === 1) ? 2 : -2;
+            addXP((int)$reply['user_id'], $xpC, "Alterou voto na resposta #$replyId", $coC);
+        }
+    } else {
+        $db->prepare("INSERT INTO forum_reply_votes (user_id,reply_id,value) VALUES (?,?,?)")->execute(array($uid,$replyId,$value));
+        $newScore+=$value; $userVote=$value;
+        // Adicionar XP/Coins inicial
+        $xpC = ($value === 1) ? 3 : -2;
+        $coC = ($value === 1) ? 2 : 0;
+        addXP((int)$reply['user_id'], $xpC, "Voto recebido na resposta #$replyId", $coC);
+    }
     $db->prepare("UPDATE forum_replies SET vote_score=? WHERE id=?")->execute(array($newScore,$replyId));
 
-    // Atribuição de Karma/XP ao autor da resposta (+3 Like, -2 Dislike) e Moedas (+2 por Like)
-    if ($userVote !== 0) {
-        $xp = ($userVote === 1) ? 3 : -2;
-        $coins = ($userVote === 1) ? 2 : 0;
-        $reason = ($userVote === 1) ? "Recebeu Like na resposta #$replyId" : "Recebeu Dislike na resposta #$replyId";
-        addXP((int)$reply['user_id'], $xp, $reason, $coins);
-
-        if ($userVote === 1) {
-            require_once dirname(__DIR__) . '/../includes/missions.php';
-            updateMissionProgress($uid, 'forum_upvotes');
-        }
+    if ($userVote === 1) {
+        require_once dirname(__DIR__) . '/../includes/missions.php';
+        updateMissionProgress($uid, 'forum_upvotes');
     }
 
     echo json_encode(array('success'=>true,'score'=>$newScore,'user_vote'=>$userVote));
@@ -405,17 +424,19 @@ if ($action === 'poll_messages') {
 
     // Marcar como lidas ao mesmo tempo
     $db->prepare("UPDATE private_messages SET read_at=NOW() WHERE sender_id=? AND receiver_id=? AND read_at IS NULL")
-       ->execute(array($otherId,$uid));
+       ->execute(array($otherId, $uid));
 
-    $msgs = $db->query("
+    $stmt = $db->prepare("
         SELECT pm.*, u.full_name as sender_name, u.username as sender_username, u.avatar_url as sender_avatar
         FROM private_messages pm
-        JOIN users u ON u.id=pm.sender_id
-        WHERE ((pm.sender_id=$uid AND pm.receiver_id=$otherId) OR (pm.sender_id=$otherId AND pm.receiver_id=$uid))
-          AND pm.id > $lastId
+        JOIN users u ON pm.sender_id = u.id
+        WHERE (pm.receiver_id = ? AND pm.sender_id = ? AND pm.id > ?)
+           OR (pm.receiver_id = ? AND pm.sender_id = ? AND pm.id > ?)
         ORDER BY pm.created_at ASC
         LIMIT 50
-    ")->fetchAll();
+    ");
+    $stmt->execute(array($uid, $otherId, $lastId, $otherId, $uid, $lastId));
+    $msgs = $stmt->fetchAll();
 
     echo json_encode(array('success'=>true,'messages'=>$msgs));
     exit;

@@ -49,8 +49,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 logActivity(null, 'password_reset_requested', "email={$email}");
 
+                // Proteção contra Host Header Injection - usar domínio fixo se disponível
                 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
                 $host     = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+                // Lista de hosts permitidos (whitelist)
+                $allowedHosts = ['localhost', 'manual-impressao-3d.onrender.com', 'manual-3d.local'];
+                if (!in_array($host, $allowedHosts)) {
+                    $host = 'manual-impressao-3d.onrender.com'; // Fallback para o domínio oficial
+                }
+
                 $dir      = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
                 $resetUrl = "{$protocol}://{$host}{$dir}/reset_password.php?token={$token}";
 

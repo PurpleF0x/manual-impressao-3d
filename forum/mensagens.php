@@ -74,7 +74,7 @@ if ($openUser) {
 
 // ── Lista de conversas ────────────────────────────────────────
 // Buscar a última mensagem de cada conversa
-$conversations = $db->query("
+$stmt = $db->prepare("
     SELECT
         other_id,
         u.full_name, u.username, u.avatar_url,
@@ -82,18 +82,20 @@ $conversations = $db->query("
         SUM(unread) as unread_count
     FROM (
         SELECT
-            CASE WHEN sender_id=$uid THEN receiver_id ELSE sender_id END as other_id,
+            CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END as other_id,
             content as last_msg,
             created_at as last_time,
-            CASE WHEN receiver_id=$uid AND read_at IS NULL THEN 1 ELSE 0 END as unread
+            CASE WHEN receiver_id = ? AND read_at IS NULL THEN 1 ELSE 0 END as unread
         FROM private_messages
-        WHERE sender_id=$uid OR receiver_id=$uid
+        WHERE sender_id = ? OR receiver_id = ?
     ) t
-    JOIN users u ON u.id=t.other_id
+    JOIN users u ON u.id = t.other_id
     GROUP BY other_id, u.full_name, u.username, u.avatar_url, last_msg, last_time
     ORDER BY last_time DESC
     LIMIT 50
-")->fetchAll();
+");
+$stmt->execute([$uid, $uid, $uid, $uid]);
+$conversations = $stmt->fetchAll();
 
 // Deduplicar — manter só a conversa mais recente por utilizador
 $seen = array(); $convList = array();
@@ -107,18 +109,20 @@ foreach ($conversations as $c) {
 // ── Mensagens da conversa aberta ─────────────────────────────
 $messages = array();
 if ($openUser) {
-    $messages = $db->query("
+    $stmt = $db->prepare("
         SELECT pm.*, 
                s.full_name as sender_name, s.username as sender_username, s.avatar_url as sender_avatar,
                r.full_name as receiver_name
         FROM private_messages pm
-        JOIN users s ON s.id=pm.sender_id
-        JOIN users r ON r.id=pm.receiver_id
-        WHERE (pm.sender_id=$uid AND pm.receiver_id={$openUser['id']})
-           OR (pm.sender_id={$openUser['id']} AND pm.receiver_id=$uid)
+        JOIN users s ON s.id = pm.sender_id
+        JOIN users r ON r.id = pm.receiver_id
+        WHERE (pm.sender_id = ? AND pm.receiver_id = ?)
+           OR (pm.sender_id = ? AND pm.receiver_id = ?)
         ORDER BY pm.created_at ASC
         LIMIT 200
-    ")->fetchAll();
+    ");
+    $stmt->execute([$uid, $openUser['id'], $openUser['id'], $uid]);
+    $messages = $stmt->fetchAll();
 }
 
 // Mensagens não lidas total
@@ -629,11 +633,28 @@ function appendMessage(msg) {
 
         var header = document.createElement('div');
         header.className = 'msg-group-header';
-        header.innerHTML = '<div class="msg-group-av">'
-            + (msg.sender_avatar ? '<img src="'+msg.sender_avatar+'" alt="">' : initials)
-            + '</div>'
-            + '<span class="msg-group-name">' + escHtml(msg.sender_name||'') + '</span>'
-            + '<span class="msg-group-time">agora</span>';
+
+        var avDiv = document.createElement('div');
+        avDiv.className = 'msg-group-av';
+        if (msg.sender_avatar) {
+            var img = document.createElement('img');
+            img.src = msg.sender_avatar;
+            avDiv.appendChild(img);
+        } else {
+            avDiv.textContent = initials;
+        }
+
+        var nameSpan = document.createElement('span');
+        nameSpan.className = 'msg-group-name';
+        nameSpan.textContent = msg.sender_name || '';
+
+        var timeSpan = document.createElement('span');
+        timeSpan.className = 'msg-group-time';
+        timeSpan.textContent = 'agora';
+
+        header.appendChild(avDiv);
+        header.appendChild(nameSpan);
+        header.appendChild(timeSpan);
 
         var bubble = document.createElement('div');
         bubble.className = 'msg-bubble last ' + side;
@@ -719,17 +740,42 @@ async function searchUsers(q) {
             wrap.innerHTML = '<div style="padding:14px 18px;font-size:12px;color:var(--muted)">Nenhum utilizador encontrado.</div>';
             return;
         }
-        wrap.innerHTML = data.map(function(u) {
-            var initials = (u.full_name || '??').substring(0, 2);
-            var av = u.avatar_url
-                ? '<img src="' + u.avatar_url + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
-                : initials;
-            return '<a href="mensagens.php?user=' + u.id + '" class="search-result-item">' +
-                   '<div class="search-av">' + av + '</div>' +
-                   '<div><div class="search-name">' + u.full_name + '</div>' +
-                   '<div class="search-username">@' + u.username + '</div></div>' +
-                   '</a>';
-        }).join('');
+        wrap.innerHTML = '';
+        data.forEach(function(u) {
+            var a = document.createElement('a');
+            a.href = 'mensagens.php?user=' + parseInt(u.id);
+            a.className = 'search-result-item';
+
+            var avDiv = document.createElement('div');
+            avDiv.className = 'search-av';
+            if (u.avatar_url) {
+                var img = document.createElement('img');
+                img.src = u.avatar_url;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '50%';
+                avDiv.appendChild(img);
+            } else {
+                avDiv.textContent = (u.full_name || '??').substring(0, 2).toUpperCase();
+            }
+
+            var infoDiv = document.createElement('div');
+            var nameDiv = document.createElement('div');
+            nameDiv.className = 'search-name';
+            nameDiv.textContent = u.full_name;
+
+            var userDiv = document.createElement('div');
+            userDiv.className = 'search-username';
+            userDiv.textContent = '@' + u.username;
+
+            infoDiv.appendChild(nameDiv);
+            infoDiv.appendChild(userDiv);
+
+            a.appendChild(avDiv);
+            a.appendChild(infoDiv);
+            wrap.appendChild(a);
+        });
     } catch(e) { console.error(e); }
 }
 

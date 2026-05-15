@@ -1,21 +1,11 @@
 <?php
 /**
- * Envio de Email via Resend SMTP — PHPMailer (sem Composer)
+ * Envio de Email via Gmail SMTP — PHPMailer (sem Composer)
  *
- * Estrutura de ficheiros necessária no teu site:
+ * Estrutura de ficheiros:
  *   includes/
- *     mail_config.php   ← este ficheiro
- *     PHPMailer/
- *       Exception.php
- *       PHPMailer.php
- *       SMTP.php
- *
- * Como instalar o PHPMailer manualmente:
- *   1. Vai a https://github.com/PHPMailer/PHPMailer
- *   2. Clica em Code → Download ZIP e extrai
- *   3. Dentro do ZIP, entra na pasta "src/"
- *   4. Copia os 3 ficheiros (Exception.php, PHPMailer.php, SMTP.php)
- *      para a pasta "includes/PHPMailer/" no teu site
+ *     mail_config.php
+ *     PHPMailer/ (Exception.php, PHPMailer.php, SMTP.php)
  */
 
 // Carregar PHPMailer (sem Composer)
@@ -27,15 +17,16 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-// ─── CREDENCIAIS RESEND ───────────────────────────────────────
-define('MAIL_FROM',     'onboarding@resend.dev');  // Remetente (não precisas de verificar domínio)
-define('MAIL_FROM_NAME','Manual Impressão 3D');     // Nome que aparece no email
-define('MAIL_PASS',     're_A1x7daYu_C3d5cT95LKoS3LkXs8PcJUSY');     // A tua API Key do Resend (começa por "re_")
-define('MAIL_REPLY_TO', '3d.escolas@gmail.com');   // Respostas chegam ao teu Gmail
+// ─── CREDENCIAIS GMAIL (VIA ENV VARS NO RENDER) ───────────────
+define('MAIL_HOST',     'smtp.gmail.com');
+define('MAIL_USERNAME', getenv('GMAIL_USER') ?: '3d.escolas@gmail.com');
+define('MAIL_PASSWORD', getenv('GMAIL_PASSWORD')); // Definir no Render (Palavra-passe de App)
+define('MAIL_PORT',     587);
+define('MAIL_FROM_NAME','Manual Impressão 3D');
 // ──────────────────────────────────────────────────────────────
 
 /**
- * Envia um email via Resend SMTP.
+ * Envia um email via Gmail SMTP.
  */
 function sendEmail(
     string $toEmail,
@@ -49,18 +40,18 @@ function sendEmail(
     try {
         // ── Servidor SMTP ──
         $mail->isSMTP();
-        $mail->Host       = 'smtp.resend.com';
+        $mail->Host       = MAIL_HOST;
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'resend';   // Sempre "resend" — não mudes isto
-        $mail->Password   = MAIL_PASS;  // A tua API Key (re_...)
+        $mail->Username   = MAIL_USERNAME;
+        $mail->Password   = MAIL_PASSWORD;
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
+        $mail->Port       = MAIL_PORT;
         $mail->CharSet    = 'UTF-8';
 
         // ── Remetente e destinatário ──
-        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
+        $mail->setFrom(MAIL_USERNAME, MAIL_FROM_NAME);
         $mail->addAddress($toEmail, $toName);
-        $mail->addReplyTo(MAIL_REPLY_TO, MAIL_FROM_NAME);
+        $mail->addReplyTo(MAIL_USERNAME, MAIL_FROM_NAME);
 
         // ── Conteúdo ──
         $mail->isHTML(true);
@@ -89,7 +80,7 @@ function sendWelcomeEmail(string $toEmail, string $toName): bool {
         <p>A tua conta foi criada com sucesso no <strong>Manual de Impressão 3D</strong>.</p>
         <p>Já podes aceder a todo o conteúdo do manual, guardar favoritos e deixar comentários.</p>
         <br>
-        <a href='https://o-teu-site.infinityfreeapp.com'
+        <a href='https://manual-impressao-3d.onrender.com'
            style='background:#00e5ff; color:#000; padding:12px 24px;
                   text-decoration:none; border-radius:6px; font-weight:bold;'>
             Ir para o Manual
@@ -105,7 +96,6 @@ function sendWelcomeEmail(string $toEmail, string $toName): bool {
 
 /**
  * Email de recuperação de password.
- * $resetUrl é construída no recuperar_password.php com o host correto.
  */
 function sendPasswordResetEmail(string $toEmail, string $toName, string $resetToken, string $resetUrl): bool {
     $subject = 'Recuperação de Password — Manual 3D';

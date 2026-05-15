@@ -9,6 +9,7 @@
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
+SET FOREIGN_KEY_CHECKS = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -28,6 +29,7 @@ SET time_zone = "+00:00";
 -- Estrutura da tabela `activity_logs`
 --
 
+DROP TABLE IF EXISTS `activity_logs`;
 CREATE TABLE `activity_logs` (
   `id` int(11) NOT NULL,
   `user_id` int(11) DEFAULT NULL,
@@ -41,7 +43,7 @@ CREATE TABLE `activity_logs` (
 -- Extraindo dados da tabela `activity_logs`
 --
 
-INSERT INTO `activity_logs` (`id`, `user_id`, `action`, `details`, `ip_address`, `created_at`) VALUES
+INSERT IGNORE INTO `activity_logs` (`id`, `user_id`, `action`, `details`, `ip_address`, `created_at`) VALUES
 (1, 1, 'login', 'Login efetuado: admin', '::1', '2026-03-05 15:47:55'),
 (2, 1, 'logout', 'Logout efetuado', '::1', '2026-03-05 15:49:34'),
 (3, 2, 'register', 'Novo registo: Martim', '::1', '2026-03-05 15:49:49'),
@@ -166,6 +168,7 @@ INSERT INTO `activity_logs` (`id`, `user_id`, `action`, `details`, `ip_address`,
 -- Estrutura da tabela `admin_logs`
 --
 
+DROP TABLE IF EXISTS `admin_logs`;
 CREATE TABLE `admin_logs` (
   `id` int(11) NOT NULL,
   `actor_id` int(11) NOT NULL,
@@ -179,7 +182,7 @@ CREATE TABLE `admin_logs` (
 -- Extraindo dados da tabela `admin_logs`
 --
 
-INSERT INTO `admin_logs` (`id`, `actor_id`, `target_id`, `action`, `detail`, `created_at`) VALUES
+INSERT IGNORE INTO `admin_logs` (`id`, `actor_id`, `target_id`, `action`, `detail`, `created_at`) VALUES
 (1, 1, 2, 'coins', '+500 moedas', '2026-03-20 22:17:28'),
 (2, 1, NULL, 'delete_community', 'Comunidade #2: Comunidade +18', '2026-03-20 22:53:19'),
 (3, 1, 2, 'warn', 'Aviso: ', '2026-03-28 22:41:07');
@@ -190,6 +193,7 @@ INSERT INTO `admin_logs` (`id`, `actor_id`, `target_id`, `action`, `detail`, `cr
 -- Estrutura da tabela `ai_conversations`
 --
 
+DROP TABLE IF EXISTS `ai_conversations`;
 CREATE TABLE `ai_conversations` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -204,7 +208,7 @@ CREATE TABLE `ai_conversations` (
 -- Extraindo dados da tabela `ai_conversations`
 --
 
-INSERT INTO `ai_conversations` (`id`, `user_id`, `title`, `section_context`, `mode`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `ai_conversations` (`id`, `user_id`, `title`, `section_context`, `mode`, `created_at`, `updated_at`) VALUES
 (1, 2, 'Qual a melhor impressora para iniciantes até 300€?', NULL, 'advanced', '2026-03-27 08:02:09', '2026-03-27 08:03:27'),
 (3, 2, 'Olá', NULL, 'beginner', '2026-03-28 15:33:04', '2026-03-28 15:33:09'),
 (4, 1, 'Simön Amarantus\nera um explorador e historiador francês que …', NULL, 'beginner', '2026-03-30 07:34:07', '2026-03-30 07:34:08'),
@@ -218,6 +222,7 @@ INSERT INTO `ai_conversations` (`id`, `user_id`, `title`, `section_context`, `mo
 -- Estrutura da tabela `ai_messages`
 --
 
+DROP TABLE IF EXISTS `ai_messages`;
 CREATE TABLE `ai_messages` (
   `id` int(11) NOT NULL,
   `conversation_id` int(11) NOT NULL,
@@ -230,7 +235,7 @@ CREATE TABLE `ai_messages` (
 -- Extraindo dados da tabela `ai_messages`
 --
 
-INSERT INTO `ai_messages` (`id`, `conversation_id`, `role`, `content`, `created_at`) VALUES
+INSERT IGNORE INTO `ai_messages` (`id`, `conversation_id`, `role`, `content`, `created_at`) VALUES
 (1, 1, 'user', 'Qual a melhor impressora para iniciantes até 300€?', '2026-03-27 08:02:10'),
 (2, 1, 'assistant', '**Impressoras 3D para Iniciantes até 300€**\n\nExistem várias opções de impressoras 3D para iniciantes a preços acessíveis. Aqui estão algumas sugestões:\n\n### Monoprice Select Mini V2\n- Preço: cerca de 120€\n- Tecnologia: FDM\n- Resolução: 50-100 micras\n- Tamanho: 10 x 7,5 x 5,5 cm\n- Peso: 1,5 kg\n- Características: fácil de usar, compacta, baixo custo\n\n### Creality Ender 3\n- Preço: cerca de 150€\n- Tecnologia: FDM\n- Resolução: 50-100 micras\n- Tamanho: 24 x 22 x 30 cm\n- Peso: 5 kg\n- Características: fácil de montar, personalizável, grande tamanha de impressão\n\n### Prusa i3 DIY Kit\n- Preço: cerca de 200€\n- Tecnologia: FDM\n- Resolução: 50-100 micras\n- Tamanho: 26 x 26 x 40 cm\n- Peso: 5 kg\n- Características: fácil de montar, personalizável, alta qualidade de impressão\n\n### Anycubic Mega\n- Preço: cerca de 250€\n- Tecnologia: FDM\n- Resolução: 50-100 micras\n- Tamanho: 22 x 20 x 30 cm\n- Peso: 4,5 kg\n- Características: fácil de usar, grande tamanha de impressão, qualidade de impressão boa\n\n**Observação:** os preços podem variar dependendo da loja e do fornecedor.\n\n**Dicas para Iniciantes:**\n\n* Inicie com uma impressora compacta e fácil de usar, como a Monoprice Select Mini V2.\n* Leia as instruções de montagem e manutenção cuidadosamente.\n* Exija uma boa qualidade do material de impressão (filamento).\n* Pratique e experimente diferentes configurações e projetos.\n\n**Importante:** as impressoras 3D podem variar em qualidade e desempenho, mesmo dentro de uma mesma categoria. É importante ler as avaliações e revisões de outros usuários antes de fazer uma compra.', '2026-03-27 08:02:10'),
 (3, 1, 'user', 'Podes resumir?', '2026-03-27 08:02:20'),
@@ -286,6 +291,7 @@ INSERT INTO `ai_messages` (`id`, `conversation_id`, `role`, `content`, `created_
 -- Estrutura da tabela `comments`
 --
 
+DROP TABLE IF EXISTS `comments`;
 CREATE TABLE `comments` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -307,7 +313,7 @@ CREATE TABLE `comments` (
 -- Extraindo dados da tabela `comments`
 --
 
-INSERT INTO `comments` (`id`, `user_id`, `parent_id`, `section`, `category`, `title`, `content`, `status`, `likes`, `created_at`, `updated_at`, `reviewed_at`, `reviewed_by`, `reject_reason`) VALUES
+INSERT IGNORE INTO `comments` (`id`, `user_id`, `parent_id`, `section`, `category`, `title`, `content`, `status`, `likes`, `created_at`, `updated_at`, `reviewed_at`, `reviewed_by`, `reject_reason`) VALUES
 (1, 1, NULL, 'geral', 'duvida', 'Problema com stringing no PETG', 'Olá! Estou com dificuldade em imprimir com PETG. As minhas peças ficam com muitos fios (stringing). Já tentei aumentar a retraction mas não resolveu. Alguém tem dicas?', 'aprovado', 0, '2026-03-05 15:47:29', '2026-03-05 15:47:29', NULL, NULL, NULL),
 (2, 1, NULL, 'geral', 'dica', 'Dica: Primeira camada é fundamental', 'Dica para iniciantes: invistam numa boa primeira camada! Verifiquem sempre o nivelamento da cama antes de começar uma impressão longa.', 'aprovado', 0, '2026-03-05 15:47:29', '2026-03-05 15:47:29', NULL, NULL, NULL),
 (3, 1, NULL, 'geral', 'problema', 'Ruído estranho no eixo Z', 'A minha impressora está a fazer um ruído estranho no eixo Z. Parece rangido. Já lubrifiquei mas continua.', 'aprovado', 0, '2026-03-05 15:47:29', '2026-03-05 15:47:29', NULL, NULL, NULL),
@@ -326,6 +332,7 @@ INSERT INTO `comments` (`id`, `user_id`, `parent_id`, `section`, `category`, `ti
 -- Estrutura da tabela `comment_likes`
 --
 
+DROP TABLE IF EXISTS `comment_likes`;
 CREATE TABLE `comment_likes` (
   `id` int(11) NOT NULL,
   `comment_id` int(11) NOT NULL,
@@ -337,7 +344,7 @@ CREATE TABLE `comment_likes` (
 -- Extraindo dados da tabela `comment_likes`
 --
 
-INSERT INTO `comment_likes` (`id`, `comment_id`, `user_id`, `created_at`) VALUES
+INSERT IGNORE INTO `comment_likes` (`id`, `comment_id`, `user_id`, `created_at`) VALUES
 (2, 1, 1, '2026-03-05 15:51:24'),
 (4, 10, 3, '2026-03-13 14:45:17'),
 (5, 2, 1, '2026-03-13 16:53:37'),
@@ -349,6 +356,7 @@ INSERT INTO `comment_likes` (`id`, `comment_id`, `user_id`, `created_at`) VALUES
 -- Estrutura da tabela `forum_communities`
 --
 
+DROP TABLE IF EXISTS `forum_communities`;
 CREATE TABLE `forum_communities` (
   `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
@@ -368,7 +376,7 @@ CREATE TABLE `forum_communities` (
 -- Extraindo dados da tabela `forum_communities`
 --
 
-INSERT INTO `forum_communities` (`id`, `name`, `slug`, `description`, `icon`, `banner_color`, `created_by`, `member_count`, `post_count`, `is_active`, `created_at`, `content_labels`) VALUES
+INSERT IGNORE INTO `forum_communities` (`id`, `name`, `slug`, `description`, `icon`, `banner_color`, `created_by`, `member_count`, `post_count`, `is_active`, `created_at`, `content_labels`) VALUES
 (1, 'Problemas impressoras 3D', 'problemas-impressoras-3d', 'Esta comunidade é feita para as pessoas conseguirem comunicar os problemas que já tiveram a imprimir e como esse problema foi resolvido', '🖨️', '#aa44ff', 1, 2, 2, 1, '2026-03-17 16:04:43', NULL);
 
 -- --------------------------------------------------------
@@ -377,6 +385,7 @@ INSERT INTO `forum_communities` (`id`, `name`, `slug`, `description`, `icon`, `b
 -- Estrutura da tabela `forum_memberships`
 --
 
+DROP TABLE IF EXISTS `forum_memberships`;
 CREATE TABLE `forum_memberships` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -389,7 +398,7 @@ CREATE TABLE `forum_memberships` (
 -- Extraindo dados da tabela `forum_memberships`
 --
 
-INSERT INTO `forum_memberships` (`id`, `user_id`, `community_id`, `role`, `joined_at`) VALUES
+INSERT IGNORE INTO `forum_memberships` (`id`, `user_id`, `community_id`, `role`, `joined_at`) VALUES
 (1, 1, 1, 'owner', '2026-03-17 16:04:43'),
 (3, 2, 1, 'admin', '2026-03-18 11:55:41');
 
@@ -399,6 +408,7 @@ INSERT INTO `forum_memberships` (`id`, `user_id`, `community_id`, `role`, `joine
 -- Estrutura da tabela `forum_moderation_log`
 --
 
+DROP TABLE IF EXISTS `forum_moderation_log`;
 CREATE TABLE `forum_moderation_log` (
   `id` int(10) UNSIGNED NOT NULL,
   `post_id` int(11) NOT NULL,
@@ -414,6 +424,7 @@ CREATE TABLE `forum_moderation_log` (
 -- Estrutura da tabela `forum_posts`
 --
 
+DROP TABLE IF EXISTS `forum_posts`;
 CREATE TABLE `forum_posts` (
   `id` int(11) NOT NULL,
   `community_id` int(11) NOT NULL,
@@ -440,7 +451,7 @@ CREATE TABLE `forum_posts` (
 -- Extraindo dados da tabela `forum_posts`
 --
 
-INSERT INTO `forum_posts` (`id`, `community_id`, `user_id`, `title`, `content`, `type`, `vote_score`, `reply_count`, `is_pinned`, `is_locked`, `created_at`, `updated_at`, `flair`, `image_url`, `image_type`, `status`, `moderated_by`, `moderated_at`, `rejection_reason`) VALUES
+INSERT IGNORE INTO `forum_posts` (`id`, `community_id`, `user_id`, `title`, `content`, `type`, `vote_score`, `reply_count`, `is_pinned`, `is_locked`, `created_at`, `updated_at`, `flair`, `image_url`, `image_type`, `status`, `moderated_by`, `moderated_at`, `rejection_reason`) VALUES
 (4, 1, 1, 'Imprimir após algum tempo', 'Eu sou uma pessoa que imprimo coisas de 2-2 semanas ou 3-3 semanas, nunca tinha-me ocorrido, mas hoje fui tentar imprimir na minha impressora e o filamento PLA estava todo partido. \r\nDesta vez tive de abrir a impressora na trazeira e com cuidado tirar o filamento de dentro da impressora. Para resolver este problema pesquisei e encontrei que precisava de ter na impressor coisas que puxassem a humidade e coloca-los onde os filamentos estão armazenados.', 'text', 2, 1, 0, 0, '2026-03-17 16:12:30', NULL, NULL, NULL, NULL, 'approved', NULL, NULL, NULL),
 (13, 1, 1, 'Raba', NULL, 'text', 0, 0, 0, 0, '2026-03-28 22:42:18', NULL, NULL, NULL, NULL, 'approved', NULL, NULL, NULL);
 
@@ -450,6 +461,7 @@ INSERT INTO `forum_posts` (`id`, `community_id`, `user_id`, `title`, `content`, 
 -- Estrutura da tabela `forum_post_votes`
 --
 
+DROP TABLE IF EXISTS `forum_post_votes`;
 CREATE TABLE `forum_post_votes` (
   `user_id` int(11) NOT NULL,
   `post_id` int(11) NOT NULL,
@@ -460,7 +472,7 @@ CREATE TABLE `forum_post_votes` (
 -- Extraindo dados da tabela `forum_post_votes`
 --
 
-INSERT INTO `forum_post_votes` (`user_id`, `post_id`, `value`) VALUES
+INSERT IGNORE INTO `forum_post_votes` (`user_id`, `post_id`, `value`) VALUES
 (2, 4, 1),
 (3, 4, 1);
 
@@ -470,6 +482,7 @@ INSERT INTO `forum_post_votes` (`user_id`, `post_id`, `value`) VALUES
 -- Estrutura da tabela `forum_replies`
 --
 
+DROP TABLE IF EXISTS `forum_replies`;
 CREATE TABLE `forum_replies` (
   `id` int(11) NOT NULL,
   `post_id` int(11) NOT NULL,
@@ -484,7 +497,7 @@ CREATE TABLE `forum_replies` (
 -- Extraindo dados da tabela `forum_replies`
 --
 
-INSERT INTO `forum_replies` (`id`, `post_id`, `parent_id`, `user_id`, `content`, `vote_score`, `created_at`) VALUES
+INSERT IGNORE INTO `forum_replies` (`id`, `post_id`, `parent_id`, `user_id`, `content`, `vote_score`, `created_at`) VALUES
 (2, 4, NULL, 2, 'Testado e funciona', 0, '2026-03-18 11:52:13');
 
 -- --------------------------------------------------------
@@ -493,6 +506,7 @@ INSERT INTO `forum_replies` (`id`, `post_id`, `parent_id`, `user_id`, `content`,
 -- Estrutura da tabela `forum_reply_votes`
 --
 
+DROP TABLE IF EXISTS `forum_reply_votes`;
 CREATE TABLE `forum_reply_votes` (
   `user_id` int(11) NOT NULL,
   `reply_id` int(11) NOT NULL,
@@ -505,6 +519,7 @@ CREATE TABLE `forum_reply_votes` (
 -- Estrutura da tabela `forum_user_xp`
 --
 
+DROP TABLE IF EXISTS `forum_user_xp`;
 CREATE TABLE `forum_user_xp` (
   `user_id` int(11) NOT NULL,
   `community_id` int(11) NOT NULL,
@@ -515,7 +530,7 @@ CREATE TABLE `forum_user_xp` (
 -- Extraindo dados da tabela `forum_user_xp`
 --
 
-INSERT INTO `forum_user_xp` (`user_id`, `community_id`, `xp`) VALUES
+INSERT IGNORE INTO `forum_user_xp` (`user_id`, `community_id`, `xp`) VALUES
 (1, 1, 21);
 
 -- --------------------------------------------------------
@@ -524,6 +539,7 @@ INSERT INTO `forum_user_xp` (`user_id`, `community_id`, `xp`) VALUES
 -- Estrutura da tabela `notifications`
 --
 
+DROP TABLE IF EXISTS `notifications`;
 CREATE TABLE `notifications` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -538,7 +554,7 @@ CREATE TABLE `notifications` (
 -- Extraindo dados da tabela `notifications`
 --
 
-INSERT INTO `notifications` (`id`, `user_id`, `type`, `comment_id`, `message`, `is_read`, `created_at`) VALUES
+INSERT IGNORE INTO `notifications` (`id`, `user_id`, `type`, `comment_id`, `message`, `is_read`, `created_at`) VALUES
 (1, 1, 'comment_reply', 4, 'Sá respondeu ao teu comentário. A resposta aguarda moderação.', 1, '2026-03-05 15:50:23'),
 (2, 2, 'comment_approved', 4, 'O teu comentário foi aprovado e já está visível.', 1, '2026-03-05 15:51:07'),
 (3, 2, 'comment_rejected', 5, 'O teu comentário foi rejeitado pelo moderador.', 1, '2026-03-11 12:01:53'),
@@ -554,6 +570,7 @@ INSERT INTO `notifications` (`id`, `user_id`, `type`, `comment_id`, `message`, `
 -- Estrutura da tabela `password_resets`
 --
 
+DROP TABLE IF EXISTS `password_resets`;
 CREATE TABLE `password_resets` (
   `id` int(11) NOT NULL,
   `email` varchar(100) NOT NULL,
@@ -567,7 +584,7 @@ CREATE TABLE `password_resets` (
 -- Extraindo dados da tabela `password_resets`
 --
 
-INSERT INTO `password_resets` (`id`, `email`, `token`, `expires_at`, `used`, `created_at`) VALUES
+INSERT IGNORE INTO `password_resets` (`id`, `email`, `token`, `expires_at`, `used`, `created_at`) VALUES
 (5, 'martimsa.28473@ae-smfeira.pt', '4d6f2e5a72188d1b912a8199143f3cc4cbadfb244b5ed9b7d2d7c34461e02f05', '2026-03-09 23:11:06', 0, '2026-03-09 19:11:05'),
 (7, 'martimt60@gmail.com', '3b5201d9d0fb73c28862bdc5e4f9766050a32121a5171a15991885c16aa53c57', '2026-03-09 23:28:23', 0, '2026-03-09 19:28:23');
 
@@ -577,6 +594,7 @@ INSERT INTO `password_resets` (`id`, `email`, `token`, `expires_at`, `used`, `cr
 -- Estrutura da tabela `private_messages`
 --
 
+DROP TABLE IF EXISTS `private_messages`;
 CREATE TABLE `private_messages` (
   `id` int(11) NOT NULL,
   `sender_id` int(11) NOT NULL,
@@ -590,7 +608,7 @@ CREATE TABLE `private_messages` (
 -- Extraindo dados da tabela `private_messages`
 --
 
-INSERT INTO `private_messages` (`id`, `sender_id`, `receiver_id`, `content`, `read_at`, `created_at`) VALUES
+INSERT IGNORE INTO `private_messages` (`id`, `sender_id`, `receiver_id`, `content`, `read_at`, `created_at`) VALUES
 (1, 1, 2, 'Bom dia', '2026-03-20 16:10:59', '2026-03-20 13:49:00');
 
 -- --------------------------------------------------------
@@ -599,6 +617,7 @@ INSERT INTO `private_messages` (`id`, `sender_id`, `receiver_id`, `content`, `re
 -- Estrutura da tabela `reported_comments`
 --
 
+DROP TABLE IF EXISTS `reported_comments`;
 CREATE TABLE `reported_comments` (
   `id` int(11) NOT NULL,
   `comment_id` int(11) NOT NULL,
@@ -615,7 +634,7 @@ CREATE TABLE `reported_comments` (
 -- Extraindo dados da tabela `reported_comments`
 --
 
-INSERT INTO `reported_comments` (`id`, `comment_id`, `reporter_id`, `reason`, `description`, `status`, `created_at`, `resolved_at`, `resolved_by`) VALUES
+INSERT IGNORE INTO `reported_comments` (`id`, `comment_id`, `reporter_id`, `reason`, `description`, `status`, `created_at`, `resolved_at`, `resolved_by`) VALUES
 (1, 10, 2, 'desinformacao', 'Acho que não é assim que se come', 'resolvido', '2026-03-13 17:31:02', '2026-03-16 09:45:35', NULL),
 (2, 8, 1, 'desinformacao', NULL, 'pendente', '2026-03-16 09:54:10', NULL, NULL);
 
@@ -625,6 +644,7 @@ INSERT INTO `reported_comments` (`id`, `comment_id`, `reporter_id`, `reason`, `d
 -- Estrutura da tabela `reported_users`
 --
 
+DROP TABLE IF EXISTS `reported_users`;
 CREATE TABLE `reported_users` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -644,7 +664,7 @@ CREATE TABLE `reported_users` (
 -- Extraindo dados da tabela `reported_users`
 --
 
-INSERT INTO `reported_users` (`id`, `user_id`, `reported_by`, `reason`, `description`, `status`, `action_taken`, `created_at`, `resolved_at`, `resolved_by`, `admin_message`, `suspension_days`) VALUES
+INSERT IGNORE INTO `reported_users` (`id`, `user_id`, `reported_by`, `reason`, `description`, `status`, `action_taken`, `created_at`, `resolved_at`, `resolved_by`, `admin_message`, `suspension_days`) VALUES
 (1, 2, 1, 'Outro', NULL, 'resolvido', 'warning', '2026-03-13 09:09:29', '2026-03-13 09:09:56', 1, NULL, NULL),
 (2, 4, 1, 'Informação falsa', NULL, 'resolvido', 'none', '2026-03-13 09:23:25', '2026-03-13 09:33:29', 1, NULL, NULL),
 (3, 1, 2, 'Informação falsa', NULL, 'pendente', 'none', '2026-03-13 09:34:12', NULL, NULL, NULL, NULL),
@@ -657,11 +677,12 @@ INSERT INTO `reported_users` (`id`, `user_id`, `reported_by`, `reason`, `descrip
 -- Estrutura da tabela `shop_items`
 --
 
+DROP TABLE IF EXISTS `shop_items`;
 CREATE TABLE `shop_items` (
   `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
   `description` varchar(255) DEFAULT NULL,
-  `category` enum('frame','background','banner','accent') NOT NULL,
+  `category` enum('frame','background','banner','accent','badge','medal') NOT NULL,
   `item_key` varchar(50) NOT NULL,
   `css_value` text NOT NULL,
   `preview_css` text DEFAULT NULL,
@@ -676,7 +697,7 @@ CREATE TABLE `shop_items` (
 -- Extraindo dados da tabela `shop_items`
 --
 
-INSERT INTO `shop_items` (`id`, `name`, `description`, `category`, `item_key`, `css_value`, `preview_css`, `price`, `source`, `community_id`, `is_active`, `created_at`) VALUES
+INSERT IGNORE INTO `shop_items` (`id`, `name`, `description`, `category`, `item_key`, `css_value`, `preview_css`, `price`, `source`, `community_id`, `is_active`, `created_at`) VALUES
 (1, 'Cyan Neon', 'Frame neon ciano brilhante', 'frame', 'frame_cyan_neon', 'border: 3px solid #00e5ff; box-shadow: 0 0 12px #00e5ff, 0 0 24px rgba(0,229,255,0.4); border-radius: 50%;', 'border:3px solid #00e5ff;box-shadow:0 0 12px #00e5ff;border-radius:50%', 50, 'shop', NULL, 1, '2026-03-20 14:35:53'),
 (2, 'Purple Glow', 'Frame roxa brilhante', 'frame', 'frame_purple_glow', 'border: 3px solid #7c3aed; box-shadow: 0 0 12px #7c3aed, 0 0 24px rgba(124,58,237,0.5); border-radius: 50%;', 'border:3px solid #7c3aed;box-shadow:0 0 12px #7c3aed;border-radius:50%', 50, 'shop', NULL, 1, '2026-03-20 14:35:53'),
 (3, 'Fire', 'Frame laranja ardente', 'frame', 'frame_fire', 'border: 3px solid #ff6b35; box-shadow: 0 0 12px #ff6b35, 0 0 20px rgba(255,107,53,0.5); border-radius: 50%;', 'border:3px solid #ff6b35;box-shadow:0 0 12px #ff6b35;border-radius:50%', 50, 'shop', NULL, 1, '2026-03-20 14:35:53'),
@@ -702,6 +723,7 @@ INSERT INTO `shop_items` (`id`, `name`, `description`, `category`, `item_key`, `
 -- Estrutura da tabela `users`
 --
 
+DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `username` varchar(50) NOT NULL,
@@ -715,6 +737,10 @@ CREATE TABLE `users` (
   `website` varchar(255) DEFAULT NULL,
   `experience_level` enum('iniciante','intermedio','avancado','profissional') DEFAULT 'iniciante',
   `role` enum('master','admin','moderator','user') DEFAULT 'user',
+  `karma_total` int(11) DEFAULT 0,
+  `streak_count` int(11) DEFAULT 0,
+  `last_streak_date` date DEFAULT NULL,
+  `prefs_show_karma` tinyint(1) DEFAULT 1,
   `is_active` tinyint(1) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
@@ -723,15 +749,15 @@ CREATE TABLE `users` (
   `warning_at` timestamp NULL DEFAULT NULL,
   `suspension_message` text DEFAULT NULL,
   `suspension_until` timestamp NULL DEFAULT NULL,
-  `coins` int(11) DEFAULT 0,
-  `suspended_until` datetime DEFAULT NULL
+  `suspended_until` datetime DEFAULT NULL,
+  `coins` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Extraindo dados da tabela `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `full_name`, `avatar`, `avatar_url`, `bio`, `location`, `website`, `experience_level`, `role`, `is_active`, `created_at`, `updated_at`, `last_login`, `warning_message`, `warning_at`, `suspension_message`, `suspension_until`, `coins`, `suspended_until`) VALUES
+INSERT IGNORE INTO `users` (`id`, `username`, `email`, `password_hash`, `full_name`, `avatar`, `avatar_url`, `bio`, `location`, `website`, `experience_level`, `role`, `is_active`, `created_at`, `updated_at`, `last_login`, `warning_message`, `warning_at`, `suspension_message`, `suspension_until`, `coins`, `suspended_until`) VALUES
 (1, 'master', 'castromartim0@gmail.com', '$2y$10$DGEJacA5Q073QCrv.aEzMeFN0SqHbBFNt9DJZ4uB/9fQycViBw1zG', 'Master', 'MS', 'uploads/avatars/avatar_1_1774032613.png', '', '', '', 'intermedio', 'master', 1, '2026-03-05 15:47:29', '2026-04-04 16:50:11', '2026-04-04 16:50:11', NULL, NULL, NULL, NULL, 0, NULL),
 (2, 'Martim', 'martimsa.28473@ae-smfeira.pt', '$2y$10$OGMNYQgZzTQX5HQKyTx3weU1JjIMErDHBFo7uxMMyuH0ljA4vzUPW', 'Martim Sá', 'S', 'uploads/avatars/avatar_2_1774734411.png', '', '', '', 'iniciante', 'admin', 1, '2026-03-05 15:49:49', '2026-03-28 21:46:51', '2026-03-28 21:43:10', NULL, NULL, NULL, NULL, 0, NULL),
 (3, 'Rodrigo', 'martimt60@gmail.com', '$2y$10$081bscydbcge6f6pgljvquUE1lPfo7uOK892ZGCAKrBwIOPCAnQLi', 'Rodrigo Pereira', 'RP', NULL, NULL, NULL, NULL, 'iniciante', 'user', 1, '2026-03-09 11:13:08', '2026-03-27 09:02:05', '2026-03-27 09:02:05', NULL, NULL, NULL, NULL, 0, NULL),
@@ -743,6 +769,7 @@ INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `full_name`, `a
 -- Estrutura da tabela `user_inventory`
 --
 
+DROP TABLE IF EXISTS `user_inventory`;
 CREATE TABLE `user_inventory` (
   `user_id` int(11) NOT NULL,
   `item_id` int(11) NOT NULL,
@@ -755,6 +782,7 @@ CREATE TABLE `user_inventory` (
 -- Estrutura da tabela `user_materials`
 --
 
+DROP TABLE IF EXISTS `user_materials`;
 CREATE TABLE `user_materials` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -770,6 +798,7 @@ CREATE TABLE `user_materials` (
 -- Estrutura da tabela `user_notices`
 --
 
+DROP TABLE IF EXISTS `user_notices`;
 CREATE TABLE `user_notices` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -784,7 +813,7 @@ CREATE TABLE `user_notices` (
 -- Extraindo dados da tabela `user_notices`
 --
 
-INSERT INTO `user_notices` (`id`, `user_id`, `type`, `message`, `is_read`, `created_by`, `created_at`) VALUES
+INSERT IGNORE INTO `user_notices` (`id`, `user_id`, `type`, `message`, `is_read`, `created_by`, `created_at`) VALUES
 (1, 2, 'warning', '', 0, 1, '2026-03-28 22:41:07');
 
 -- --------------------------------------------------------
@@ -793,6 +822,7 @@ INSERT INTO `user_notices` (`id`, `user_id`, `type`, `message`, `is_read`, `crea
 -- Estrutura da tabela `user_printers`
 --
 
+DROP TABLE IF EXISTS `user_printers`;
 CREATE TABLE `user_printers` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -810,13 +840,19 @@ CREATE TABLE `user_printers` (
 -- Estrutura da tabela `user_profile_config`
 --
 
+DROP TABLE IF EXISTS `user_profile_config`;
 CREATE TABLE `user_profile_config` (
   `user_id` int(11) NOT NULL,
   `frame_key` varchar(50) DEFAULT NULL,
   `background_key` varchar(50) DEFAULT NULL,
   `banner_url` varchar(500) DEFAULT NULL,
   `accent_color` varchar(20) DEFAULT NULL,
+  `top_badges` text DEFAULT NULL,
   `coins` int(11) DEFAULT 0,
+  `streak_count` int(11) DEFAULT 0,
+  `last_streak_date` date DEFAULT NULL,
+  `daily_missions_data` text DEFAULT NULL,
+  `growth_points` int(11) DEFAULT 0,
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -824,7 +860,7 @@ CREATE TABLE `user_profile_config` (
 -- Extraindo dados da tabela `user_profile_config`
 --
 
-INSERT INTO `user_profile_config` (`user_id`, `frame_key`, `background_key`, `banner_url`, `accent_color`, `coins`, `updated_at`) VALUES
+INSERT IGNORE INTO `user_profile_config` (`user_id`, `frame_key`, `background_key`, `banner_url`, `accent_color`, `coins`, `updated_at`) VALUES
 (1, NULL, NULL, 'https://i.imgur.com/Ua8m2Wq.gif', '', 12, '2026-03-21 21:16:32'),
 (2, NULL, NULL, 'https://i.imgur.com/rcw85F1.gif', NULL, 3, '2026-03-20 22:18:56'),
 (3, NULL, NULL, NULL, NULL, 0, '2026-03-21 21:29:34');
@@ -835,6 +871,7 @@ INSERT INTO `user_profile_config` (`user_id`, `frame_key`, `background_key`, `ba
 -- Estrutura da tabela `user_sessions`
 --
 
+DROP TABLE IF EXISTS `user_sessions`;
 CREATE TABLE `user_sessions` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -847,7 +884,7 @@ CREATE TABLE `user_sessions` (
 -- Extraindo dados da tabela `user_sessions`
 --
 
-INSERT INTO `user_sessions` (`id`, `user_id`, `session_token`, `expires_at`, `created_at`) VALUES
+INSERT IGNORE INTO `user_sessions` (`id`, `user_id`, `session_token`, `expires_at`, `created_at`) VALUES
 (4, 1, '64c83605c8ef3d848341436a2eceeac9ca24f7f3c5bf1b62fa51bc1482a88a7c', '2026-04-09 14:16:01', '2026-03-10 11:16:01'),
 (5, 2, 'f02cb50cf1ff435b37a9bec7105771e81467ba56e69d7d6da2810cab4be5e58a', '2026-04-10 14:21:58', '2026-03-11 11:21:58');
 
@@ -857,6 +894,7 @@ INSERT INTO `user_sessions` (`id`, `user_id`, `session_token`, `expires_at`, `cr
 -- Estrutura da tabela `user_slicers`
 --
 
+DROP TABLE IF EXISTS `user_slicers`;
 CREATE TABLE `user_slicers` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -1355,6 +1393,7 @@ ALTER TABLE `user_sessions`
 --
 ALTER TABLE `user_slicers`
   ADD CONSTRAINT `user_slicers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+SET FOREIGN_KEY_CHECKS = 1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

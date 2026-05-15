@@ -335,7 +335,7 @@ CREATE TABLE IF NOT EXISTS `forum_memberships` (
   `user_id` int(11) NOT NULL,
   `community_id` int(11) NOT NULL,
   `role` enum('owner','admin','moderator','member') NOT NULL DEFAULT 'member',
-  `joined_at?` timestamp NULL DEFAULT current_timestamp(),
+  `joined_at` timestamp NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_member` (`user_id`,`community_id`),
   KEY `community_id` (`community_id`)
@@ -379,7 +379,7 @@ CREATE TABLE IF NOT EXISTS `forum_replies` (
   `post_id` int(11) NOT NULL,
   `parent_id` int(11) DEFAULT NULL,
   `user_id` int(11) NOT NULL,
-  `content?` text NOT NULL,
+  `content` text NOT NULL,
   `vote_score` int(11) DEFAULT 0,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
