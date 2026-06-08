@@ -16,6 +16,57 @@ require_once __DIR__ . '/../config/database.php';
 
 $_CACHE = [];
 
+function ensureUserProfileConfig(?int $userId = null): void {
+    $db = getDB();
+
+    try {
+        $db->exec("CREATE TABLE IF NOT EXISTS user_profile_config (
+            user_id INT PRIMARY KEY,
+            frame_key VARCHAR(50) NULL,
+            background_key VARCHAR(50) NULL,
+            banner_url VARCHAR(500) NULL,
+            accent_color VARCHAR(20) NULL,
+            top_badges TEXT NULL,
+            coins INT DEFAULT 0,
+            streak_count INT DEFAULT 0,
+            last_streak_date DATE NULL,
+            daily_missions_data TEXT NULL,
+            growth_points INT DEFAULT 0,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $columns = [
+            'frame_key' => "ALTER TABLE user_profile_config ADD COLUMN frame_key VARCHAR(50) NULL",
+            'background_key' => "ALTER TABLE user_profile_config ADD COLUMN background_key VARCHAR(50) NULL",
+            'banner_url' => "ALTER TABLE user_profile_config ADD COLUMN banner_url VARCHAR(500) NULL",
+            'accent_color' => "ALTER TABLE user_profile_config ADD COLUMN accent_color VARCHAR(20) NULL",
+            'top_badges' => "ALTER TABLE user_profile_config ADD COLUMN top_badges TEXT NULL",
+            'coins' => "ALTER TABLE user_profile_config ADD COLUMN coins INT DEFAULT 0",
+            'streak_count' => "ALTER TABLE user_profile_config ADD COLUMN streak_count INT DEFAULT 0",
+            'last_streak_date' => "ALTER TABLE user_profile_config ADD COLUMN last_streak_date DATE NULL",
+            'daily_missions_data' => "ALTER TABLE user_profile_config ADD COLUMN daily_missions_data TEXT NULL",
+            'growth_points' => "ALTER TABLE user_profile_config ADD COLUMN growth_points INT DEFAULT 0",
+            'updated_at' => "ALTER TABLE user_profile_config ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+        ];
+
+        foreach ($columns as $column => $alterSql) {
+            try {
+                $db->query("SELECT {$column} FROM user_profile_config LIMIT 1");
+            } catch (Exception $e) {
+                try { $db->exec($alterSql); } catch (Exception $ignored) {}
+            }
+        }
+
+        if ($userId !== null && $userId > 0) {
+            $stmt = $db->prepare("INSERT IGNORE INTO user_profile_config (user_id) VALUES (?)");
+            $stmt->execute([$userId]);
+        }
+    } catch (Exception $e) {
+        error_log("Erro ensureUserProfileConfig: " . $e->getMessage());
+    }
+}
+
 function isLoggedIn(): bool {
     return isset($_SESSION['user_id']) && $_SESSION['user_id'] > 0;
 }
@@ -52,6 +103,7 @@ function getCurrentUser(): ?array {
         $stmt->execute([$_SESSION['user_id']]);
         $user = $stmt->fetch();
         if ($user) {
+            ensureUserProfileConfig((int)$user['id']);
             checkDailyStreak((int)$user['id']);
             $_CACHE['current_user'] = $user;
         } else {
@@ -69,6 +121,7 @@ function checkDailyStreak(int $userId): void {
 
     $db = getDB();
     try {
+        ensureUserProfileConfig($userId);
         $stmt = $db->prepare("SELECT streak_count, last_streak_date, growth_points FROM user_profile_config WHERE user_id = ?");
         $stmt->execute([$userId]);
         $config = $stmt->fetch();
@@ -328,22 +381,7 @@ function addXP(int $userId, int $xpAmount, string $reason, int $coinAmount = 0):
 
         // Atualiza moedas na loja (unificação da economia)
         if ($coinAmount !== 0) {
-            // Garantir que a tabela existe (fallback caso a loja não tenha sido aberta)
-            try {
-                $db->query("SELECT coins FROM user_profile_config LIMIT 1");
-            } catch (Exception $e) {
-                $db->exec("CREATE TABLE IF NOT EXISTS user_profile_config (
-                    user_id INT PRIMARY KEY,
-                    frame_key VARCHAR(50) NULL,
-                    background_key VARCHAR(50) NULL,
-                    banner_url VARCHAR(500) NULL,
-                    accent_color VARCHAR(20) NULL,
-                    top_badges TEXT NULL,
-                    coins INT DEFAULT 0,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-            }
+            ensureUserProfileConfig($userId);
 
             $stmt = $db->prepare("UPDATE user_profile_config SET coins = coins + ? WHERE user_id = ?");
             $stmt->execute([$coinAmount, $userId]);

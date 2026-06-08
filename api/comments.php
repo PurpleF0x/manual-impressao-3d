@@ -12,15 +12,15 @@ require_once __DIR__ . '/../includes/mail_config.php';
 header('Content-Type: application/json; charset=utf-8');
 
 // ─── PERSPECTIVE API ──────────────────────────────────────────
-// Obtém a chave em: https://perspectiveapi.com → Get started
-define('PERSPECTIVE_API_KEY', 'AIzaSyArbfs-DkYAm8xyGIXmTXjwK1oI2FYm3qo');
+// Obtém a chave via variável de ambiente para segurança
+define('PERSPECTIVE_API_KEY', getenv('PERSPECTIVE_API_KEY') ?: '');
 
 /**
  * Analisa o texto com a Perspective API.
  * Devolve o score de toxicidade (0.0 a 1.0) ou -1 em caso de erro.
  */
 function getToxicityScore(string $text): float {
-    if (PERSPECTIVE_API_KEY === 'AIzaSyArbfs-DkYAm8xyGIXmTXjwK1oI2FYm3qo') {
+    if (empty(PERSPECTIVE_API_KEY)) {
         return -1; // API não configurada — deixa passar para moderação humana
     }
 

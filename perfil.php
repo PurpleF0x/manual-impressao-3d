@@ -180,9 +180,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 
 $user      = getCurrentUser();
-$stmtConfig = $db->prepare("SELECT streak_count, growth_points FROM user_profile_config WHERE user_id = ?");
-$stmtConfig->execute([$user['id']]);
-$userConfig = $stmtConfig->fetch() ?: ['streak_count' => 0, 'growth_points' => 0];
+ensureUserProfileConfig((int)$user['id']);
+$userConfig = ['streak_count' => 0, 'growth_points' => 0];
+try {
+    $stmtConfig = $db->prepare("SELECT streak_count, growth_points FROM user_profile_config WHERE user_id = ?");
+    $stmtConfig->execute([$user['id']]);
+    $userConfig = $stmtConfig->fetch() ?: $userConfig;
+} catch (Exception $e) {
+    error_log("Erro ao carregar streak/growth do perfil: " . $e->getMessage());
+}
 $streakCount = (int)$userConfig['streak_count'];
 $growthPoints = (int)$userConfig['growth_points'];
 $streakColor = getStreakColor($streakCount);
@@ -309,7 +315,10 @@ if (!empty($_POST['action'])) {
   .nav-section{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;padding:20px 24px 8px;opacity:0.6}
 
   /* MENU TOGGLE + PROGRESS + BACK TO TOP */
-  .menu-toggle{display:none;position:fixed;top:60px;left:20px;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;font-size:20px}
+  .menu-toggle{display:none;position:fixed;top:8px;left:14px;z-index:1300;width:42px;height:42px;background:rgba(17,17,24,0.96);border:1px solid var(--border);border-radius:12px;padding:0;cursor:pointer;font-size:20px;line-height:1;color:var(--text);align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,0.35);backdrop-filter:blur(12px)}
+  .menu-toggle:hover{border-color:var(--accent);color:var(--accent)}
+  .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.52);z-index:1100;backdrop-filter:blur(2px)}
+  .sidebar-backdrop.open{display:block}
   .progress-bar{position:fixed;top:50px;left:280px;right:0;height:3px;background:var(--surface);z-index:1000}
   .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));width:0%;transition:width 0.1s}
   .back-to-top{position:fixed;bottom:30px;right:30px;width:50px;height:50px;background:var(--surface);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;visibility:hidden;transition:all 0.3s;z-index:100;font-size:20px}
@@ -518,10 +527,10 @@ if (!empty($_POST['action'])) {
   #avatarFileInput{display:none}
 
   @media(max-width:1024px){
-    nav{transform:translateX(-100%)}
+    nav{transform:translateX(-100%);z-index:1200;padding-top:72px}
     nav.open{transform:translateX(0)}
-    .menu-toggle{display:block}
-    .user-bar{left:0;padding:0 16px}
+    .menu-toggle{display:flex}
+    .user-bar{left:0;padding:0 16px 0 72px;z-index:900}
     main{margin-left:0}
     .profile-hero{padding:70px 24px 40px}
     .hero-stats{flex-direction:row;gap:24px}
@@ -532,14 +541,20 @@ if (!empty($_POST['action'])) {
     .progress-bar{left:0}
   }
   @media(max-width:600px){
+    .user-bar{gap:8px;padding-left:66px}
+    .user-info{min-width:0;gap:8px}
+    .user-name{max-width:34vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .user-role{display:none}
+    .btn-auth{padding:7px 10px;font-size:10px}
     .hero-stats{display:none}
-    .profile-hero{gap:20px}
+    .profile-hero{gap:20px;padding-top:92px}
   }
 </style>
 </head>
 <body>
 
-<button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+<button class="menu-toggle" id="menuToggle" onclick="toggleProfileMenu()" aria-label="Abrir menu" aria-expanded="false">?</button>
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeProfileMenu()"></div>
 
 <!-- USER BAR -->
 <div class="user-bar">
@@ -1232,6 +1247,37 @@ if (!empty($_POST['action'])) {
 <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
 <script>
+function setProfileMenuOpen(open) {
+  const sidebar = document.getElementById('sidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  const toggle = document.getElementById('menuToggle');
+  if (sidebar) sidebar.classList.toggle('open', open);
+  if (backdrop) backdrop.classList.toggle('open', open);
+  if (toggle) {
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+    toggle.textContent = open ? '×' : '☰';
+  }
+  document.body.classList.toggle('sidebar-open', open);
+}
+
+function toggleProfileMenu() {
+  const sidebar = document.getElementById('sidebar');
+  setProfileMenuOpen(!(sidebar && sidebar.classList.contains('open')));
+}
+
+function closeProfileMenu() {
+  setProfileMenuOpen(false);
+}
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeProfileMenu();
+});
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 1024) closeProfileMenu();
+});
+
 // TABS
 function switchTab(tab, btn) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));

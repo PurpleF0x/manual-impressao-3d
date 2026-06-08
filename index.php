@@ -43,7 +43,14 @@ if (isLoggedIn()) {
 <style>
 <style>
 /* ── Missions Widget ── */
-#missionsWidget { position: fixed; bottom: 24px; left: 24px; z-index: 9999; font-family: 'Inter', sans-serif; }
+#missionsWidget {
+    position: fixed;
+    bottom: 24px;
+    left: 304px;
+    z-index: 1600;
+    font-family: 'Inter', sans-serif;
+    pointer-events: none;
+}
 
 #missions-btn {
     width: 56px; height: 56px; border-radius: 50%;
@@ -51,8 +58,28 @@ if (isLoggedIn()) {
     border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(255,107,53,0.4);
     display: flex; align-items: center; justify-content: center;
     font-size: 24px; transition: all 0.3s; position: relative;
+    pointer-events: auto;
 }
 #missions-btn:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(255,107,53,0.55); }
+#missions-btn::after {
+    content: 'Missões';
+    position: absolute;
+    left: 66px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(17,17,24,0.96);
+    border: 1px solid rgba(255,107,53,0.26);
+    border-radius: 999px;
+    padding: 7px 12px;
+    color: #fff;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
 #missions-btn .mission-notif {
     position: absolute; top: -2px; right: -2px; width: 14px; height: 14px;
     background: #00ff88; border: 1px solid #0a0a0f; border-radius: 50%;
@@ -66,6 +93,7 @@ if (isLoggedIn()) {
     border-radius: 18px; box-shadow: 0 24px 60px rgba(0,0,0,0.7);
     flex-direction: column; overflow: hidden;
     animation: aiSlideUp 0.2s ease;
+    pointer-events: auto;
 }
 #missions-panel.open { display: flex; }
 
@@ -228,6 +256,39 @@ if (isLoggedIn()) {
 
 @media(max-width:480px) {
     #printAI-panel { width: calc(100vw - 32px); right: -8px; }
+}
+
+@media(max-width:1024px) {
+    #missionsWidget {
+        left: 16px;
+        bottom: 18px;
+    }
+    #missions-panel {
+        width: min(360px, calc(100vw - 32px));
+        max-height: min(520px, calc(100vh - 120px));
+    }
+}
+
+@media(max-width:560px) {
+    #missionsWidget {
+        left: 14px;
+        bottom: 14px;
+    }
+    #missions-btn {
+        width: 54px;
+        height: 54px;
+    }
+    #missions-btn::after {
+        display: none;
+    }
+    #missions-panel {
+        position: fixed;
+        left: 12px;
+        right: 12px;
+        bottom: 78px;
+        width: auto;
+        max-height: calc(100vh - 108px);
+    }
 }
 </style>
 
@@ -1691,22 +1752,43 @@ if (document.getElementById('missionsWidget')) {
   .menu-toggle {
     display: none;
     position: fixed;
-    top: 60px;
-    left: 20px;
-    z-index: 200;
-    background: var(--surface);
+    top: 8px;
+    left: 14px;
+    z-index: 1300;
+    width: 42px;
+    height: 42px;
+    background: rgba(17,17,24,0.96);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px;
+    border-radius: 12px;
+    padding: 0;
     cursor: pointer;
+    color: var(--text);
     font-size: 20px;
+    line-height: 1;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    backdrop-filter: blur(12px);
   }
+  .menu-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.52);
+    z-index: 1100;
+    backdrop-filter: blur(2px);
+  }
+  .sidebar-backdrop.open { display: block; }
 
   /* RESPONSIVE */
   @media (max-width: 1024px) {
     nav { 
       transform: translateX(-100%);
       width: 280px;
+      z-index: 1200;
+      padding-top: 72px;
     }
     
     nav.open {
@@ -1714,12 +1796,13 @@ if (document.getElementById('missionsWidget')) {
     }
     
     .menu-toggle {
-      display: block;
+      display: flex;
     }
     
     .user-bar {
       left: 0;
-      padding: 0 16px;
+      padding: 0 16px 0 72px;
+      z-index: 900;
     }
     
     main { margin-left: 0; }
@@ -1732,6 +1815,33 @@ if (document.getElementById('missionsWidget')) {
     .comments-header { flex-direction: column; align-items: flex-start; }
     .level-bar { padding: 12px 24px; top: 50px; }
     .stats-bar { justify-content: center; }
+  }
+
+  @media (max-width: 560px) {
+    .user-bar {
+      gap: 8px;
+      padding-left: 66px;
+    }
+    .user-info {
+      min-width: 0;
+      gap: 8px;
+    }
+    .user-name {
+      max-width: 34vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .user-role {
+      display: none;
+    }
+    .btn-auth {
+      padding: 7px 10px;
+      font-size: 10px;
+    }
+    .hero {
+      padding-top: 92px;
+    }
   }
 
   /* BACK TO TOP */
@@ -2046,7 +2156,8 @@ if (document.getElementById('missionsWidget')) {
 </head>
 <body class="mode-beginner">
 <?php renderUserNotice(); ?>
-<button class="menu-toggle" onclick="toggleMenu()">☰</button>
+<button class="menu-toggle" id="menuToggle" onclick="toggleMenu()" aria-label="Abrir menu" aria-expanded="false">&#9776;</button>
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeMenu()"></div>
 
 <!-- User Bar -->
 <div class="user-bar">
@@ -3010,8 +3121,26 @@ if (document.getElementById('missionsWidget')) {
     setMode('advanced');
   }
 
+  function setMenuOpen(open) {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    const toggle = document.getElementById('menuToggle');
+    sidebar.classList.toggle('open', open);
+    if (backdrop) backdrop.classList.toggle('open', open);
+    if (toggle) {
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      toggle.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+      toggle.innerHTML = open ? '&times;' : '&#9776;';
+    }
+    document.body.classList.toggle('sidebar-open', open);
+  }
+
   function toggleMenu() {
-    document.getElementById('sidebar').classList.toggle('open');
+    setMenuOpen(!document.getElementById('sidebar').classList.contains('open'));
+  }
+
+  function closeMenu() {
+    setMenuOpen(false);
   }
 
   const sections = document.querySelectorAll('section[id], div[id]');
@@ -3038,9 +3167,17 @@ if (document.getElementById('missionsWidget')) {
       const target = document.querySelector(href);
       if (target) {
         target.scrollIntoView({ behavior: 'smooth' });
-        document.getElementById('sidebar').classList.remove('open');
+        closeMenu();
       }
     });
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMenu();
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1024) closeMenu();
   });
 
   window.addEventListener('scroll', () => {

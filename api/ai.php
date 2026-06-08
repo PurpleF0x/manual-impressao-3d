@@ -157,7 +157,6 @@ curl_setopt_array($ch, [
         'Authorization: Bearer ' . GROQ_API_KEY
     ],
     CURLOPT_TIMEOUT => 30,
-    CURLOPT_SSL_VERIFYPEER => false,
 ]);
 
 $response = curl_exec($ch);
@@ -182,8 +181,7 @@ if ($httpCode !== 200 || !isset($data['choices'][0]['message']['content'])) {
 
     echo json_encode([
         'success' => false,
-        'error' => "Erro ($httpCode): $err",
-        'debug' => "Modelo: " . GROQ_MODEL
+        'error' => "Erro ($httpCode): $err"
     ]);
     exit;
 }

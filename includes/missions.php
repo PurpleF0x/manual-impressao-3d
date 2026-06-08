@@ -85,13 +85,7 @@ function getMissionsDefinitions(): array {
  */
 function getUserMissions(int $userId): array {
     $db = getDB();
-
-    // Garantir que a coluna existe
-    try {
-        $db->query("SELECT daily_missions_data FROM user_profile_config LIMIT 1");
-    } catch (Exception $e) {
-        $db->exec("ALTER TABLE user_profile_config ADD COLUMN daily_missions_data JSON NULL");
-    }
+    ensureUserProfileConfig($userId);
 
     $stmt = $db->prepare("SELECT daily_missions_data FROM user_profile_config WHERE user_id = ?");
     $stmt->execute([$userId]);
@@ -164,6 +158,7 @@ function getUserMissions(int $userId): array {
  */
 function saveUserMissions(int $userId, array $missions): void {
     $db = getDB();
+    ensureUserProfileConfig($userId);
     $json = json_encode($missions);
     $db->prepare("UPDATE user_profile_config SET daily_missions_data = ? WHERE user_id = ?")
        ->execute([$json, $userId]);
