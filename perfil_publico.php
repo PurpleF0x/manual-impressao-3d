@@ -294,7 +294,17 @@ main{max-width:960px;margin:0 auto;padding:40px 32px}
             </div>
             <div class="badges-row">
                 <?php foreach($topBadges as $tb): ?>
-                    <div class="badge-slot" title="<?php echo sanitize($tb['name'] . ': ' . $tb['desc']); ?>"><?php echo $tb['icon']; ?></div>
+                    <div class="badge-slot" title="<?php echo sanitize($tb['name'] . ': ' . $tb['desc']); ?>">
+                        <?php if($tb['category'] === 'badge' || $tb['category'] === 'medal'): ?>
+                            <?php echo $tb['icon']; ?>
+                        <?php elseif($tb['category'] === 'frame'): ?>
+                            <div style="width:18px;height:18px;border-radius:50%;<?php echo $tb['icon']; ?>"></div>
+                        <?php elseif($tb['category'] === 'accent'): ?>
+                            <div style="width:16px;height:16px;border-radius:50%;background:<?php echo $tb['icon']; ?>"></div>
+                        <?php else: ?>
+                            🏅
+                        <?php endif; ?>
+                    </div>
                 <?php endforeach; ?>
             </div>
             <?php if (!empty($bio)): ?>

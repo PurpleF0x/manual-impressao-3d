@@ -457,7 +457,7 @@ function getAvailableBadges(int $userId): array {
 
     try {
         $stmt = $db->prepare("
-            SELECT si.id, si.name, si.description as `desc`, si.css_value as icon
+            SELECT si.id, si.name, si.description as `desc`, si.css_value as icon, si.category
             FROM user_inventory ui
             JOIN shop_items si ON ui.item_id = si.id
             WHERE ui.user_id = ? AND si.category IN ('badge', 'medal')
@@ -469,7 +469,8 @@ function getAvailableBadges(int $userId): array {
                 'id'   => $r['id'],
                 'name' => $r['name'],
                 'icon' => $r['icon'],
-                'desc' => $r['desc']
+                'desc' => $r['desc'],
+                'category' => $r['category']
             ];
         }
     } catch (Exception $e) {}
@@ -500,7 +501,14 @@ function getTopBadges(int $userId): array {
                 foreach ($ids as $id) {
                     foreach ($items as $item) {
                         if ((int)$item['id'] === (int)$id) {
-                            $top[] = $item;
+                            $top[] = [
+                                'id'    => $item['id'],
+                                'name'  => $item['name'],
+                                'desc'  => $item['description'],
+                                'icon'  => $item['css_value'],
+                                'css_value' => $item['css_value'],
+                                'category' => $item['category']
+                            ];
                             break;
                         }
                     }
@@ -522,7 +530,16 @@ function getTopBadges(int $userId): array {
         $stmt = $db->prepare("SELECT id, name, description, category, css_value FROM shop_items WHERE item_key = ? LIMIT 1");
         $stmt->execute([$key]);
         $item = $stmt->fetch();
-        if ($item) $top[] = $item;
+        if ($item) {
+            $top[] = [
+                'id'    => $item['id'],
+                'name'  => $item['name'],
+                'desc'  => $item['description'],
+                'icon'  => $item['css_value'],
+                'css_value' => $item['css_value'],
+                'category' => $item['category']
+            ];
+        }
     }
 
     return array_slice($top, 0, 3);

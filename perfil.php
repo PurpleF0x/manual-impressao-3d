@@ -523,9 +523,7 @@ if (!empty($_POST['action'])) {
   .badge-icon{font-size:24px;margin-bottom:8px;display:block}
   .badge-name{display:block;font-weight:700;font-size:12px;color:#fff;margin-bottom:2px}
   .badge-desc{display:block;font-size:10px;color:var(--muted);line-height:1.2}
-  .badges-row{display:flex;gap:8px;margin-top:12px}
-  .badge-slot{width:32px;height:32px;border-radius:8px;background:var(--surface3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;transition:all 0.2s}
-  .badge-slot:hover{transform:scale(1.1);border-color:var(--accent)}
+
   #avatarFileInput{display:none}
 
   @media(max-width:1024px){
@@ -643,7 +641,17 @@ if (!empty($_POST['action'])) {
     </div>
     <div class="badges-row">
         <?php foreach($topBadges as $tb): ?>
-            <div class="badge-slot" title="<?php echo sanitize($tb['name'] . ': ' . $tb['desc']); ?>"><?php echo $tb['icon']; ?></div>
+            <div class="badge-slot" title="<?php echo sanitize($tb['name'] . ': ' . $tb['desc']); ?>">
+                <?php if($tb['category'] === 'badge' || $tb['category'] === 'medal'): ?>
+                    <?php echo $tb['icon']; ?>
+                <?php elseif($tb['category'] === 'frame'): ?>
+                    <div style="width:18px;height:18px;border-radius:50%;<?php echo $tb['icon']; ?>"></div>
+                <?php elseif($tb['category'] === 'accent'): ?>
+                    <div style="width:16px;height:16px;border-radius:50%;background:<?php echo $tb['icon']; ?>"></div>
+                <?php else: ?>
+                    🏅
+                <?php endif; ?>
+            </div>
         <?php endforeach; ?>
         <?php for($i=count($topBadges); $i<3; $i++): ?>
             <div class="badge-slot" style="opacity:0.2; border-style:dashed">?</div>
