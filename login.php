@@ -35,6 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if (empty($username) || empty($password)) {
             $errors[] = "Preenche todos os campos.";
+        } elseif (!isset($_POST['accept_terms'])) {
+            $errors[] = "Deves aceitar os Termos de Utilização e a Política de Privacidade.";
         } else {
             $db = getDB();
             
@@ -194,6 +196,13 @@ $backHref  = strpos($redirectTo, 'forum') !== false ? $redirectTo : 'index.php';
             <div class="checkbox-group">
                 <input type="checkbox" id="remember" name="remember">
                 <label for="remember">Lembrar-me neste dispositivo</label>
+            </div>
+
+            <div class="checkbox-group" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px;">
+                <input type="checkbox" id="accept_terms" name="accept_terms" required style="width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer; margin-top: 3px;">
+                <label for="accept_terms" style="color: var(--muted); font-size: 13px; cursor: pointer; line-height: 1.5;">
+                    Aceito os <a href="terms.php" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600;">Termos</a> e a <a href="privacy.php" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600;">Política de Privacidade</a>.
+                </label>
             </div>
 
             <button type="submit" class="btn-primary">ENTRAR</button>

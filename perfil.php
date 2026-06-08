@@ -1221,6 +1221,10 @@ if (!empty($_POST['action'])) {
 <!-- FOOTER -->
 <footer>
   <p>Manual de Impressão 3D — Perfil de <strong><?php echo sanitize($user['full_name']); ?></strong></p>
+  <p style="margin-top: 8px;">
+    <a href="terms.php" style="color: var(--muted); text-decoration: none;">Termos de Utilização</a> |
+    <a href="privacy.php" style="color: var(--muted); text-decoration: none;">Política de Privacidade</a>
+  </p>
   <p style="margin-top:6px;opacity:0.5;">© <?php echo date('Y'); ?> Manual Educativo de Impressão 3D</p>
 </footer>
 

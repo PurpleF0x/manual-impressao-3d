@@ -2964,6 +2964,10 @@ if (document.getElementById('missionsWidget')) {
 
   <footer>
     <p>Manual de Impressão 3D — Criado para <strong>Professores e Alunos</strong> | Tecnologia: FDM · SLA · SLS</p>
+    <p style="margin-top: 8px;">
+        <a href="terms.php" style="color: var(--muted); text-decoration: none;">Termos de Utilização</a> |
+        <a href="privacy.php" style="color: var(--muted); text-decoration: none;">Política de Privacidade</a>
+    </p>
     <p style="margin-top: 8px; opacity: 0.5;">Este documento pode ser livremente partilhado para fins educativos</p>
   </footer>
 

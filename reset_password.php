@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $reset) {
         } else {
             $db->beginTransaction();
             try {
-                $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 10]);
+                $hash = hashPassword($password);
 
                 // Atualizar password do utilizador
                 $db->prepare("UPDATE users SET password_hash = ? WHERE email = ?")
