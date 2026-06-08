@@ -523,7 +523,9 @@ if (!empty($_POST['action'])) {
   .badge-icon{font-size:24px;margin-bottom:8px;display:block}
   .badge-name{display:block;font-weight:700;font-size:12px;color:#fff;margin-bottom:2px}
   .badge-desc{display:block;font-size:10px;color:var(--muted);line-height:1.2}
-
+  .badges-row{display:flex;gap:8px;margin-top:12px}
+  .badge-slot{width:32px;height:32px;border-radius:8px;background:var(--surface3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;transition:all 0.2s}
+  .badge-slot:hover{transform:scale(1.1);border-color:var(--accent)}
   #avatarFileInput{display:none}
 
   @media(max-width:1024px){
