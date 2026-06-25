@@ -45,8 +45,8 @@ function sendEmail(
         $mail->SMTPAuth   = true;
         $mail->Username   = MAIL_USERNAME;
         $mail->Password   = MAIL_PASSWORD;
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = MAIL_PORT;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // SSL Direto
+        $mail->Port       = 465;
         $mail->CharSet    = 'UTF-8';
 
         // Opções de SSL para ambientes Cloud (Render/Docker)
