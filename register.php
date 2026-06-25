@@ -60,8 +60,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $userId = $db->lastInsertId();
                 
                 logActivity($userId, 'register', "Novo registo: $username");
-                
-                setFlashMessage('success', 'Registo efetuado com sucesso! Pode agora fazer login.');
+
+                // Enviar Email de Boas-vindas
+                require_once 'includes/mail_config.php';
+                sendWelcomeEmail($email, $fullName);
+
+                setFlashMessage('success', 'Registo efetuado com sucesso! Verifica o teu email (e a pasta de SPAM).');
                 redirect('login.php');
             } catch (PDOException $e) {
                 $errors[] = "Erro ao registar. Tente novamente.";

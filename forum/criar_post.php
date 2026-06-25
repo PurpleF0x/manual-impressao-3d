@@ -1,4 +1,5 @@
 <?php
+ob_start();
 /**
  * forum/criar_post.php — Criar novo post
  */
@@ -108,7 +109,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
                     if ($modCheck->fetch()) $isMod = true;
                 }
 
-                $postStatus = $isMod ? 'approved' : 'pending';
+                // Se não for moderador, verificar se a comunidade exige aprovação
+                if (!$isMod && !empty($comm['requires_approval'])) {
+                    $postStatus = 'pending';
+                } else {
+                    $postStatus = 'approved';
+                }
 
                 $ins = $db->prepare("INSERT INTO forum_posts (community_id,user_id,title,content,type,flair,image_url,image_type,status) VALUES (?,?,?,?,'text',?,?,?,?)");
                 $ins->execute(array($commId,(int)$currentUser['id'],$title,$content?:null,$flair?:null,$imageUrl,$imageType,$postStatus));

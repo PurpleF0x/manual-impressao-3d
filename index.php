@@ -260,29 +260,32 @@ if (isLoggedIn()) {
 
 @media(max-width:1024px) {
     #missionsWidget {
-        left: 16px;
-        bottom: 18px;
+        left: auto;
+        right: 16px;
+        bottom: 100px;
+        z-index: 2500;
     }
     #missions-panel {
+        right: 0;
+        left: auto;
         width: min(360px, calc(100vw - 32px));
-        max-height: min(520px, calc(100vh - 120px));
+        max-height: min(520px, calc(100vh - 160px));
+    }
+    #missions-btn::after {
+        display: none;
     }
 }
 
 @media(max-width:560px) {
     #missionsWidget {
-        left: 14px;
-        bottom: 14px;
+        right: 14px;
+        bottom: 94px;
     }
     #missions-btn {
-        width: 54px;
-        height: 54px;
-    }
-    #missions-btn::after {
-        display: none;
+        width: 52px;
+        height: 52px;
     }
     #missions-panel {
-        position: fixed;
         left: 12px;
         right: 12px;
         bottom: 78px;
@@ -1752,25 +1755,30 @@ if (document.getElementById('missionsWidget')) {
   .menu-toggle {
     display: none;
     position: fixed;
-    top: 8px;
-    left: 14px;
-    z-index: 1300;
-    width: 42px;
-    height: 42px;
-    background: rgba(17,17,24,0.96);
-    border: 1px solid var(--border);
+    top: 12px;
+    left: 12px;
+    z-index: 2500;
+    width: 48px;
+    height: 48px;
+    background: rgba(17, 17, 24, 0.98);
+    border: 1px solid var(--accent);
     border-radius: 12px;
     padding: 0;
     cursor: pointer;
-    color: var(--text);
-    font-size: 20px;
+    color: var(--accent);
+    font-size: 24px;
     line-height: 1;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
     backdrop-filter: blur(12px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .menu-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .menu-toggle:hover {
+    transform: scale(1.05);
+    background: var(--accent);
+    color: #000;
+  }
 
   .sidebar-backdrop {
     display: none;
@@ -1787,8 +1795,8 @@ if (document.getElementById('missionsWidget')) {
     nav { 
       transform: translateX(-100%);
       width: 280px;
-      z-index: 1200;
-      padding-top: 72px;
+      z-index: 3000;
+      padding-top: 80px;
     }
     
     nav.open {
@@ -1802,7 +1810,7 @@ if (document.getElementById('missionsWidget')) {
     .user-bar {
       left: 0;
       padding: 0 16px 0 72px;
-      z-index: 900;
+      z-index: 1000;
     }
     
     main { margin-left: 0; }

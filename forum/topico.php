@@ -34,6 +34,35 @@ try {
     ");
     $stmt->execute(array($postId));
     $post = $stmt->fetch();
+
+    if (!$post || ($post['status'] !== 'approved' && !canModerate($currentUser) && (int)$post['author_id'] !== (int)($currentUser['id']??-1))) {
+        http_response_code(404);
+        die('
+        <!DOCTYPE html>
+        <html lang="pt">
+        <head>
+            <meta charset="UTF-8">
+            <title>Post não encontrado — Fórum 3D</title>
+            <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Inter:wght@400&display=swap" rel="stylesheet">
+            <style>
+                body { background: #0a0a0f; color: #e8e8f0; font-family: "Inter", sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
+                .container { padding: 40px; background: #111118; border: 1px solid rgba(0, 229, 255, 0.15); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); max-width: 400px; }
+                h1 { font-family: "Syne", sans-serif; font-size: 42px; margin: 0 0 10px; color: #00e5ff; }
+                p { opacity: 0.6; margin-bottom: 30px; }
+                .btn { background: #00e5ff; color: #000; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 700; transition: all 0.2s; }
+                .btn:hover { box-shadow: 0 0 20px rgba(0, 229, 255, 0.4); transform: translateY(-2px); }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>404</h1>
+                <p>O post que procuras já não existe ou foi removido pela moderação.</p>
+                <a href="index.php" class="btn">Voltar ao Fórum</a>
+            </div>
+        </body>
+        </html>
+        ');
+    }
 } catch(Exception $e) {
     die('<p style="color:#888;padding:40px;font-family:monospace">Erro ao carregar post: ' . htmlspecialchars($e->getMessage()) . '</p>');
 }

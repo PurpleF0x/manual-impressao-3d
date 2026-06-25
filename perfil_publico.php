@@ -325,6 +325,28 @@ main{max-width:960px;margin:0 auto;padding:40px 32px}
                     <div class="xp-next">Faltam <?php echo ($nextLevelXP - $karmaTotal); ?> XP para o nível <?php echo getUserLevel($nextLevelXP)['name']; ?></div>
                 <?php endif; ?>
             </div>
+
+            <?php
+            // Carregar GP para o perfil público
+            $stmtGP = $db->prepare("SELECT growth_points FROM user_profile_config WHERE user_id = ?");
+            $stmtGP->execute([$targetId]);
+            $gpVal = (int)($stmtGP->fetchColumn() ?: 0);
+            $plantLevel = floor($gpVal / 100);
+            $plantProgress = $gpVal % 100;
+            $stages = ['Semente', 'Broto', 'Plântula', 'Pequena Árvore', 'Árvore Maker', 'Grande Carvalho Tech'];
+            $currentStage = $stages[min($plantLevel, count($stages)-1)];
+            ?>
+            <div class="growth-widget" style="margin-top: 12px; background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.1); border-radius: 12px; padding: 10px 14px; text-align: left;">
+                <div style="display: flex; justify-content: space-between; font-family: 'Space Mono', monospace; font-size: 9px; color: var(--accent4); text-transform: uppercase; margin-bottom: 6px;">
+                    <span>🌱 Planta</span>
+                    <span><?php echo $gpVal; ?> GP</span>
+                </div>
+                <div style="height: 5px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; margin-bottom: 6px;">
+                    <div style="width: <?php echo $plantProgress; ?>%; height: 100%; background: var(--accent4);"></div>
+                </div>
+                <div style="font-size: 10px; color: var(--muted); text-align: right;">Estágio: <strong style="color:#fff"><?php echo $currentStage; ?></strong></div>
+            </div>
+
             <div style="display:flex; gap:16px; margin-top:8px; justify-content: flex-end">
                 <div class="stat-box"><div class="stat-num"><?php echo count($printers); ?></div><div class="stat-lbl">Impressoras</div></div>
                 <div class="stat-box"><div class="stat-num"><?php echo count($slicers); ?></div><div class="stat-lbl">Slicers</div></div>

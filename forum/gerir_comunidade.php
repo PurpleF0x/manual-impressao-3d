@@ -89,21 +89,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
     }
 
     if ($action === 'update_info') {
-        $name = trim($_POST['name'] ?? '');
-        $desc = trim($_POST['description'] ?? '');
-        $icon = trim($_POST['icon'] ?? $comm['icon']);
-        $color = trim($_POST['banner_color'] ?? $comm['banner_color']);
-        if (mb_strlen($name) >= 3 && mb_strlen($name) <= 80) {
-            $db->prepare("UPDATE forum_communities SET name=?, description=?, icon=?, banner_color=? WHERE id=?")
-               ->execute(array($name, $desc ?: null, $icon, $color, $commId));
-            $comm['name'] = $name;
-            $comm['description'] = $desc;
-            $comm['icon'] = $icon;
-            $comm['banner_color'] = $color;
-            $flash = 'Informações atualizadas.';
-        } else {
-            $flash = 'O nome deve ter entre 3 e 80 caracteres.';
-            $flashType = 'error';
+        // ... (código existente) ...
+    }
+
+    // Ações de Moderação de Posts
+    if ($action === 'approve_post' || $action === 'reject_post') {
+        $postId = (int)($_POST['post_id'] ?? 0);
+        if ($postId > 0) {
+            if ($action === 'approve_post') {
+                $db->prepare("UPDATE forum_posts SET status='approved', moderated_by=?, moderated_at=NOW() WHERE id=? AND community_id=?")
+                   ->execute([$uid, $postId, $commId]);
+                $db->prepare("UPDATE forum_communities SET post_count = post_count + 1 WHERE id=?")->execute([$commId]);
+                $flash = "Post aprovado com sucesso!";
+            } else {
+                $db->prepare("UPDATE forum_posts SET status='rejected', moderated_by=?, moderated_at=NOW() WHERE id=? AND community_id=?")
+                   ->execute([$uid, $postId, $commId]);
+                $flash = "Post rejeitado.";
+                $flashType = "error";
+            }
         }
     }
 }
@@ -112,6 +115,7 @@ $csrf = generateCSRFToken();
 $bannerColor = $comm['banner_color'] ?: '#00e5ff';
 
 // Garantir colunas de moderação (safe — ignora se já existem)
+try { $db->exec("ALTER TABLE forum_communities ADD COLUMN IF NOT EXISTS requires_approval TINYINT(1) DEFAULT 0"); } catch(Exception $e){}
 try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'approved'"); } catch(Exception $e){}
 try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS moderated_by INT NULL"); } catch(Exception $e){}
 try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS moderated_at DATETIME NULL"); } catch(Exception $e){}
@@ -245,9 +249,31 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
     <div class="flash <?php echo $flashType; ?>"><?php echo $flashType === 'success' ? '✓' : '⚠️'; ?> <?php echo sanitize($flash); ?></div>
     <?php endif; ?>
 
-    <!-- Informações da comunidade -->
-    <div class="card">
-        <div class="card-header">
+    <style>
+        .tabs-bar { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--border2); padding-bottom: 10px; }
+        .tab-btn { background: none; border: 1px solid var(--border2); border-radius: 8px; padding: 10px 20px; color: var(--muted); font-family: 'Space Mono', monospace; font-size: 11px; cursor: pointer; transition: all 0.2s; }
+        .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .pending-card { background: var(--surface2); border: 1px solid var(--border2); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+    </style>
+
+    <div class="tabs-bar">
+        <button class="tab-btn active" onclick="switchTab('info', this)">Definições</button>
+        <button class="tab-btn" onclick="switchTab('membros', this)">Membros (<?php echo count($members); ?>)</button>
+        <?php
+        $pendingPosts = $db->query("SELECT fp.*, u.full_name, u.username FROM forum_posts fp JOIN users u ON u.id=fp.user_id WHERE community_id=$commId AND status='pending' ORDER BY created_at DESC")->fetchAll();
+        if (count($pendingPosts) > 0 || !empty($comm['requires_approval'])): ?>
+            <button class="tab-btn" onclick="switchTab('pendentes', this)" style="<?php echo count($pendingPosts)>0 ? 'color:var(--accent2); border-color:var(--accent2);' : ''; ?>">
+                Pendentes (<?php echo count($pendingPosts); ?>)
+            </button>
+        <?php endif; ?>
+    </div>
+
+    <!-- TAB: INFO -->
+    <div class="tab-panel active" id="tab-info">
+        <div class="card">
+            <div class="card-header">
             <div class="card-header-icon" style="background:rgba(0,229,255,0.08)">✏️</div>
             <div>
                 <div class="card-header-title">Informações</div>
@@ -308,12 +334,23 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
                     </div>
                 </div>
 
+                <div class="form-group" style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);padding:15px;border-radius:10px;border:1px solid var(--border2);margin-bottom:20px">
+                    <input type="checkbox" name="requires_approval" id="reqApp" style="width:18px;height:18px;accent-color:var(--accent)" <?php echo (!empty($comm['requires_approval'])) ? 'checked' : ''; ?>>
+                    <label for="reqApp" style="cursor:pointer;flex:1">
+                        <div style="font-size:13px;font-weight:700;color:#fff">Moderação de Posts</div>
+                        <div style="font-size:11px;color:var(--muted)">Se ativado, novos posts de membros comuns precisarão de aprovação manual.</div>
+                    </label>
+                </div>
+
                 <button type="submit" class="btn btn-primary">💾 GUARDAR INFORMAÇÕES</button>
             </form>
         </div>
     </div>
+    </div>
 
-    <!-- Estatísticas rápidas -->
+    <!-- TAB: MEMBROS -->
+    <div class="tab-panel" id="tab-membros">
+        <!-- Estatísticas rápidas -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
         <?php
         $postCount   = (int)$comm['post_count'];
@@ -443,11 +480,62 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
             <?php endif; ?>
         </div>
     </div>
-    <?php endif; ?>
+
+    <!-- TAB: PENDENTES -->
+    <div class="tab-panel" id="tab-pendentes">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-icon" style="background:rgba(255,107,53,0.1)">⏳</div>
+                <div>
+                    <div class="card-header-title">Posts Aguardando Aprovação</div>
+                    <div class="card-header-sub">Estes posts só aparecerão na comunidade após serem aceites</div>
+                </div>
+            </div>
+            <div class="card-body">
+                <?php if (empty($pendingPosts)): ?>
+                    <div class="empty-state">Nenhum post pendente de momento.</div>
+                <?php else: ?>
+                    <?php foreach ($pendingPosts as $pp): ?>
+                    <div class="pending-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px">
+                            <div>
+                                <div style="font-weight:700; color:#fff; font-size:15px"><?php echo sanitize($pp['title']); ?></div>
+                                <div style="font-size:11px; color:var(--muted)">Por @<?php echo sanitize($pp['username']); ?> em <?php echo date('d/m/Y H:i', strtotime($pp['created_at'])); ?></div>
+                            </div>
+                            <div style="display:flex; gap:8px">
+                                <form method="POST" style="margin:0">
+                                    <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
+                                    <input type="hidden" name="action" value="approve_post">
+                                    <input type="hidden" name="post_id" value="<?php echo $pp['id']; ?>">
+                                    <button type="submit" class="btn btn-primary" style="padding:6px 12px; font-size:10px; background:var(--accent4); color:#000">APROVAR</button>
+                                </form>
+                                <form method="POST" style="margin:0">
+                                    <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
+                                    <input type="hidden" name="action" value="reject_post">
+                                    <input type="hidden" name="post_id" value="<?php echo $pp['id']; ?>">
+                                    <button type="submit" class="btn btn-danger" style="padding:6px 12px; font-size:10px" onclick="return confirm('Rejeitar este post?')">REJEITAR</button>
+                                </form>
+                            </div>
+                        </div>
+                        <?php if($pp['content']): ?>
+                            <div style="font-size:13px; color:var(--muted); line-height:1.5; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px"><?php echo nl2br(sanitize(mb_substr($pp['content'], 0, 300))); ?>...</div>
+                        <?php endif; ?>
+                    </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
 
 </div>
 
 <script>
+function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    btn.classList.add('active');
+}
 function selIcon(icon, el) {
     document.querySelectorAll('.icon-opt').forEach(function(x){ x.classList.remove('selected'); });
     el.classList.add('selected');

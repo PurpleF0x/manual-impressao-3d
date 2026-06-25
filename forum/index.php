@@ -91,18 +91,36 @@ try { $db->exec("CREATE TABLE IF NOT EXISTS private_messages (
 
 // ── Dados ─────────────────────────────────────────────────────
 $feedTab = $_GET['feed'] ?? 'recent';
-$feedOrder = $feedTab === 'popular' ? 'fp.vote_score DESC, fp.reply_count DESC' : 'fp.created_at DESC';
+$flairFilter = $_GET['flair'] ?? null;
+
+$feedOrder = 'fp.created_at DESC';
+if ($feedTab === 'popular') {
+    $feedOrder = '(fp.vote_score * 2 + fp.reply_count * 5) DESC, fp.created_at DESC';
+}
 
 $feedPosts = array();
 try {
     $mineJoin = '';
-    $mineWhere = '';
+    $whereParts = array("fc.is_active = 1", "(fp.status = 'approved' OR fp.status IS NULL)");
+
     if ($feedTab === 'mine' && $currentUser) {
         $mineJoin  = "JOIN forum_memberships fm ON fm.community_id=fp.community_id AND fm.user_id=" . (int)$currentUser['id'];
     } elseif ($feedTab === 'mine') {
-        $feedPosts = array(); // não logado — array vazio
+        $feedPosts = array();
         goto skip_feed;
     }
+
+    if ($flairFilter) {
+        $whereParts[] = "fp.flair = " . $db->quote($flairFilter);
+    }
+
+    if ($feedTab === 'popular') {
+        // Posts populares dos últimos 30 dias (mais flexível que 7)
+        $whereParts[] = "fp.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+    }
+
+    $whereSql = implode(" AND ", $whereParts);
+
     $feedPosts = $db->query("
         SELECT fp.*, fc.name as community_name, fc.slug as community_slug,
                fc.icon as community_icon, fc.banner_color,
@@ -111,9 +129,7 @@ try {
         JOIN forum_communities fc ON fc.id = fp.community_id
         JOIN users u ON u.id = fp.user_id
         $mineJoin
-        WHERE fc.is_active = 1
-        AND (fp.status = 'approved' OR fp.status IS NULL)
-        " . ($feedTab === 'popular' ? "AND fp.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)" : "") . "
+        WHERE $whereSql
         ORDER BY $feedOrder
         LIMIT 40
     ")->fetchAll();
@@ -596,6 +612,27 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <?php if ($currentUser): ?>
             <a href="criar_post.php" class="create-post-btn">✏️ NOVO POST</a>
             <?php endif; ?>
+        </div>
+
+        <?php
+        $flairs = array(
+            'pergunta'=>array('❓','Pergunta'),
+            'tutorial'=>array('📖','Tutorial'),
+            'projeto'=>array('🏗️','Projeto'),
+            'ajuda'=>array('🆘','Ajuda'),
+            'discussao_tecnica'=>array('🔬','Discussão'),
+            'showcase'=>array('📸','Showcase')
+        );
+        ?>
+        <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;margin-bottom:10px;scrollbar-width:none">
+            <a href="?feed=<?php echo $feedTab; ?>" class="flair-badge <?php echo !$flairFilter?'active':''; ?>" style="text-decoration:none; white-space:nowrap; cursor:pointer; <?php echo !$flairFilter?'background:var(--accent);color:#000;border-color:var(--accent)':''; ?>">Todas</a>
+            <?php foreach($flairs as $key => $f): ?>
+                <a href="?feed=<?php echo $feedTab; ?>&flair=<?php echo $key; ?>"
+                   class="flair-badge flair-<?php echo $key; ?> <?php echo $flairFilter===$key?'active':''; ?>"
+                   style="text-decoration:none; white-space:nowrap; cursor:pointer; <?php echo $flairFilter===$key?'box-shadow:0 0 10px currentColor; transform:scale(1.05)':''; ?>">
+                    <?php echo $f[0]; ?> <?php echo $f[1]; ?>
+                </a>
+            <?php endforeach; ?>
         </div>
 
         <div id="feedContainer">

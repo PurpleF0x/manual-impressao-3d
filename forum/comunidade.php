@@ -47,11 +47,20 @@ if (!empty($_SESSION['forum_flash'])) {
     unset($_SESSION['forum_flash']);
 }
 
-// Só mostrar posts aprovados no feed público
+// Regras de visibilidade de posts
+$postWhere = "AND (fp.status='approved' OR fp.status IS NULL)";
+if ($isMod) {
+    // Moderadores vêem tudo menos os rejeitados
+    $postWhere = "AND fp.status != 'rejected'";
+} elseif ($currentUser) {
+    // Utilizador vê aprovados + os seus próprios pendentes
+    $postWhere = "AND (fp.status='approved' OR fp.status IS NULL OR (fp.status='pending' AND fp.user_id = ".(int)$currentUser['id']."))";
+}
+
 $posts = $db->query("
     SELECT fp.*, u.full_name, u.username, u.avatar_url
     FROM forum_posts fp JOIN users u ON u.id=fp.user_id
-    WHERE fp.community_id=$commId AND (fp.status='approved' OR fp.status IS NULL)
+    WHERE fp.community_id=$commId $postWhere
     ORDER BY $orderBy
     LIMIT 50
 ")->fetchAll();

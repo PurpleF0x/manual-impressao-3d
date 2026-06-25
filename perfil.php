@@ -2,6 +2,7 @@
 require_once 'includes/functions.php';
 require_once 'includes/comments.php';
 require_once 'includes/content_filter.php';
+require_once 'includes/missions.php';
 
 if (!isLoggedIn()) {
     redirect('login.php');
@@ -197,6 +198,10 @@ $printers  = $db->prepare("SELECT * FROM user_printers WHERE user_id=? ORDER BY 
 $slicers   = $db->prepare("SELECT * FROM user_slicers WHERE user_id=? ORDER BY created_at DESC");   $slicers->execute([$user['id']]);   $slicers=$slicers->fetchAll();
 $materials = $db->prepare("SELECT * FROM user_materials WHERE user_id=? ORDER BY created_at DESC"); $materials->execute([$user['id']]); $materials=$materials->fetchAll();
 
+// Missões
+$userMissions = getUserMissions((int)$user['id']);
+$missionDefs  = getMissionsDefinitions();
+
 // comentários do utilizador (aprovados)
 $myComments = getUserComments((int)$user['id']);
  
@@ -275,6 +280,7 @@ if (!empty($_POST['action'])) {
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="apple-touch-icon" sizes="192x192" href="/favicon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
   :root {
     --bg:#0a0a0f; --surface:#111118; --surface2:#1a1a26; --surface3:#222235;
@@ -660,7 +666,7 @@ if (!empty($_POST['action'])) {
     <?php if (!empty($bio)): ?><div class="hero-bio"><?php echo nl2br(sanitize($bio)); ?></div><?php endif; ?>
   </div>
 
-  <div class="hero-stats">
+    <div class="hero-stats">
     <div class="xp-widget">
         <div class="xp-header">
             <span class="xp-level-name" style="color:<?php echo $currentLevel['color']; ?>"><?php echo $currentLevel['name']; ?></span>
@@ -676,19 +682,24 @@ if (!empty($_POST['action'])) {
         <?php endif; ?>
     </div>
 
-    <div class="growth-widget">
-        <div class="growth-header">
-            <span>🌱 Crescimento</span>
-            <span><?php echo $growthPoints; ?> GP</span>
+    <div class="growth-widget" style="margin-top: 15px; background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.1); border-radius: 12px; padding: 12px 16px;">
+        <div class="growth-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="color: var(--accent4); font-family: 'Space Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">🌱 Crescimento</span>
+            <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: #fff;"><?php echo $growthPoints; ?> GP</span>
         </div>
-        <div class="growth-bar-bg">
+        <div class="growth-bar-bg" style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden;">
             <?php
-                $growthLevel = floor($growthPoints / 100);
-                $growthProgress = $growthPoints % 100;
+                // Planta evolui a cada 100 GP
+                $plantLevel = floor($growthPoints / 100);
+                $plantProgress = $growthPoints % 100;
+                $stages = ['Semente', 'Broto', 'Plântula', 'Pequena Árvore', 'Árvore Maker', 'Grande Carvalho Tech'];
+                $currentStage = $stages[min($plantLevel, count($stages)-1)];
             ?>
-            <div class="growth-bar-fill" style="width: <?php echo $growthProgress; ?>%"></div>
+            <div class="growth-bar-fill" style="width: <?php echo $plantProgress; ?>%; height: 100%; background: var(--accent4); box-shadow: 0 0 10px rgba(0,255,136,0.3);"></div>
         </div>
-        <div class="growth-footer">Nível da Planta: <?php echo $growthLevel; ?></div>
+        <div class="growth-footer" style="font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 6px; text-align: right;">
+            Estágio: <strong style="color: var(--accent4);"><?php echo $currentStage; ?></strong> (Nível <?php echo $plantLevel; ?>)
+        </div>
     </div>
 
     <div style="display:flex; gap:16px; margin-top:8px">
@@ -710,6 +721,7 @@ if (!empty($_POST['action'])) {
 <!-- TABS BAR -->
 <div class="tabs-bar" id="tabsBar">
   <button class="tab-btn active" id="tb-info"      onclick="switchTab('info',this)">👤 Informações</button>
+  <button class="tab-btn"        id="tb-missions"  onclick="switchTab('missions',this)">🎯 Missões</button>
   <button class="tab-btn"        id="tb-printers"  onclick="switchTab('printers',this)">🖨️ Impressoras</button>
   <button class="tab-btn"        id="tb-slicers"   onclick="switchTab('slicers',this)">⚙️ Slicers</button>
   <button class="tab-btn"        id="tb-materials" onclick="switchTab('materials',this)">🧵 Materiais</button>
@@ -787,6 +799,111 @@ if (!empty($_POST['action'])) {
           <span style="font-size:13px;color:var(--muted);">A usar avatar gerado automaticamente</span>
         <?php endif; ?>
       </div>
+    </div>
+  </section>
+</div>
+
+<!-- ════ TAB: MISSÕES ════ -->
+<div class="tab-panel" id="tab-missions">
+  <section class="section">
+    <div class="section-header">
+      <div class="section-number">02</div>
+      <div class="section-title"><h2>Missões Diárias e Semanais</h2><p>Completa objetivos para ganhar XP e pontos de crescimento para a tua planta</p></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span class="icon">🌱</span> Estado da Planta</div>
+        <div class="growth-widget" style="margin-top: 0; background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.1); border-radius: 12px; padding: 18px 22px;">
+            <div class="growth-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span style="color: var(--accent4); font-family: 'Space Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">Progresso da Planta</span>
+                <span style="font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: #fff;"><?php echo $growthPoints; ?> GP</span>
+            </div>
+            <div class="growth-bar-bg" style="height: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; margin-bottom: 12px;">
+                <div class="growth-bar-fill" style="width: <?php echo $plantProgress; ?>%; height: 100%; background: linear-gradient(90deg, var(--accent4), #00ffaa); box-shadow: 0 0 15px rgba(0,255,136,0.4);"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <div style="font-size: 12px; color: var(--muted); line-height: 1.4;">
+                    Estágio atual: <strong style="color: #fff;"><?php echo $currentStage; ?></strong><br>
+                    Próximo nível: <strong><?php echo (100 - $plantProgress); ?> GP</strong>
+                </div>
+                <div style="font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent4); text-transform: uppercase;">
+                    Nível <?php echo $plantLevel; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span class="icon">🎯</span> Missões Ativas</div>
+
+        <div style="display: grid; gap: 16px;">
+            <?php
+            $dailyKeys = array_filter(array_keys($missionDefs), fn($k) => !isset($missionDefs[$k]['type']) || $missionDefs[$k]['type'] === 'daily');
+            $weeklyKeys = array_filter(array_keys($missionDefs), fn($k) => ($missionDefs[$k]['type'] ?? '') === 'weekly');
+            ?>
+
+            <div style="font-family: 'Syne'; font-size: 12px; color: var(--accent); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;">Objetivos Diários</div>
+            <?php foreach($dailyKeys as $key):
+                $def = $missionDefs[$key];
+                $prog = $userMissions['list'][$key] ?? ['current'=>0, 'completed'=>false, 'claimed'=>false];
+                $pct = min(100, ($prog['current'] / $def['goal']) * 100);
+            ?>
+                <div class="item-card <?php echo $prog['completed'] ? 'completed' : ''; ?>" style="padding: 16px; <?php echo $prog['completed'] ? 'border-color: rgba(0,255,136,0.3); background: rgba(0,255,136,0.02);' : ''; ?>">
+                    <div style="display: flex; gap: 14px; align-items: center;">
+                        <div style="font-size: 24px; width: 48px; height: 48px; background: var(--surface2); border-radius: 12px; display: flex; align-items: center; justify-content: center;"><?php echo $def['icon']; ?></div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 700; color: #fff; font-size: 14px; margin-bottom: 2px;"><?php echo $def['title']; ?></div>
+                            <div style="font-size: 12px; color: var(--muted);"><?php echo $def['desc']; ?></div>
+                            <div style="margin-top: 8px; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden;">
+                                <div style="width: <?php echo $pct; ?>%; height: 100%; background: var(--accent2); transition: width 0.4s;"></div>
+                            </div>
+                        </div>
+                        <div style="text-align: right; min-width: 60px;">
+                            <?php if($prog['claimed']): ?>
+                                <span style="color: var(--accent4); font-size: 12px; font-weight: 700;">RECLAMADO ✅</span>
+                            <?php elseif($prog['completed']): ?>
+                                <button class="btn btn-primary" style="padding: 6px 12px; font-size: 10px;" onclick="claimProfileMission('<?php echo $key; ?>')">RECLAMAR</button>
+                            <?php else: ?>
+                                <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted);"><?php echo $prog['current']; ?>/<?php echo $def['goal']; ?></span>
+                            <?php endif; ?>
+                            <div style="font-family: 'Space Mono', monospace; font-size: 9px; color: var(--accent2); margin-top: 4px;">+<?php echo $def['xp']; ?> XP</div>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+
+            <?php if(!empty($weeklyKeys)): ?>
+                <div style="font-family: 'Syne'; font-size: 12px; color: var(--accent3); margin: 16px 0 4px; text-transform: uppercase; letter-spacing: 1px;">Objetivos Semanais</div>
+                <?php foreach($weeklyKeys as $key):
+                    $def = $missionDefs[$key];
+                    $prog = $userMissions['weekly_list'][$key] ?? ['current'=>0, 'completed'=>false, 'claimed'=>false];
+                    $pct = min(100, ($prog['current'] / $def['goal']) * 100);
+                ?>
+                    <div class="item-card <?php echo $prog['completed'] ? 'completed' : ''; ?>" style="padding: 16px; <?php echo $prog['completed'] ? 'border-color: rgba(124,58,237,0.3); background: rgba(124,58,237,0.02);' : ''; ?>">
+                        <div style="display: flex; gap: 14px; align-items: center;">
+                            <div style="font-size: 24px; width: 48px; height: 48px; background: var(--surface2); border-radius: 12px; display: flex; align-items: center; justify-content: center;"><?php echo $def['icon']; ?></div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 700; color: #fff; font-size: 14px; margin-bottom: 2px;"><?php echo $def['title']; ?></div>
+                                <div style="font-size: 12px; color: var(--muted);"><?php echo $def['desc']; ?></div>
+                                <div style="margin-top: 8px; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden;">
+                                    <div style="width: <?php echo $pct; ?>%; height: 100%; background: var(--accent3); transition: width 0.4s;"></div>
+                                </div>
+                            </div>
+                            <div style="text-align: right; min-width: 60px;">
+                                <?php if($prog['claimed']): ?>
+                                    <span style="color: var(--accent4); font-size: 12px; font-weight: 700;">RECLAMADO ✅</span>
+                                <?php elseif($prog['completed']): ?>
+                                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 10px; background: var(--accent3);" onclick="claimProfileMission('<?php echo $key; ?>')">RECLAMAR</button>
+                                <?php else: ?>
+                                    <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted);"><?php echo $prog['current']; ?>/<?php echo $def['goal']; ?></span>
+                                <?php endif; ?>
+                                <div style="font-family: 'Space Mono', monospace; font-size: 9px; color: var(--accent3); margin-top: 4px;">+<?php echo $def['xp']; ?> XP</div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
     </div>
   </section>
 </div>
@@ -1351,6 +1468,27 @@ function updateBadgeCount(input) {
         btn.disabled = false;
         btn.style.opacity = '1';
     }
+}
+
+async function claimProfileMission(key) {
+    try {
+        const res = await fetch('api/missions.php', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ action: 'claim', mission_key: key })
+        });
+        const data = await res.json();
+        if (data.success) {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#00ff88', '#ff6b35', '#7c3aed', '#00e5ff']
+            });
+            new Audio('assets/audio/success.mp3').play();
+            setTimeout(() => location.reload(), 1500);
+        }
+    } catch(e) { console.error(e); }
 }
 
 // MANTER TAB APÓS SUBMIT
