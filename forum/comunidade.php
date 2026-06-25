@@ -49,7 +49,7 @@ if (!empty($_SESSION['forum_flash'])) {
 
 // Regras de visibilidade de posts
 $postWhere = "AND (fp.status='approved' OR fp.status IS NULL)";
-if ($isMod) {
+if ($canMod) {
     // Moderadores vêem tudo menos os rejeitados
     $postWhere = "AND fp.status != 'rejected'";
 } elseif ($currentUser) {

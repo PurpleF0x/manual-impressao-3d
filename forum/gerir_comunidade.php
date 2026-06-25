@@ -480,6 +480,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
             <?php endif; ?>
         </div>
     </div>
+    <?php endif; ?>
+    </div>
 
     <!-- TAB: PENDENTES -->
     <div class="tab-panel" id="tab-pendentes">
