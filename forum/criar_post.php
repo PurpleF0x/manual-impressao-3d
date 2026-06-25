@@ -1,5 +1,4 @@
 <?php
-ob_start();
 /**
  * forum/criar_post.php — Criar novo post
  */
