@@ -15,7 +15,17 @@ require_once 'includes/functions.php';
             --text: #e8e8f0; --muted: #888899; --border: rgba(0,229,255,0.15);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 40px 20px; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            padding: 40px 20px;
+            background-image: linear-gradient(rgba(10, 10, 15, 0.9), rgba(10, 10, 15, 0.9)), url('https://images.unsplash.com/photo-1581092160562-40aa08e78837?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
         .container { max-width: 800px; margin: 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 40px; }
         h1 { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; color: #fff; margin-bottom: 24px; }
         h1 span { color: var(--accent); }
