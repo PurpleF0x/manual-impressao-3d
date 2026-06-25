@@ -40,13 +40,23 @@ function sendEmail(
     try {
         // ── Servidor SMTP ──
         $mail->isSMTP();
-        $mail->Host       = MAIL_HOST;
+        // Forçar IPv4 se houver problemas de rede (smtp.gmail.com resolve para IPv6 às vezes)
+        $mail->Host       = gethostbyname(MAIL_HOST);
         $mail->SMTPAuth   = true;
         $mail->Username   = MAIL_USERNAME;
         $mail->Password   = MAIL_PASSWORD;
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = MAIL_PORT;
         $mail->CharSet    = 'UTF-8';
+
+        // Opções de SSL para ambientes Cloud (Render/Docker)
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            ]
+        ];
 
         // ── Remetente e destinatário ──
         $mail->setFrom(MAIL_USERNAME, MAIL_FROM_NAME);
