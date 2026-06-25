@@ -1,32 +1,15 @@
 <?php
 /**
- * Envio de Email via Gmail SMTP — PHPMailer (sem Composer)
- *
- * Estrutura de ficheiros:
- *   includes/
- *     mail_config.php
- *     PHPMailer/ (Exception.php, PHPMailer.php, SMTP.php)
+ * Envio de Email via Resend API (HTTP)
+ * Substitui o PHPMailer para evitar bloqueios de porta SMTP no Render.
  */
 
-// Carregar PHPMailer (sem Composer)
-require_once __DIR__ . '/PHPMailer/Exception.php';
-require_once __DIR__ . '/PHPMailer/PHPMailer.php';
-require_once __DIR__ . '/PHPMailer/SMTP.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
-
-// ─── CREDENCIAIS GMAIL (VIA ENV VARS NO RENDER) ───────────────
-define('MAIL_HOST',     'smtp.gmail.com');
-define('MAIL_USERNAME', getenv('GMAIL_USER') ?: '3d.escolas@gmail.com');
-define('MAIL_PASSWORD', getenv('GMAIL_PASSWORD')); // Definir no Render (Palavra-passe de App)
-define('MAIL_PORT',     587);
-define('MAIL_FROM_NAME','Manual Impressão 3D');
-// ──────────────────────────────────────────────────────────────
+define('RESEND_API_KEY', getenv('RESEND_API_KEY'));
+define('MAIL_FROM',      'onboarding@resend.dev'); // Email padrão de teste do Resend
+define('MAIL_FROM_NAME', 'Manual Impressão 3D');
 
 /**
- * Envia um email via Gmail SMTP.
+ * Envia um email via Resend API usando CURL.
  */
 function sendEmail(
     string $toEmail,
@@ -35,45 +18,40 @@ function sendEmail(
     string $bodyHtml,
     string $bodyText = null
 ): bool {
-    $mail = new PHPMailer(true);
+    $apiKey = RESEND_API_KEY;
 
-    try {
-        // ── Servidor SMTP ──
-        $mail->isSMTP();
-        // Forçar IPv4 se houver problemas de rede (smtp.gmail.com resolve para IPv6 às vezes)
-        $mail->Host       = gethostbyname(MAIL_HOST);
-        $mail->SMTPAuth   = true;
-        $mail->Username   = MAIL_USERNAME;
-        $mail->Password   = MAIL_PASSWORD;
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // SSL Direto
-        $mail->Port       = 465;
-        $mail->CharSet    = 'UTF-8';
+    if (!$apiKey) {
+        error_log("Erro: RESEND_API_KEY não configurada.");
+        return false;
+    }
 
-        // Opções de SSL para ambientes Cloud (Render/Docker)
-        $mail->SMTPOptions = [
-            'ssl' => [
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-                'allow_self_signed' => true
-            ]
-        ];
+    $payload = [
+        'from'    => MAIL_FROM_NAME . ' <' . MAIL_FROM . '>',
+        'to'      => [$toEmail],
+        'subject' => $subject,
+        'html'    => $bodyHtml,
+        'text'    => $bodyText ?? strip_tags($bodyHtml),
+    ];
 
-        // ── Remetente e destinatário ──
-        $mail->setFrom(MAIL_USERNAME, MAIL_FROM_NAME);
-        $mail->addAddress($toEmail, $toName);
-        $mail->addReplyTo(MAIL_USERNAME, MAIL_FROM_NAME);
+    $ch = curl_init('https://api.resend.com/emails');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode($payload),
+        CURLOPT_HTTPHEADER     => [
+            'Authorization: Bearer ' . $apiKey,
+            'Content-Type: application/json'
+        ],
+    ]);
 
-        // ── Conteúdo ──
-        $mail->isHTML(true);
-        $mail->Subject = $subject;
-        $mail->Body    = $bodyHtml;
-        $mail->AltBody = $bodyText ?? strip_tags($bodyHtml);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
 
-        $mail->send();
+    if ($httpCode >= 200 && $httpCode < 300) {
         return true;
-
-    } catch (Exception $e) {
-        error_log('Erro ao enviar email para ' . $toEmail . ': ' . $mail->ErrorInfo);
+    } else {
+        error_log("Erro Resend API ($httpCode): " . $response);
         return false;
     }
 }
@@ -83,22 +61,17 @@ function sendEmail(
  */
 function sendWelcomeEmail(string $toEmail, string $toName): bool {
     $subject = 'Bem-vindo ao Manual de Impressão 3D!';
-
     $html = "
-    <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+    <div style='font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;'>
         <h2 style='color: #00e5ff;'>Olá, {$toName}! 👋</h2>
         <p>A tua conta foi criada com sucesso no <strong>Manual de Impressão 3D</strong>.</p>
-        <p>Já podes aceder a todo o conteúdo do manual, guardar favoritos e deixar comentários.</p>
+        <p>Já podes aceder a todo o conteúdo, guardar favoritos e deixar comentários.</p>
         <br>
         <a href='https://manual-impressao-3d.onrender.com'
            style='background:#00e5ff; color:#000; padding:12px 24px;
-                  text-decoration:none; border-radius:6px; font-weight:bold;'>
+                  text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>
             Ir para o Manual
         </a>
-        <br><br>
-        <p style='color:#888; font-size:12px;'>
-            Se não criaste esta conta, podes ignorar este email.
-        </p>
     </div>";
 
     return sendEmail($toEmail, $toName, $subject, $html);
@@ -109,23 +82,18 @@ function sendWelcomeEmail(string $toEmail, string $toName): bool {
  */
 function sendPasswordResetEmail(string $toEmail, string $toName, string $resetToken, string $resetUrl): bool {
     $subject = 'Recuperação de Password — Manual 3D';
-
     $html = "
-    <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+    <div style='font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;'>
         <h2 style='color: #ff6b35;'>Recuperação de Password</h2>
         <p>Olá <strong>{$toName}</strong>,</p>
         <p>Recebemos um pedido para redefinir a tua password.</p>
-        <p>Clica no botão abaixo — o link é válido durante <strong>1 hora</strong>.</p>
+        <p>Clica no botão abaixo — o link é válido durante 1 hora.</p>
         <br>
         <a href='{$resetUrl}'
            style='background:#ff6b35; color:#fff; padding:12px 24px;
-                  text-decoration:none; border-radius:6px; font-weight:bold;'>
+                  text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>
             Redefinir Password
         </a>
-        <br><br>
-        <p style='color:#888; font-size:12px;'>
-            Se não pediste a recuperação, ignora este email — a tua conta está segura.
-        </p>
     </div>";
 
     return sendEmail($toEmail, $toName, $subject, $html);
