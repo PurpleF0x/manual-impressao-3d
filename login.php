@@ -223,6 +223,9 @@ $backHref  = strpos($redirectTo, 'forum') !== false ? $redirectTo : 'index.php';
 
         <div class="auth-footer">
             <p>Ainda não tens conta? <a href="register.php">Criar Conta</a></p>
+            <p style="margin-top:15px; font-size:12px; opacity:0.7;">
+                Problemas com a conta? <a href="mailto:3d.escolas@gmail.com?subject=Ajuda com Conta Manual 3D" style="color:var(--muted);">Contactar Suporte</a>
+            </p>
         </div>
     </div>
 

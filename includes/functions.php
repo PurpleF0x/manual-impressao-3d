@@ -485,59 +485,50 @@ function getTopBadges(int $userId): array {
     $db = getDB();
 
     // 1. Tentar obter da tabela de personalização (Novo Sistema)
+    $val = null;
     try {
         $stmt = $db->prepare("SELECT top_badges FROM user_profile_config WHERE user_id = ?");
         $stmt->execute([$userId]);
         $val = $stmt->fetchColumn();
-        if ($val) {
-            $ids = json_decode($val, true) ?: [];
-            if (!empty($ids)) {
-                $placeholders = implode(',', array_fill(0, count($ids), '?'));
-                $stmt = $db->prepare("SELECT id, name, description, category, css_value FROM shop_items WHERE id IN ($placeholders)");
-                $stmt->execute($ids);
-                $items = $stmt->fetchAll();
-
-                $top = [];
-                foreach ($ids as $id) {
-                    foreach ($items as $item) {
-                        if ((int)$item['id'] === (int)$id) {
-                            $top[] = [
-                                'id'    => $item['id'],
-                                'name'  => $item['name'],
-                                'desc'  => $item['description'],
-                                'icon'  => $item['css_value'],
-                                'css_value' => $item['css_value'],
-                                'category' => $item['category']
-                            ];
-                            break;
-                        }
-                    }
-                }
-                return array_slice($top, 0, 3);
-            }
-        }
     } catch (Exception $e) {}
 
-    // 2. Fallback para a tabela users (Sistema Legado)
-    $stmt = $db->prepare("SELECT top_badges FROM users WHERE id = ?");
-    $stmt->execute([$userId]);
-    $val = $stmt->fetchColumn();
+    // 2. Se não houver na config, tentar na tabela users (Sistema Legado)
+    if (!$val) {
+        try {
+            $stmt = $db->prepare("SELECT top_badges FROM users WHERE id = ?");
+            $stmt->execute([$userId]);
+            $val = $stmt->fetchColumn();
+        } catch (Exception $e) {}
+    }
+
     if (!$val) return [];
 
-    $selectedKeys = json_decode($val, true) ?: [];
+    $keysOrIds = json_decode($val, true) ?: [];
+    if (empty($keysOrIds)) return [];
+
     $top = [];
-    foreach ($selectedKeys as $key) {
-        $stmt = $db->prepare("SELECT id, name, description, category, css_value FROM shop_items WHERE item_key = ? LIMIT 1");
-        $stmt->execute([$key]);
-        $item = $stmt->fetch();
+    foreach ($keysOrIds as $itemRef) {
+        $item = null;
+        if (is_numeric($itemRef)) {
+            // É um ID
+            $stmt = $db->prepare("SELECT id, name, description, category, css_value FROM shop_items WHERE id = ? LIMIT 1");
+            $stmt->execute([$itemRef]);
+            $item = $stmt->fetch();
+        } else {
+            // É uma Key (Legado)
+            $stmt = $db->prepare("SELECT id, name, description, category, css_value FROM shop_items WHERE item_key = ? LIMIT 1");
+            $stmt->execute([$itemRef]);
+            $item = $stmt->fetch();
+        }
+
         if ($item) {
             $top[] = [
-                'id'    => $item['id'],
-                'name'  => $item['name'],
-                'desc'  => $item['description'],
-                'icon'  => $item['css_value'],
-                'css_value' => $item['css_value'],
-                'category' => $item['category']
+                'id'        => $item['id'],
+                'name'      => $item['name'],
+                'desc'      => $item['description'],
+                'category'  => $item['category'],
+                'icon'      => $item['css_value'], // Para compatibilidade manual
+                'css_value' => $item['css_value']  // Para compatibilidade fórum
             ];
         }
     }

@@ -143,7 +143,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php if ($success): ?>
         <div class="alert alert-success">
             &#x2705; Se o email estiver registado, receberás em breve um link para redefinir a palavra-passe.<br>
-            <small style="margin-top:6px;display:block;opacity:0.8">Verifica também a pasta de spam. O link é válido por 1 hora.</small>
+            <strong style="display:block;margin-top:10px;color:#fff;">⚠️ ATENÇÃO: Verifica a tua pasta de Lixo Eletrónico ou SPAM.</strong>
+            <small style="margin-top:6px;display:block;opacity:0.8">O link é válido por 1 hora.</small>
         </div>
         <div class="footer">
             <a href="login.php">← Voltar ao login</a>
