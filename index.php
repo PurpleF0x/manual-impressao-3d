@@ -44,9 +44,9 @@ if (isLoggedIn()) {
 /* ── Missions Widget ── */
 #missionsWidget {
     position: fixed;
-    bottom: 92px; /* Empilhado acima do botão da IA (24 + 56 + 12 gap) */
-    right: 24px;
-    z-index: 9999;
+    bottom: 24px;
+    left: 24px;
+    z-index: 10000; /* Por cima da sidebar */
     font-family: 'Inter', sans-serif;
 }
 
@@ -57,8 +57,7 @@ if (isLoggedIn()) {
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(255,107,53,0.4);
     display: flex; align-items: center; justify-content: center;
-    font-size: 24px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
+    font-size: 24px; transition: all 0.3s;
     animation: missionPulse 2s infinite;
 }
 
@@ -68,27 +67,17 @@ if (isLoggedIn()) {
     100% { box-shadow: 0 0 0 0 rgba(255,107,53, 0); }
 }
 
-#missions-btn:hover { transform: scale(1.1) rotate(5deg); }
+#missions-btn:hover { transform: scale(1.1); }
 
-#missions-btn::after {
-    content: 'Missões';
-    position: absolute;
-    right: 68px; /* Aparece à esquerda do botão */
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(124, 58, 237, 0.9);
-    border-radius: 8px;
-    padding: 6px 12px;
-    color: #fff;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    white-space: nowrap;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-    pointer-events: none;
+#missions-panel {
+    display: none; position: absolute; bottom: 68px; left: 0;
+    width: 340px; max-height: 480px;
+    background: #111118; border: 1px solid rgba(255,107,53,0.2);
+    border-radius: 18px; box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+    flex-direction: column; overflow: hidden;
+    animation: aiSlideUp 0.2s ease;
 }
+#missions-panel.open { display: flex; }
 
 #missions-panel {
     display: none; position: absolute; bottom: 80px; right: 0;
