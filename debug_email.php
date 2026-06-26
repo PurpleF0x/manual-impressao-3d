@@ -1,42 +1,33 @@
 <?php
 /**
- * Ficheiro de Teste SMTP no Render
+ * Ficheiro de Teste Profissional de Emails
  */
 require_once 'includes/functions.php';
 require_once 'includes/mail_config.php';
 
-echo "<h1>Teste de Envio de Email</h1>";
+$emailTeste = '3d.escolas@gmail.com'; // O teu email de teste
 
-// 1. Verificar se as variáveis de ambiente estão a ser lidas
-$user = getenv('GMAIL_USER') ?: 'Não definida';
-$pass = getenv('GMAIL_PASSWORD') ? '****** (Definida)' : 'Não definida';
+echo "<h1>Painel de Teste de Comunicações</h1>";
+echo "<p>Domínio Configurado: <strong>" . SITE_URL . "</strong></p>";
 
-echo "<p><strong>Configuração:</strong></p>";
+if (isset($_GET['acao'])) {
+    if ($_GET['acao'] === 'boasvindas') {
+        echo "<p>A enviar email de boas-vindas...</p>";
+        $res = sendWelcomeEmail($emailTeste, "Explorador 3D");
+    } elseif ($_GET['acao'] === 'recuperacao') {
+        echo "<p>A enviar email de recuperação...</p>";
+        $res = sendPasswordResetEmail($emailTeste, "Utilizador Teste", "token_123", SITE_URL . "/reset_password.php?token=123");
+    }
+
+    if ($res) {
+        echo "<h2 style='color:green;'>✅ Email enviado com sucesso para $emailTeste!</h2>";
+    } else {
+        echo "<h2 style='color:red;'>❌ Erro ao enviar. Verifica os logs do Render.</h2>";
+    }
+}
+
 echo "<ul>";
-echo "<li>Utilizador: $user</li>";
-echo "<li>Palavra-passe: $pass</li>";
+echo "<li><a href='?acao=boasvindas'>Testar Email de Boas-vindas</a></li>";
+echo "<li><a href='?acao=recuperacao'>Testar Email de Recuperação</a></li>";
 echo "</ul>";
-
-if ($user === 'Não definida' || $pass === 'Não definida') {
-    echo "<p style='color:red;'>⚠️ Erro: As variáveis de ambiente não estão configuradas no Render!</p>";
-    exit;
-}
-
-// 2. Tentar enviar o email
-echo "<p>A tentar enviar email para <strong>$user</strong>...</p>";
-
-$assunto = "Teste do Sistema — Manual 3D";
-$corpo   = "<h2>Olá!</h2><p>Se estás a ler isto, o motor SMTP no Render está <strong>operacional</strong>.</p><hr><p>Manual de Impressão 3D</p>";
-
-$resultado = sendEmail($user, "Admin Manual", $assunto, $corpo);
-
-if ($resultado) {
-    echo "<h2 style='color:green;'>✅ SUCESSO!</h2>";
-    echo "<p>O email foi aceite pelo servidor da Google. Verifica a tua caixa de entrada (e a pasta de spam).</p>";
-} else {
-    echo "<h2 style='color:red;'>❌ FALHOU</h2>";
-    echo "<p>O envio falhou. Verificaste se a 'Palavra-passe de App' está correta e sem espaços?</p>";
-    echo "<p>Consulta os <strong>Logs</strong> no painel do Render para ver o erro detalhado do PHPMailer.</p>";
-}
-
 echo "<br><a href='index.php'>Voltar ao Início</a>";

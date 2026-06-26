@@ -103,6 +103,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
             addLog($db,$uid,$targetId,'unban','Desbanido');
             $flash = array('ok', "✅ {$target['full_name']} desbanido");
 
+        } elseif ($action === 'delete_user' && amMaster($currentUser)) {
+            // Eliminação definitiva da base de dados
+            $db->prepare("DELETE FROM users WHERE id=?")->execute(array($targetId));
+            addLog($db,$uid,null,'delete_user',"Utilizador ID #$targetId eliminado definitivamente");
+            $flash = array('ok', "🗑️ Utilizador eliminado da base de dados com sucesso.");
+
         } elseif ($action === 'change_role' && amAdmin($currentUser)) {
             $newRole = $_POST['new_role'] ?? 'user';
             $allowed = amMaster($currentUser)
@@ -607,6 +613,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                 <?php endif; ?>
                 <?php if (amMaster($currentUser)): ?>
                 <button class="act-btn coins" onclick="openModal('coins',<?php echo $u['id']; ?>,'<?php echo addslashes(sanitize($u['full_name'])); ?>')">🪙 Moedas</button>
+                <button class="act-btn ban" style="border-color:#ff4444; color:#ff4444" onclick="if(confirm('ELIMINAR DEFINITIVAMENTE? Esta ação não pode ser revertida e apagará todos os dados, posts e comentários desta pessoa.')) quickAction('delete_user',<?php echo $u['id']; ?>)">🗑️ ELIMINAR</button>
                 <?php endif; ?>
                 <a href="perfil.php?id=<?php echo $u['id']; ?>" class="act-btn" style="text-decoration:none">👤</a>
             </div>
