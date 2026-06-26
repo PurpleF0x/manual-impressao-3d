@@ -45,12 +45,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $reset) {
                    ->execute([$hash, $reset['email']]);
 
                 // Obter ID do utilizador para limpar sessões
-                $stmtUser = $db->prepare("SELECT id FROM users WHERE email = ?");
+                $stmtUser = $db->prepare("SELECT id, full_name, email FROM users WHERE email = ?");
                 $stmtUser->execute([$reset['email']]);
                 $userFound = $stmtUser->fetch();
                 if ($userFound) {
                     // Invalidar sessões de "lembrar-me" antigas
                     $db->prepare("DELETE FROM user_sessions WHERE user_id = ?")->execute([$userFound['id']]);
+
+                    // Enviar email de confirmação
+                    require_once 'includes/mail_config.php';
+                    sendPasswordChangedEmail($userFound['email'], $userFound['full_name']);
                 }
 
                 // Marcar token como usado

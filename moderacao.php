@@ -341,6 +341,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
         <div class="sidebar-title">🛡️ Moderação</div>
         <div class="sidebar-sub"><?php echo sanitize($user['full_name']); ?> · <?php echo $user['role']; ?></div>
     </div>
+    <div class="nav-label">Administração</div>
+    <button class="nav-btn" id="nav-dashboard" onclick="switchTab('dashboard',this)"><span><span class="icon">📊</span>Dashboard Global</span></button>
+    <div class="sidebar-sep"></div>
     <div class="nav-label">Fila de revisão</div>
     <button class="nav-btn active" id="nav-pendente" onclick="switchTab('pendente',this)"><span><span class="icon">⏳</span>Pendentes</span><span class="nav-count pendente"><?php echo count($pending); ?></span></button>
     <button class="nav-btn" id="nav-bloqueado" onclick="switchTab('bloqueado',this)"><span><span class="icon">🚫</span>Bloqueados</span><span class="nav-count bloqueado"><?php echo count($blocked); ?></span></button>
@@ -367,6 +370,63 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
     <?php if (!empty($flash)): ?>
     <div class="flash <?php echo $flash['type']; ?>"><?php echo sanitize($flash['msg']); ?></div>
     <?php endif; ?>
+
+    <!-- Dashboard Global (Novo) -->
+    <div class="tab-panel" id="tab-dashboard">
+        <div class="panel-title">📊 Dashboard de Gestão</div>
+        <div class="panel-sub">Visão geral do ecossistema Manual 3D</div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-bottom:40px">
+            <?php
+            $totalUsers = $db->query("SELECT COUNT(*) FROM users")->fetchColumn();
+            $totalPosts = $db->query("SELECT COUNT(*) FROM forum_posts")->fetchColumn();
+            $totalComms = $db->query("SELECT COUNT(*) FROM forum_communities")->fetchColumn();
+            $totalGP    = $db->query("SELECT SUM(growth_points) FROM user_profile_config")->fetchColumn();
+            ?>
+            <div class="stat-card" style="border-left: 4px solid var(--accent)">
+                <div class="num" style="color:var(--accent)"><?php echo number_format($totalUsers); ?></div>
+                <div class="lbl">Utilizadores Registados</div>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--accent3)">
+                <div class="num" style="color:var(--accent3)"><?php echo number_format($totalPosts); ?></div>
+                <div class="lbl">Posts no Fórum</div>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--accent4)">
+                <div class="num" style="color:var(--accent4)"><?php echo number_format($totalGP); ?></div>
+                <div class="lbl">GP Totais (Crescimento)</div>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--accent2)">
+                <div class="num" style="color:var(--accent2)"><?php echo $totalComms; ?></div>
+                <div class="lbl">Comunidades Ativas</div>
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px">
+            <div class="card" style="padding:24px">
+                <h3 style="font-family:'Syne'; margin-bottom:15px">📈 Atividade Recente</h3>
+                <div style="display:flex; flex-direction:column; gap:12px">
+                    <?php
+                    $recentActivity = $db->query("SELECT al.*, u.username FROM activity_logs al LEFT JOIN users u ON u.id=al.user_id ORDER BY al.created_at DESC LIMIT 5")->fetchAll();
+                    foreach($recentActivity as $act): ?>
+                        <div style="font-size:12px; border-bottom:1px solid var(--border); padding-bottom:8px">
+                            <span style="color:var(--accent)">@<?php echo sanitize($act['username'] ?? 'Sistema'); ?></span>
+                            <span style="color:var(--muted)">fez</span> <strong><?php echo sanitize($act['action']); ?></strong>
+                            <div style="color:var(--muted); font-size:10px"><?php echo date('d/m H:i', strtotime($act['created_at'])); ?></div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <div class="card" style="padding:24px">
+                <h3 style="font-family:'Syne'; margin-bottom:15px">🛠️ Atalhos Rápidos</h3>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                    <a href="forum/admin.php" class="btn btn-none" style="text-decoration:none; text-align:center; justify-content:center">Gere Utilizadores</a>
+                    <a href="debug_email.php" class="btn btn-none" style="text-decoration:none; text-align:center; justify-content:center">Teste Email</a>
+                    <a href="calculadora.php" class="btn btn-none" style="text-decoration:none; text-align:center; justify-content:center">Calculadora</a>
+                    <a href="index.php" class="btn btn-none" style="text-decoration:none; text-align:center; justify-content:center">Ver Manual</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Pendentes -->
     <div class="tab-panel active" id="tab-pendente">

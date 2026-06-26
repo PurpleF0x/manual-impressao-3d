@@ -41,7 +41,7 @@ function sendEmail(
     ]);
 
     $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $httpCode = curl_getinfo($ch, CURLINFO_CODE);
     curl_close($ch);
 
     return ($httpCode >= 200 && $httpCode < 300);
@@ -103,6 +103,23 @@ function sendPasswordResetEmail(string $toEmail, string $toName, string $resetTo
             <a href='{$resetUrl}' style='background: #ff6b35; color: #fff; padding: 14px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-block;'>REDEFINIR PALAVRA-PASSE</a>
         </div>
         <p style='font-size: 14px; color: #888899;'>Se não pediste esta alteração, a tua conta continua segura e podes ignorar este aviso.</p>";
+
+    return sendEmail($toEmail, $toName, $subject, getEmailTemplate($content));
+}
+
+/**
+ * Email de confirmação de alteração de password
+ */
+function sendPasswordChangedEmail(string $toEmail, string $toName): bool {
+    $subject = "Palavra-passe Alterada — Manual 3D";
+    $content = "
+        <h2 style='color: #fff; margin-top: 0;'>Segurança da Conta</h2>
+        <p style='font-size: 16px; line-height: 1.6;'>Olá, <strong>{$toName}</strong>.</p>
+        <p style='font-size: 16px; line-height: 1.6;'>Informamos que a palavra-passe da tua conta no <strong>Manual de Impressão 3D</strong> foi alterada com sucesso.</p>
+        <p style='font-size: 16px; line-height: 1.6;'>Se foste tu a realizar esta alteração, podes ignorar este aviso. A tua conta está segura.</p>
+        <div style='padding: 20px; background: rgba(255,107,53,0.1); border-radius: 8px; border: 1px solid rgba(255,107,53,0.2); margin: 20px 0;'>
+            <p style='font-size: 14px; color: #ff6b35; margin: 0;'><strong>Não foste tu?</strong> Se não autorizaste esta alteração, entra em contacto com o suporte imediatamente ou tenta recuperar o acesso na página de login.</p>
+        </div>";
 
     return sendEmail($toEmail, $toName, $subject, getEmailTemplate($content));
 }

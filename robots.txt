@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /config/
+Disallow: /includes/
+Disallow: /api/
+Disallow: /forum/gerir_comunidade.php
+Disallow: /moderacao.php
+Disallow: /dashboard.php
+
+Sitemap: https://manual-3d.pt/sitemap.xml

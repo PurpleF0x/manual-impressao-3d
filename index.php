@@ -3094,7 +3094,76 @@ if (document.getElementById('missionsWidget')) {
     </dl>
   </section>
 
-  <!-- COMENTÁRIOS / DÚVIDAS -->
+  <!-- COMPARADOR DE MATERIAIS -->
+  <section class="section" id="comparador">
+    <div class="section-header">
+      <div class="section-number">05B</div>
+      <div class="section-title">
+        <h2>Comparador de Materiais</h2>
+        <p>Dados técnicos para ajudar na escolha certa</p>
+      </div>
+    </div>
+    <div style="overflow-x:auto; background:var(--surface); border:1px solid var(--border); border-radius:14px;">
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Filamento</th>
+                    <th>Facilidade</th>
+                    <th>Resistência</th>
+                    <th>Resist. Térmica</th>
+                    <th>Warping</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>PLA</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐</td><td>⭐⭐</td><td>Mínimo</td></tr>
+                <tr><td>PETG</td><td>⭐⭐⭐⭐</td><td>⭐⭐⭐</td><td>⭐⭐⭐</td><td>Médio</td></tr>
+                <tr><td>ABS</td><td>⭐⭐</td><td>⭐⭐⭐⭐</td><td>⭐⭐⭐⭐</td><td>Elevado</td></tr>
+                <tr><td>ASA</td><td>⭐⭐</td><td>⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>Elevado</td></tr>
+                <tr><td>TPU</td><td>⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐</td><td>Baixo</td></tr>
+                <tr><td>Nylon</td><td>⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>Crítico</td></tr>
+            </tbody>
+        </table>
+    </div>
+  </section>
+
+  <!-- CALCULADORAS -->
+  <section class="section" id="ferramentas">
+    <div class="card" style="background:linear-gradient(135deg, rgba(0,229,255,0.1), rgba(124,58,237,0.1)); border-color: var(--accent);">
+        <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap">
+            <div style="font-size:40px">🧮</div>
+            <div style="flex:1">
+                <h3 style="margin:0; font-family:'Syne'">Ferramentas de Cálculo</h3>
+                <p style="color:var(--muted); font-size:14px">Estima o custo do filamento e o gasto elétrico de cada impressão.</p>
+            </div>
+            <a href="calculadora.php" class="btn-auth btn-profile" style="background:var(--accent); color:#000; border:none; padding:12px 24px">ABRIR CALCULADORA</a>
+        </div>
+    </div>
+  </section>
+
+  <!-- NOTÍCIAS MAKER -->
+  <section class="section" id="noticias">
+    <div class="section-header">
+      <div class="section-number">12</div>
+      <div class="section-title">
+        <h2>Notícias 3D</h2>
+        <p>O que há de novo no mundo da fabricação aditiva</p>
+      </div>
+    </div>
+    <div class="cards">
+        <div class="card">
+            <span class="tag tag-pro">NOVIDADE</span>
+            <h3 style="margin-top:10px">O Futuro das Impressoras Multi-material</h3>
+            <p style="font-size:13px">Sistemas como o AMS e o MMU3 estão a tornar a impressão colorida acessível a todos.</p>
+            <span style="font-size:10px; color:var(--muted)">Junho 2024</span>
+        </div>
+        <div class="card">
+            <span class="tag tag-beginner">DICA</span>
+            <h3 style="margin-top:10px">IA na Impressão 3D</h3>
+            <p style="font-size:13px">Novos softwares usam inteligência artificial para detetar falhas em tempo real usando câmaras.</p>
+            <span style="font-size:10px; color:var(--muted)">Junho 2024</span>
+        </div>
+    </div>
+  </section>
   <?php require_once 'comments_component.php'; ?>
 
   <footer>

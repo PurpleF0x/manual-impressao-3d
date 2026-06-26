@@ -93,7 +93,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             if (!password_verify($cur, $user['password_hash'])) $errors[] = "Palavra-passe atual incorreta.";
             elseif (strlen($new)<8) $errors[] = "Nova palavra-passe deve ter pelo menos 8 caracteres.";
             elseif ($new!==$con) $errors[] = "As palavras-passe não coincidem.";
-            else { $db->prepare("UPDATE users SET password_hash=? WHERE id=?")->execute([password_hash($new,PASSWORD_DEFAULT),$user['id']]); $success[]="Palavra-passe alterada!"; }
+            else {
+                $db->prepare("UPDATE users SET password_hash=? WHERE id=?")->execute([password_hash($new,PASSWORD_DEFAULT),$user['id']]);
+
+                // Enviar email de confirmação
+                require_once 'includes/mail_config.php';
+                sendPasswordChangedEmail($user['email'], $user['full_name']);
+
+                $success[]="Palavra-passe alterada!";
+            }
         }
         elseif ($action === 'add_printer') {
             $br=trim($_POST['printer_brand']??''); $mo=trim($_POST['printer_model']??'');
