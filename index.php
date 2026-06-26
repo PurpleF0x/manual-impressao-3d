@@ -3163,30 +3163,6 @@ if (document.getElementById('missionsWidget')) {
     </div>
   </section>
 
-  <!-- NOTÍCIAS MAKER -->
-  <section class="section" id="noticias">
-    <div class="section-header">
-      <div class="section-number">12</div>
-      <div class="section-title">
-        <h2>Notícias 3D</h2>
-        <p>O que há de novo no mundo da fabricação aditiva</p>
-      </div>
-    </div>
-    <div class="cards">
-        <div class="card">
-            <span class="tag tag-pro">NOVIDADE</span>
-            <h3 style="margin-top:10px">O Futuro das Impressoras Multi-material</h3>
-            <p style="font-size:13px">Sistemas como o AMS e o MMU3 estão a tornar a impressão colorida acessível a todos.</p>
-            <span style="font-size:10px; color:var(--muted)">Junho 2024</span>
-        </div>
-        <div class="card">
-            <span class="tag tag-beginner">DICA</span>
-            <h3 style="margin-top:10px">IA na Impressão 3D</h3>
-            <p style="font-size:13px">Novos softwares usam inteligência artificial para detetar falhas em tempo real usando câmaras.</p>
-            <span style="font-size:10px; color:var(--muted)">Junho 2024</span>
-        </div>
-    </div>
-  </section>
   <?php require_once 'comments_component.php'; ?>
 
   <footer>
