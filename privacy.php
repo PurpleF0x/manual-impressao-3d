@@ -63,7 +63,11 @@ require_once 'includes/functions.php';
             <li>Enviar notificações importantes sobre a tua conta.</li>
         </ul>
 
-        <h2>3. Partilha de Dados</h2>
+        <h2>3. Cookies e Publicidade</h2>
+        <p>Utilizamos cookies para melhorar a experiência do utilizador e para fins estatísticos. Além disso, utilizamos serviços de terceiros como o <strong>Google AdSense</strong> para apresentar anúncios. Estes parceiros podem utilizar cookies para personalizar os anúncios com base nas suas visitas a este e a outros sites na internet.</p>
+        <p>Pode optar por desativar a publicidade personalizada visitando as Definições de Anúncios do Google.</p>
+
+        <h2>4. Partilha de Dados</h2>
         <p>Não vendemos os teus dados pessoais a terceiros. As tuas informações de perfil público (nome de utilizador, bio, emblemas) são visíveis para outros membros da comunidade.</p>
 
         <h2>4. Segurança</h2>

@@ -104,11 +104,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
             $flash = array('ok', "✅ {$target['full_name']} desbanido");
 
         } elseif ($action === 'delete_user' && amMaster($currentUser)) {
-            // Eliminação definitiva da base de dados
             $db->prepare("DELETE FROM users WHERE id=?")->execute(array($targetId));
             addLog($db,$uid,null,'delete_user',"Utilizador ID #$targetId eliminado definitivamente");
             $flash = array('ok', "🗑️ Utilizador eliminado da base de dados com sucesso.");
 
+        } elseif ($action === 'add_shop_item' && amMaster($currentUser)) {
+            $name = trim($_POST['item_name'] ?? '');
+            $icon = trim($_POST['item_icon'] ?? '');
+            $price = (int)($_POST['item_price'] ?? 0);
+            $cat = $_POST['item_category'] ?? 'badges';
+            $rarity = $_POST['item_rarity'] ?? 'common';
+            if ($name && $icon) {
+                $db->prepare("INSERT INTO shop_items (name, icon, price, category, rarity, is_active) VALUES (?,?,?,?,?,1)")
+                   ->execute([$name, $icon, $price, $cat, $rarity]);
+                $flash = ['ok', "🎉 Item '$name' adicionado à loja!"];
+            }
+        } elseif ($action === 'toggle_shop_item' && amMaster($currentUser)) {
+            $itemId = (int)$_POST['item_id'];
+            $db->prepare("UPDATE shop_items SET is_active = NOT is_active WHERE id = ?")->execute([$itemId]);
+            $flash = ['ok', "Estado do item atualizado."];
         } elseif ($action === 'change_role' && amAdmin($currentUser)) {
             $newRole = $_POST['new_role'] ?? 'user';
             $allowed = amMaster($currentUser)
@@ -484,6 +498,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <a href="?tab=stats"       class="nav-link <?php echo $tab==='stats'?'active':''; ?>"><span class="icon">📊</span> Estatísticas</a>
     <a href="?tab=users"       class="nav-link <?php echo $tab==='users'?'active':''; ?>"><span class="icon">👥</span> Utilizadores</a>
     <a href="?tab=communities" class="nav-link <?php echo $tab==='communities'?'active':''; ?>"><span class="icon">🏘️</span> Comunidades</a>
+    <a href="?tab=loja"        class="nav-link <?php echo $tab==='loja'?'active':''; ?>"><span class="icon">🛒</span> Gestão de Loja</a>
     <a href="?tab=logs"        class="nav-link <?php echo $tab==='logs'?'active':''; ?>"><span class="icon">📋</span> Logs de Auditoria</a>
     <div class="nav-divider"></div>
     <div class="sidebar-title">Links Rápidos</div>
@@ -665,6 +680,78 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 <div style="text-align:center;padding:40px;color:var(--muted)">Nenhuma comunidade encontrada.</div>
 <?php endif; ?>
 
+
+<?php elseif ($tab === 'loja'): ?>
+<div class="page-header">
+    <div class="page-title">🛒 Gestão da Loja</div>
+    <div class="page-sub">Adiciona ou remove itens de personalização de perfil</div>
+</div>
+
+<div style="display:grid; grid-template-columns: 1fr 340px; gap:24px">
+    <div>
+        <h3 style="margin-bottom:15px; font-family:'Syne'; font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:1px">Itens Disponíveis</h3>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px">
+            <?php
+            $items = $db->query("SELECT * FROM shop_items ORDER BY category, price ASC")->fetchAll();
+            foreach($items as $it): ?>
+                <div style="background:var(--surface); border:1px solid <?php echo $it['is_active'] ? 'var(--border2)' : 'rgba(255,68,68,0.2)'; ?>; border-radius:12px; padding:18px; text-align:center; transition:0.2s">
+                    <div style="font-size:32px; margin-bottom:10px"><?php echo $it['icon']; ?></div>
+                    <div style="font-weight:700; font-size:14px; color:#fff; margin-bottom:4px"><?php echo sanitize($it['name']); ?></div>
+                    <div style="font-family:'Space Mono',monospace; font-size:11px; color:var(--accent2); margin-bottom:12px"><?php echo number_format($it['price']); ?> moedas</div>
+
+                    <div style="font-family:'Space Mono',monospace; font-size:9px; color:var(--muted); text-transform:uppercase; margin-bottom:15px; background:var(--surface2); padding:3px 8px; border-radius:4px; display:inline-block">
+                        <?php echo $it['category']; ?>
+                    </div>
+
+                    <form method="POST" style="margin:0">
+                        <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
+                        <input type="hidden" name="action" value="toggle_shop_item">
+                        <input type="hidden" name="item_id" value="<?php echo $it['id']; ?>">
+                        <button type="submit" class="act-btn" style="width:100%; border-color:<?php echo $it['is_active']?'#ff4444':'#00ff88'; ?>; color:<?php echo $it['is_active']?'#ff4444':'#00ff88'; ?>; justify-content:center">
+                            <?php echo $it['is_active'] ? '🗑️ DESATIVAR' : '✅ ATIVAR'; ?>
+                        </button>
+                    </form>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <div style="background:var(--surface); border:1px solid var(--border2); border-radius:16px; padding:24px; height:fit-content; position:sticky; top:80px">
+        <h3 style="font-family:'Syne'; font-size:16px; margin-bottom:20px; color:var(--accent); display:flex; align-items:center; gap:10px">
+            <span>➕</span> Novo Item
+        </h3>
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
+            <input type="hidden" name="action" value="add_shop_item">
+
+            <div class="form-group" style="margin-bottom:15px">
+                <label class="form-label">Nome do Item</label>
+                <input type="text" name="item_name" class="form-input" placeholder="ex: Moldura Neon" required>
+            </div>
+            <div class="form-group" style="margin-bottom:15px">
+                <label class="form-label">Emoji / Ícone</label>
+                <input type="text" name="item_icon" class="form-input" placeholder="ex: ✨" required>
+            </div>
+            <div class="form-group" style="margin-bottom:15px">
+                <label class="form-label">Preço (Moedas)</label>
+                <input type="number" name="item_price" class="form-input" value="500" min="0">
+            </div>
+            <div class="form-group" style="margin-bottom:20px">
+                <label class="form-label">Categoria</label>
+                <select name="item_category" class="form-input">
+                    <option value="badges">🏅 Emblema</option>
+                    <option value="frames">🖼️ Moldura (Perfil)</option>
+                    <option value="accents">🎨 Cor de Destaque</option>
+                    <option value="backgrounds">🌌 Fundo de Perfil</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:14px">💾 CRIAR ITEM</button>
+        </form>
+        <p style="margin-top:20px; font-size:11px; color:var(--muted); text-align:center; line-height:1.5">
+            Ao criar, o item ficará <strong>Ativo</strong> imediatamente para todos os utilizadores na loja do fórum.
+        </p>
+    </div>
+</div>
 
 <?php elseif ($tab === 'logs'): ?>
 <div class="page-header">

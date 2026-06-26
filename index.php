@@ -1919,6 +1919,25 @@ if (document.getElementById('missionsWidget')) {
     box-shadow: 0 0 6px rgba(0,229,255,0.5);
   }
 
+  /* ADS PLACEHOLDERS */
+  .ad-slot {
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    min-height: 90px;
+    overflow: hidden;
+  }
+  .ad-slot::before { content: 'Publicidade'; opacity: 0.5; }
+
   @media (max-width: 1024px) {
     .progress-bar {
       left: 0;
@@ -2298,6 +2317,8 @@ if (document.getElementById('missionsWidget')) {
     <div class="level-label" id="level-label">MODO INICIANTE</div>
     <div class="level-desc" id="level-desc">— Conteúdo simplificado para quem está a começar</div>
   </div>
+
+  <div class="ad-slot" style="max-width: 900px; margin: 20px auto;"></div>
 
   <!-- O QUE É -->
   <section class="section" id="o-que-e">
@@ -2779,6 +2800,8 @@ if (document.getElementById('missionsWidget')) {
       </div>
     </div>
   </section>
+
+  <div class="ad-slot" style="max-width: 900px; margin: 20px auto;"></div>
 
   <!-- PROCESSO -->
   <section class="section" id="processo">
