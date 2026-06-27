@@ -3,6 +3,7 @@ require_once 'includes/functions.php';
 require_once 'includes/comments.php';
 require_once 'includes/content_filter.php';
 require_once 'includes/missions.php';
+require_once 'includes/user_notices.php';
 
 if (!isLoggedIn()) {
     redirect('login.php');
@@ -574,6 +575,7 @@ if (!empty($_POST['action'])) {
 </style>
 </head>
 <body>
+<?php renderUserNotice(); ?>
 
 <button class="menu-toggle" id="menuToggle" onclick="toggleProfileMenu()" aria-label="Abrir menu" aria-expanded="false">?</button>
 <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeProfileMenu()"></div>

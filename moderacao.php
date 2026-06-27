@@ -72,7 +72,7 @@ function sendEmailNotificationMod($userId, $subject, $bodyHtml) {
         $html = "<div style='font-family:Arial,sans-serif;max-width:600px;margin:0 auto'>"
               . "<h3 style='color:#00e5ff'>Ola, " . htmlspecialchars($u['full_name']) . "!</h3>"
               . "<div style='color:#333;line-height:1.6'>{$bodyHtml}</div>"
-              . "<br><a href='https://manual-impressao-3d.free.nf' style='background:#00e5ff;color:#000;padding:10px 22px;text-decoration:none;border-radius:6px;font-weight:bold'>Ir para o Manual</a>"
+              . "<br><a href='https://manual-3d.pt' style='background:#00e5ff;color:#000;padding:10px 22px;text-decoration:none;border-radius:6px;font-weight:bold'>Ir para o Manual</a>"
               . "<p style='color:#888;font-size:12px;margin-top:24px'>Manual de Impressao 3D</p></div>";
         sendEmail($u['email'], $u['full_name'], $subject, $html);
     } catch(Exception $e) { error_log('Email mod: ' . $e->getMessage()); }
@@ -141,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
                       . "<p><strong>Utilizador:</strong> " . htmlspecialchars($targetName) . "</p>"
                       . "<p><strong>Banido por:</strong> " . htmlspecialchars($user['full_name']) . "</p>"
                       . ($adminMessage ? "<p><strong>Motivo:</strong> " . htmlspecialchars($adminMessage) . "</p>" : "")
-                      . "<a href='https://manual-impressao-3d.free.nf/moderacao.php' style='background:#ff4444;color:#fff;padding:10px 22px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin-top:12px'>Ver Moderacao</a></div>";
+                      . "<a href='https://manual-3d.pt/moderacao.php' style='background:#ff4444;color:#fff;padding:10px 22px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin-top:12px'>Ver Moderacao</a></div>";
                 sendEmail($adm['email'], $adm['full_name'], "Utilizador banido: {$targetName}", $html);
             }
             $flash = array('type'=>'danger','msg'=>"Utilizador {$targetName} banido permanentemente.");

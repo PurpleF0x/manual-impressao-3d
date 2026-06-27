@@ -99,9 +99,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
             $flash = array('ok', "🚫 {$target['full_name']} banido");
 
         } elseif ($action === 'unban' && amAdmin($currentUser)) {
-            $db->prepare("UPDATE users SET is_active=TRUE WHERE id=?")->execute(array($targetId));
-            addLog($db,$uid,$targetId,'unban','Desbanido');
-            $flash = array('ok', "✅ {$target['full_name']} desbanido");
+            $db->prepare("UPDATE users SET is_active=TRUE, suspended_until=NULL WHERE id=?")->execute(array($targetId));
+            addLog($db,$uid,$targetId,'unban','Desbanido / Suspensão Limpa');
+            $flash = array('ok', "✅ {$target['full_name']} reativado.");
 
         } elseif ($action === 'delete_user' && amMaster($currentUser)) {
             $db->prepare("DELETE FROM users WHERE id=?")->execute(array($targetId));
@@ -498,6 +498,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <a href="?tab=stats"       class="nav-link <?php echo $tab==='stats'?'active':''; ?>"><span class="icon">📊</span> Estatísticas</a>
     <a href="?tab=users"       class="nav-link <?php echo $tab==='users'?'active':''; ?>"><span class="icon">👥</span> Utilizadores</a>
     <a href="?tab=communities" class="nav-link <?php echo $tab==='communities'?'active':''; ?>"><span class="icon">🏘️</span> Comunidades</a>
+    <a href="?tab=access"      class="nav-link <?php echo $tab==='access'?'active':''; ?>"><span class="icon">🔐</span> Controlo de Acesso</a>
     <a href="?tab=loja"        class="nav-link <?php echo $tab==='loja'?'active':''; ?>"><span class="icon">🛒</span> Gestão de Loja</a>
     <a href="?tab=logs"        class="nav-link <?php echo $tab==='logs'?'active':''; ?>"><span class="icon">📋</span> Logs de Auditoria</a>
     <div class="nav-divider"></div>
@@ -680,6 +681,65 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 <div style="text-align:center;padding:40px;color:var(--muted)">Nenhuma comunidade encontrada.</div>
 <?php endif; ?>
 
+
+<?php elseif ($tab === 'access'): ?>
+<div class="page-header">
+    <div class="page-title">🔐 Controlo de Acesso</div>
+    <div class="page-sub">Utilizadores com restrições ativas (Banidos ou Suspensos)</div>
+</div>
+
+<div style="background:var(--surface); border:1px solid var(--border2); border-radius:16px; overflow:hidden">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Utilizador</th>
+                <th>Estado Atual</th>
+                <th>Motivo / Expira em</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            $restricted = $db->query("SELECT * FROM users WHERE is_active=0 OR (suspended_until IS NOT NULL AND suspended_until > NOW()) ORDER BY is_active ASC, suspended_until DESC")->fetchAll();
+            foreach($restricted as $u):
+                $isBan = !$u['is_active'];
+                $isSusp = !$isBan && $u['suspended_until'] && strtotime($u['suspended_until']) > time();
+            ?>
+            <tr>
+                <td>
+                    <div style="font-weight:700; color:#fff"><?php echo sanitize($u['full_name']); ?></div>
+                    <div style="font-size:11px; color:var(--muted)">@<?php echo sanitize($u['username']); ?></div>
+                </td>
+                <td>
+                    <?php if($isBan): ?>
+                        <span class="badge" style="background:rgba(255,0,0,0.1); color:#ff4444; border:1px solid rgba(255,0,0,0.2)">🚫 BANIDO</span>
+                    <?php else: ?>
+                        <span class="badge" style="background:rgba(124,58,237,0.1); color:#a78bfa; border:1px solid rgba(124,58,237,0.2)">🔒 SUSPENSO</span>
+                    <?php endif; ?>
+                </td>
+                <td style="font-size:12px; color:var(--muted)">
+                    <?php if($isSusp): ?>
+                        Expira a: <?php echo date('d/m H:i', strtotime($u['suspended_until'])); ?>
+                    <?php else: ?>
+                        Permanente
+                    <?php endif; ?>
+                </td>
+                <td>
+                    <form method="POST" style="margin:0">
+                        <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
+                        <input type="hidden" name="action" value="unban">
+                        <input type="hidden" name="target_id" value="<?php echo $u['id']; ?>">
+                        <button type="submit" class="act-btn" style="border-color:#00ff88; color:#00ff88">✅ REATIVAR</button>
+                    </form>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+            <?php if(empty($restricted)): ?>
+                <tr><td colspan="4" style="text-align:center; padding:40px; color:var(--muted)">Nenhum utilizador com restrições.</td></tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+</div>
 
 <?php elseif ($tab === 'loja'): ?>
 <div class="page-header">

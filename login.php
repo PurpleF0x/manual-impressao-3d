@@ -45,6 +45,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $stmt->fetch();
             
             if ($user && password_verify($password, $user['password_hash'])) {
+                // Verificar Suspensão
+                if (!empty($user['suspension_until'])) {
+                    $until = strtotime($user['suspension_until']);
+                    if ($until > time()) {
+                        $date = date('d/m/Y H:i', $until);
+                        $errors[] = "A tua conta está suspensa até $date. Motivo: " . ($user['suspension_message'] ?: 'Não especificado.');
+                        goto skip_login;
+                    } else {
+                        // Limpar suspensão expirada
+                        $db->prepare("UPDATE users SET suspension_message=NULL, suspension_until=NULL WHERE id=?")->execute([$user['id']]);
+                    }
+                }
+
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['role'] = $user['role'];
@@ -65,6 +78,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 setFlashMessage('success', 'Bem-vindo, ' . $user['full_name'] . '!');
                 redirect($redirectTo);
+
+                skip_login:;
             } else {
                 $errors[] = "Nome de utilizador/email ou palavra-passe incorretos.";
                 logActivity(null, 'login_failed', "Tentativa falhada: $username");
@@ -161,6 +176,7 @@ $backHref  = strpos($redirectTo, 'forum') !== false ? $redirectTo : 'index.php';
         .forgot-password a:hover { color: var(--accent); }
         @media (max-width: 600px) { .auth-container { padding: 28px; } }
     </style>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <div class="auth-container">
@@ -220,6 +236,28 @@ $backHref  = strpos($redirectTo, 'forum') !== false ? $redirectTo : 'index.php';
 
             <button type="submit" class="btn-primary">ENTRAR</button>
         </form>
+
+        <div style="margin: 20px 0; text-align: center; position: relative;">
+            <hr style="border: 0; border-top: 1px solid var(--border); margin: 0;">
+            <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--surface); padding: 0 10px; font-size: 11px; color: var(--muted); font-family: 'Space Mono';">OU</span>
+        </div>
+
+        <div id="g_id_onload"
+             data-client_id="<?php require_once 'config/google_config.php'; echo GOOGLE_CLIENT_ID; ?>"
+             data-context="signin"
+             data-ux_mode="popup"
+             data-login_uri="https://manual-3d.pt/api/google_auth.php"
+             data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin"
+             data-type="standard"
+             data-shape="rectangular"
+             data-theme="outline"
+             data-text="signin_with"
+             data-size="large"
+             data-logo_alignment="left"
+             data-width="360">
+        </div>
 
         <div class="auth-footer">
             <p>Ainda não tens conta? <a href="register.php">Criar Conta</a></p>

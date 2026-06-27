@@ -90,6 +90,13 @@ function getCurrentUser(): ?array {
             $db->exec("ALTER TABLE users ADD COLUMN top_badges TEXT DEFAULT NULL");
         }
 
+        // Garantir coluna para Google Login
+        try {
+            $db->query("SELECT google_id FROM users LIMIT 1");
+        } catch (Exception $e) {
+            $db->exec("ALTER TABLE users ADD COLUMN google_id VARCHAR(255) NULL UNIQUE");
+        }
+
         try {
             $db->query("SELECT 1 FROM xp_log LIMIT 1");
         } catch (Exception $e) {

@@ -58,13 +58,15 @@ require_once 'includes/functions.php';
         </ul>
 
         <h2>4. Conduta do Utilizador</h2>
-        <p>Ao participar na nossa comunidade, concordas em:</p>
+        <p>Utilizamos um sistema de <strong>Pontos de Conduta</strong> (semelhante à carta de condução):</p>
         <ul>
-            <li>Não publicar conteúdo ilegal, ofensivo, difamatório ou abusivo.</li>
-            <li>Não fazer spam ou publicidade não autorizada.</li>
-            <li>Respeitar os outros membros da comunidade.</li>
-            <li>Não tentar interferir com o funcionamento técnico da aplicação.</li>
+            <li>Cada utilizador começa com 100 pontos.</li>
+            <li><strong>Infrações Leves (-10 pts):</strong> Spam ou comportamento desadequado.</li>
+            <li><strong>Infrações Graves (-30 pts):</strong> Ofensas, difamação ou desrespeito.</li>
+            <li><strong>Suspensão (-50 pts):</strong> Reincidência grave.</li>
+            <li><strong>Banimento:</strong> Atingir 0 pontos resulta na desativação permanente da conta.</li>
         </ul>
+        <p>A administração reserva-se o direito de investigar mal-entendidos e reativar contas após análise via suporte.</p>
 
         <h2>5. Propriedade Intelectual</h2>
         <p>O conteúdo original do Manual de Impressão 3D está protegido por direitos de autor. Podes partilhar os links para o manual para fins educativos, mas não podes copiar e vender o conteúdo como se fosse teu.</p>

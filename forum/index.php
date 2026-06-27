@@ -3,6 +3,7 @@
  * forum/index.php — Página principal do fórum
  */
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/user_notices.php';
 // Helper: path do avatar relativo ao forum/
 function avPath($url) {
     if (!$url) return '';
@@ -568,6 +569,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
+<?php renderUserNotice(); ?>
 
 <nav class="topbar">
     <a href="index.php" class="topbar-logo">3D<span>/</span>FÓRUM</a>
