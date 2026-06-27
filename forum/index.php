@@ -218,6 +218,8 @@ function renderFlairBadgeFeed($flair) {
     <link rel="icon" type="image/png" sizes="32x32" href="../favicons/favicon-forum-32.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fórum — Manual de Impressão 3D</title>
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4562191239161971" crossorigin="anonymous"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a26;--surface3:#222235;--accent:#00e5ff;--accent2:#ff6b35;--accent3:#7c3aed;--accent4:#00ff88;--text:#e8e8f0;--muted:#888899;--border:rgba(0,229,255,0.1);--border2:rgba(255,255,255,0.06)}

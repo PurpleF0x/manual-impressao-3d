@@ -33,9 +33,9 @@ if (isLoggedIn()) {
 <!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4562191239161971" crossorigin="anonymous"></script>
 <meta property="og:description" content="Guia educativo completo de impressão 3D — do iniciante ao avançado.">
-<meta property="og:image"       content="https://manual-impressao-3d.free.nf/og-manual.jpg">
+<meta property="og:image"       content="https://manual-3d.pt/og-manual.jpg">
 <meta name="twitter:card"       content="summary_large_image">
-<meta name="twitter:image"      content="https://manual-impressao-3d.free.nf/og-manual.jpg">
+<meta name="twitter:image"      content="https://manual-3d.pt/og-manual.jpg">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <!-- ═══════════════════════════════════════════════════════
