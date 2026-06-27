@@ -378,6 +378,10 @@ if (isLoggedIn()) {
                 rows="1" onkeydown="aiKeyDown(event)" oninput="aiAutoResize(this)"></textarea>
             <button class="ai-send" id="aiSendBtn" onclick="sendAIMessage()">➤</button>
         </div>
+        <div style="padding: 0 14px 10px; font-size: 9px; color: var(--muted); text-align: center; opacity: 0.7;">
+            A IA pode cometer erros. Confirma informações críticas. <br>
+            Uso limitado por sessão.
+        </div>
     </div>
 </div>
 

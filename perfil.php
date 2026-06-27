@@ -75,6 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $loc = trim($_POST['location'] ?? '');
             $web = trim($_POST['website'] ?? '');
             $exp = $_POST['experience_level'] ?? 'iniciante';
+            $birth = $_POST['birth_date'] ?? null;
+
             if (strlen($fn)<2) $errors[] = "O nome deve ter pelo menos 2 caracteres.";
             if (!in_array($exp,['iniciante','intermedio','avancado','profissional'])) $exp='iniciante';
             if (empty($errors)) {
@@ -82,6 +84,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 if ($filterResult !== true) { $errors[] = $filterResult; }
                 else {
                     $db->prepare("UPDATE users SET full_name=?,bio=?,location=?,website=?,experience_level=? WHERE id=?")->execute([$fn,$bio,$loc,$web,$exp,$user['id']]);
+
+                    if ($birth) {
+                        $db->prepare("UPDATE user_profile_config SET birth_date=? WHERE user_id=?")->execute([$birth, $user['id']]);
+                    }
+
                     $success[] = "Perfil atualizado com sucesso!";
                 }
             }
@@ -190,16 +197,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
 $user      = getCurrentUser();
 ensureUserProfileConfig((int)$user['id']);
-$userConfig = ['streak_count' => 0, 'growth_points' => 0];
+$userConfig = ['streak_count' => 0, 'growth_points' => 0, 'birth_date' => null];
 try {
-    $stmtConfig = $db->prepare("SELECT streak_count, growth_points FROM user_profile_config WHERE user_id = ?");
+    $stmtConfig = $db->prepare("SELECT streak_count, growth_points, birth_date FROM user_profile_config WHERE user_id = ?");
     $stmtConfig->execute([$user['id']]);
     $userConfig = $stmtConfig->fetch() ?: $userConfig;
 } catch (Exception $e) {
-    error_log("Erro ao carregar streak/growth do perfil: " . $e->getMessage());
+    error_log("Erro ao carregar config do perfil: " . $e->getMessage());
 }
 $streakCount = (int)$userConfig['streak_count'];
 $growthPoints = (int)$userConfig['growth_points'];
+$birthDate = $userConfig['birth_date'];
 $streakColor = getStreakColor($streakCount);
 
 $printers  = $db->prepare("SELECT * FROM user_printers WHERE user_id=? ORDER BY created_at DESC");  $printers->execute([$user['id']]);  $printers=$printers->fetchAll();
@@ -759,6 +767,7 @@ if (!empty($_POST['action'])) {
             </select>
           </div>
           <div class="form-group"><label>Localização</label><input type="text" name="location" value="<?php echo sanitize($loc); ?>" placeholder="ex: Lisboa, Portugal"></div>
+          <div class="form-group"><label>Data de Nascimento</label><input type="date" name="birth_date" value="<?php echo $birthDate; ?>"></div>
           <div class="form-group"><label>Website / Portfolio</label><input type="url" name="website" value="<?php echo sanitize($web); ?>" placeholder="https://..."></div>
           <div class="form-group full"><label>Sobre mim</label><textarea name="bio" placeholder="Conta um pouco sobre ti e a tua experiência com impressão 3D..."><?php echo sanitize($bio); ?></textarea></div>
         </div>

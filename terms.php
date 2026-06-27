@@ -39,9 +39,8 @@ require_once 'includes/functions.php';
 </head>
 <body>
     <div class="container">
-        <a href="javascript:history.back()" class="back-link">← Voltar</a>
-
         <h1>Termos de <span>Utilização</span></h1>
+        <p style="text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 30px;">Última atualização: Junho 2024</p>
         <p>Última atualização: <?php echo date('d/m/Y'); ?></p>
 
         <h2>1. Aceitação dos Termos</h2>

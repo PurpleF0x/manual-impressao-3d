@@ -32,6 +32,8 @@ function ensureUserProfileConfig(?int $userId = null): void {
             last_streak_date DATE NULL,
             daily_missions_data TEXT NULL,
             growth_points INT DEFAULT 0,
+            has_seen_tutorial TINYINT(1) DEFAULT 0,
+            birth_date DATE NULL,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
@@ -47,6 +49,8 @@ function ensureUserProfileConfig(?int $userId = null): void {
             'last_streak_date' => "ALTER TABLE user_profile_config ADD COLUMN last_streak_date DATE NULL",
             'daily_missions_data' => "ALTER TABLE user_profile_config ADD COLUMN daily_missions_data TEXT NULL",
             'growth_points' => "ALTER TABLE user_profile_config ADD COLUMN growth_points INT DEFAULT 0",
+            'has_seen_tutorial' => "ALTER TABLE user_profile_config ADD COLUMN has_seen_tutorial TINYINT(1) DEFAULT 0",
+            'birth_date' => "ALTER TABLE user_profile_config ADD COLUMN birth_date DATE NULL",
             'updated_at' => "ALTER TABLE user_profile_config ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
         ];
 
@@ -122,7 +126,7 @@ function checkDailyStreak(int $userId): void {
     $db = getDB();
     try {
         ensureUserProfileConfig($userId);
-        $stmt = $db->prepare("SELECT streak_count, last_streak_date, growth_points FROM user_profile_config WHERE user_id = ?");
+        $stmt = $db->prepare("SELECT streak_count, last_streak_date, growth_points, birth_date FROM user_profile_config WHERE user_id = ?");
         $stmt->execute([$userId]);
         $config = $stmt->fetch();
 
@@ -133,8 +137,23 @@ function checkDailyStreak(int $userId): void {
             return;
         }
 
+        $today = date('Y-m-d');
+
+        // --- Lógica de Aniversário ---
+        if (!empty($config['birth_date'])) {
+            $birthdayMonthDay = date('m-d', strtotime($config['birth_date']));
+            $todayMonthDay = date('m-d');
+
+            if ($birthdayMonthDay === $todayMonthDay && !isset($_SESSION['birthday_reward_given'])) {
+                // Recompensa de Aniversário!
+                addXP($userId, 100, "Parabéns pelo teu aniversário! 🎉", 50);
+                awardItem($userId, 'badge_birthday'); // Badge exclusivo
+                $_SESSION['birthday_reward_given'] = true;
+                setFlashMessage('success', '✨ Parabéns! Recebeste um presente de aniversário: +100 XP e +50 GP!');
+            }
+        }
+
         $lastDate = $config['last_streak_date'];
-        $today    = date('Y-m-d');
         $yesterday = date('Y-m-d', strtotime('-1 day'));
 
         if ($lastDate === $today) {
