@@ -211,9 +211,9 @@ function renderFlairBadgeFeed($flair) {
     <meta property="og:type"        content="website">
     <meta property="og:title"       content="Fórum 3D — Comunidade de Impressão 3D">
     <meta property="og:description" content="Comunidade de impressão 3D — partilha projetos, tira dúvidas e aprende.">
-    <meta property="og:image"       content="https://manual-impressao-3d.free.nf/og-forum.jpg">
+    <meta property="og:image"       content="https://manual-3d.pt/og-forum.jpg">
     <meta name="twitter:card"       content="summary_large_image">
-    <meta name="twitter:image"      content="https://manual-impressao-3d.free.nf/og-forum.jpg">
+    <meta name="twitter:image"      content="https://manual-3d.pt/og-forum.jpg">
     <link rel="icon" type="image/x-icon"  href="../favicons/favicon-forum.ico">
     <link rel="icon" type="image/svg+xml" href="../favicons/favicon-forum.svg">
     <link rel="icon" type="image/png" sizes="32x32" href="../favicons/favicon-forum-32.png">

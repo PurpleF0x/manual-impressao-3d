@@ -110,13 +110,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
 
         } elseif ($action === 'add_shop_item' && amMaster($currentUser)) {
             $name = trim($_POST['item_name'] ?? '');
-            $icon = trim($_POST['item_icon'] ?? '');
+            $icon = trim($_POST['item_icon'] ?? ''); // Emoji ou ícone
             $price = (int)($_POST['item_price'] ?? 0);
             $cat = $_POST['item_category'] ?? 'badges';
-            $rarity = $_POST['item_rarity'] ?? 'common';
+            $key = trim($_POST['item_key'] ?? '');
+
+            if (empty($key)) {
+                $key = strtolower(str_replace(' ', '_', $name)) . '_' . rand(100, 999);
+            }
+
             if ($name && $icon) {
-                $db->prepare("INSERT INTO shop_items (name, icon, price, category, rarity, is_active) VALUES (?,?,?,?,?,1)")
-                   ->execute([$name, $icon, $price, $cat, $rarity]);
+                $db->prepare("INSERT INTO shop_items (name, css_value, item_key, price, category, is_active) VALUES (?,?,?,?,?,1)")
+                   ->execute([$name, $icon, $key, $price, $cat]);
                 $flash = ['ok', "🎉 Item '$name' adicionado à loja!"];
             }
         } elseif ($action === 'toggle_shop_item' && amMaster($currentUser)) {
@@ -300,9 +305,9 @@ try { $um = $db->prepare("SELECT COUNT(*) FROM private_messages WHERE receiver_i
 
 function roleBadge($r) {
     $map = array(
-        'master'    => array('#ffcc00','rgba(255,204,0,0.15)','&#128081;'),
-        'admin'     => array('#ff6b35','rgba(255,107,53,0.15)','&#128737;'),
-        'moderator' => array('#a78bfa','rgba(124,58,237,0.15)','&#9876;'),
+        'master'    => array('var(--muted)','rgba(255,255,255,0.05)','&#128081;'),
+        'admin'     => array('#ff6b35','rgba(107,53,0.15)','&#128737;'),
+        'moderator' => array('#a78bfa','rgba(58,237,0.15)','&#9876;'),
         'user'      => array('#888899','rgba(136,136,153,0.1)','&#128100;'),
     );
     $m = isset($map[$r]) ? $map[$r] : $map['user'];
@@ -755,7 +760,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             $items = $db->query("SELECT * FROM shop_items ORDER BY category, price ASC")->fetchAll();
             foreach($items as $it): ?>
                 <div style="background:var(--surface); border:1px solid <?php echo $it['is_active'] ? 'var(--border2)' : 'rgba(255,68,68,0.2)'; ?>; border-radius:12px; padding:18px; text-align:center; transition:0.2s">
-                    <div style="font-size:32px; margin-bottom:10px"><?php echo $it['icon']; ?></div>
+                    <div style="font-size:32px; margin-bottom:10px"><?php echo $it['css_value'] ?? $it['item_key']; ?></div>
                     <div style="font-weight:700; font-size:14px; color:#fff; margin-bottom:4px"><?php echo sanitize($it['name']); ?></div>
                     <div style="font-family:'Space Mono',monospace; font-size:11px; color:var(--accent2); margin-bottom:12px"><?php echo number_format($it['price']); ?> moedas</div>
 
@@ -795,6 +800,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <div class="form-group" style="margin-bottom:15px">
                 <label class="form-label">Preço (Moedas)</label>
                 <input type="number" name="item_price" class="form-input" value="500" min="0">
+            </div>
+            <div class="form-group" style="margin-bottom:15px">
+                <label class="form-label">ID Único (Key)</label>
+                <input type="text" name="item_key" class="form-input" placeholder="ex: badge_pro_maker">
             </div>
             <div class="form-group" style="margin-bottom:20px">
                 <label class="form-label">Categoria</label>

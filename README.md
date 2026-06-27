@@ -1,68 +1,58 @@
-# Manual de Impressão 3D — Ecosystem (Cloud Edition)
+# Manual de Impressão 3D — Ecosystem (Professional Cloud Edition)
 
-Sistema web completo e inteligente para entusiastas de Impressão 3D, integrando um Manual Técnico, Fórum de Comunidade e um Assistente de IA avançado.
+Uma plataforma educativa completa e gamificada para entusiastas de fabricação aditiva, integrando um Manual Técnico interativo, Fórum de Comunidade, Ferramentas Maker e um Assistente de Inteligência Artificial especializado.
 
-> **Status:** Migrado para infraestrutura Cloud (Render + Aiven) com IA Gemini 2.0 Flash.
+> **Domínio Oficial:** [https://manual-3d.pt](https://manual-3d.pt)  
+> **Status:** Produção ativa em infraestrutura Cloud robusta (Render + Aiven).
 
 ## 🚀 Tecnologias & Infraestrutura
 
 - **Backend:** PHP 8.2 (Containerizado via Docker)
-- **Frontend:** HTML5, CSS3 (Modern UI c/ Syne & Space Mono fonts), JS Vanilla
-- **Base de Dados:** MySQL 8.0 hospedado no **Aiven** (exige SSL e Primary Keys)
-- **Inteligência Artificial:** **Google Gemini 2.0 Flash** (via OpenAI-compatible endpoint)
-- **Hospedagem:** **Render.com** (Ambiente efêmero c/ variáveis de ambiente)
+- **Frontend:** HTML5, CSS3 (Modern UI c/ Syne & Space Mono), JavaScript Vanilla
+- **Base de Dados:** MySQL 8.0 hospedado no **Aiven** (Alta disponibilidade)
+- **Email:** **Resend API** para comunicações transacionais (Boas-vindas, Recuperação, Segurança)
+- **IA:** **Groq / Llama 3** para processamento de linguagem natural focado em 3D
+- **Hospedagem:** **Render.com** (Auto-deploy via GitHub)
 
-## 🤖 Sistema de IA (Print AI)
+## 🎯 Funcionalidades Principais
 
-O projeto conta com uma integração de IA robusta baseada em protocolos de personalidade:
+### 1. Manual Educativo Interativo
+- **Modos de Dificuldade:** Alternância dinâmica entre modo "Iniciante" (simples) e "Avançado" (técnico).
+- **Categorias:** 11 capítulos detalhados, desde a introdução até à manutenção de hardware.
+- **Base de Dados de Materiais:** Fichas técnicas de PLA, PETG, ABS, ASA, TPU e Nylon.
+- **Ferramentas Maker:** Calculadoras de custo de filamento e estimativa de consumo de energia.
 
-- **Modo Manual:** Assistente flutuante focado em dúvidas rápidas e troubleshooting.
-- **Modo Fórum:** Especialista em regras da comunidade e suporte ao utilizador.
-- **Modo Assistente (Full):** Página dedicada com histórico de conversas, contexto de secção e modos "Iniciante" vs "Avançado".
-- **Motor:** Gemini 2.0 Flash para respostas ultrarrápidas e precisas em PT-PT.
+### 2. Gamificação & Comunidade
+- **Planta Maker:** Sistema de crescimento visual onde o progresso do utilizador evolui uma planta/árvore (GP - Growth Points).
+- **Sistema de XP:** Ganho de experiência através de leitura, participação no fórum e missões diárias.
+- **Loja de Itens:** Personalização de perfis com Molduras (Frames), Cores de Destaque e Emblemas (Badges).
+- **Fórum Global:** Comunidades segmentadas por temas (Troubleshooting, Projetos, Notícias).
 
-## 📋 Requisitos de Deploy
+### 3. Inteligência Artificial (Print AI)
+- **Assistente Contextual:** Chatbot que entende em que secção do manual o utilizador está.
+- **Modo Técnico:** IA treinada para responder a falhas de impressão (Warping, Stringing, Under-extrusion).
 
-### Variáveis de Ambiente (Configurar no Render/Produção)
-- `DB_HOST`: Host do cluster Aiven.
-- `DB_PORT`: Porta (geralmente 14810 no Aiven).
-- `DB_NAME`: Nome da base de dados.
-- `DB_USER`: Utilizador da BD.
-- `DB_PASS`: Password da BD.
-- `GEMINI_API_KEY`: Chave da Google AI Studio.
+## 🛡️ Governação & Administração
 
-### Docker
-O projeto inclui um `Dockerfile` otimizado para o Render:
-- Base: `php:8.2-apache`
-- Extensões: `pdo_mysql`, `gd`, `zip`
-- Config: `mod_rewrite` ativo para URLs amigáveis.
+### Painel de Moderação Master
+- **Dashboard Global:** Métricas em tempo real de toda a plataforma (utilizadores, posts, saúde da planta).
+- **Sistema de "Carta de Condução":** Moderação justa baseada em pontos de infração (Avisos, Suspensões, Banimentos).
+- **Controlo de Acessos:** Gestão centralizada de utilizadores restritos e reativação de contas.
+- **Gestão de Inventário:** Ferramenta master para adicionar novos itens à loja global.
 
-## 📁 Estrutura do Projeto
+### Conformidade & Segurança
+- **RGPD Ready:** Consentimento explícito no registo e ferramentas de "Direito ao Esquecimento" (eliminação total de dados).
+- **SEO & Monetização:** Configurado com Google Search Console, `sitemap.xml` e Google AdSense integrado.
+- **Segurança:** Encriptação BCRYPT, proteção CSRF e comunicações via SSL/HTTPS.
 
-```
-├── api/                    # Endpoints da IA e Comentários
-├── config/                 # Configurações de BD e IA (Environment based)
-├── forum/                  # Sistema completo de fórum e comunidades
-├── includes/               # Funções core e segurança
-├── sql/                    # Scripts de migração e estrutura de dados
-├── uploads/                # Armazenamento de mídia (Efêmero em containers)
-├── Dockerfile              # Definição do container de deploy
-└── index.php               # Landing page e Manual 3D
-```
+## 📋 Requisitos de Deploy (Environment Variables)
 
-## 🔐 Segurança & Robustez
-
-- **SSL Obrigatório:** Conexão com a base de dados via Aiven com verificação de certificado.
-- **Primary Keys:** Todas as tabelas (incluindo as do fórum) garantem PKs para compatibilidade com clusters MySQL modernos.
-- **CSRF & Sanitização:** Proteção em todos os inputs e formulários de IA/Fórum.
-- **Rate Limiting:** Limites de mensagens de IA por sessão para controlo de custos/tokens.
-
-## 🛠️ Instalação Local
-
-1. Clone o repositório.
-2. Configure as variáveis de ambiente no seu `.env` ou servidor local.
-3. Utilize o `install.php` ou importe os ficheiros em `/sql/`.
-4. Certifique-se de que o `mod_rewrite` está ativo.
+Para o funcionamento pleno em produção, configurar as seguintes chaves:
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`: Credenciais Aiven.
+- `RESEND_API_KEY`: Token de envio de email.
+- `GROQ_API_KEY`: Chave para o motor de IA.
+- `GOOGLE_CLIENT_ID`: Para o sistema de Login com Google.
 
 ---
-**Criado por Martim (Purpl3F0x)** — Uma evolução do Manual 3D original para uma arquitetura cloud moderna e inteligente.
+**Desenvolvido por Martim — PAP 2023/2024**  
+*Uma plataforma desenhada para transformar a aprendizagem da impressão 3D numa jornada interativa e profissional.*

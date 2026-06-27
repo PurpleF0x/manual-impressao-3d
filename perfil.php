@@ -311,12 +311,14 @@ if (!empty($_POST['action'])) {
   body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:0.4}
 
   /* USER BAR */
-  .user-bar{position:fixed;top:0;right:0;left:280px;height:50px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;padding:0 24px;z-index:90;gap:16px}
+  .user-bar{position:fixed;top:0;right:0;left:0;height:50px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;padding:0 24px;z-index:90;gap:16px}
   .user-info{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}
   .user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;overflow:hidden}
   .user-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
   .user-name{color:var(--text);font-weight:600}
   .user-role{font-family:'Space Mono',monospace;font-size:9px;padding:2px 8px;border-radius:4px;text-transform:uppercase}
+  .user-role.master{background:transparent;color:var(--text);border:1px solid var(--border);padding:1px 6px}
+  .user-role.master{background:transparent;color:var(--text);border:1px solid var(--border);padding:1px 6px}
   .user-role.admin{background:rgba(255,107,53,0.2);color:var(--accent2)}
   .user-role.moderator{background:rgba(124,58,237,0.2);color:#a78bfa}
   .user-role.user{background:rgba(0,229,255,0.1);color:var(--accent)}
@@ -342,14 +344,14 @@ if (!empty($_POST['action'])) {
   .menu-toggle:hover{border-color:var(--accent);color:var(--accent)}
   .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.52);z-index:1100;backdrop-filter:blur(2px)}
   .sidebar-backdrop.open{display:block}
-  .progress-bar{position:fixed;top:50px;left:280px;right:0;height:3px;background:var(--surface);z-index:1000}
+  .progress-bar{position:fixed;top:50px;left:0;right:0;height:3px;background:var(--surface);z-index:1000}
   .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));width:0%;transition:width 0.1s}
   .back-to-top{position:fixed;bottom:30px;right:30px;width:50px;height:50px;background:var(--surface);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;visibility:hidden;transition:all 0.3s;z-index:100;font-size:20px}
   .back-to-top.visible{opacity:1;visibility:visible}
   .back-to-top:hover{background:var(--accent);border-color:var(--accent);transform:translateY(-4px)}
 
   /* MAIN */
-  main{margin-left:280px;min-height:100vh;padding-top:50px}
+  main{min-height:100vh;padding-top:50px}
 
   /* HERO */
   .profile-hero{position:relative;padding:50px 60px;overflow:hidden;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#0a0a0f 0%,#0d0d1a 50%,#0a0a0f 100%);display:flex;gap:32px;align-items:center;flex-wrap:wrap}
@@ -550,10 +552,7 @@ if (!empty($_POST['action'])) {
   #avatarFileInput{display:none}
 
   @media(max-width:1024px){
-    nav{transform:translateX(-100%);z-index:1200;padding-top:72px}
-    nav.open{transform:translateX(0)}
-    .menu-toggle{display:flex}
-    .user-bar{left:0;padding:0 16px 0 72px;z-index:900}
+    .user-bar{left:0;padding:0 16px;z-index:900}
     main{margin-left:0}
     .profile-hero{padding:70px 24px 40px}
     .hero-stats{flex-direction:row;gap:24px}
@@ -577,7 +576,6 @@ if (!empty($_POST['action'])) {
 <body>
 <?php renderUserNotice(); ?>
 
-<button class="menu-toggle" id="menuToggle" onclick="toggleProfileMenu()" aria-label="Abrir menu" aria-expanded="false">?</button>
 <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeProfileMenu()"></div>
 
 <!-- USER BAR -->
@@ -599,26 +597,6 @@ if (!empty($_POST['action'])) {
 
 <!-- PROGRESS BAR -->
 <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-
-<!-- SIDEBAR -->
-<nav id="sidebar">
-  <div class="nav-logo">
-    <div class="label">Manual Educativo</div>
-    <h1>Impressão<br><span>3D</span></h1>
-  </div>
-  <div class="nav-section">Navegação</div>
-  <a href="index.php"><span class="icon">🏠</span> Início</a>
-  <a href="perfil.php" class="active"><span class="icon">👤</span> O Meu Perfil</a>
-  <div class="nav-section">Secções do Perfil</div>
-  <a href="javascript:void(0)" onclick="switchTab('info',null)"><span class="icon">✏️</span> Informações</a>
-  <a href="javascript:void(0)" onclick="switchTab('printers',null)"><span class="icon">🖨️</span> Impressoras</a>
-  <a href="javascript:void(0)" onclick="switchTab('slicers',null)"><span class="icon">⚙️</span> Slicers</a>
-  <a href="javascript:void(0)" onclick="switchTab('materials',null)"><span class="icon">🧵</span> Materiais</a>
-  <a href="javascript:void(0)" onclick="switchTab('security',null)"><span class="icon">🔒</span> Segurança</a>
-  <div class="nav-section">Comunidade</div>
-  <a href="index.php#comentarios"><span class="icon">💬</span> Comentários</a>
-  <a href="logout.php"><span class="icon">🚪</span> Sair</a>
-</nav>
 
 <!-- MAIN -->
 <main>
