@@ -1,3 +1,1 @@
-# Google AdSense ads.txt
-# Substitui 'pub-0000000000000000' pelo teu ID de Editor que o Google te der.
 google.com, pub-4562191239161971, DIRECT, f08c47fec0942fa0

@@ -27,8 +27,11 @@ if (isLoggedIn()) {
 
 <!-- ═══ OG TAGS — MANUAL (index.php, manual-impressao-3d.html) ═══ -->
 <meta property="og:type"        content="website">
-<meta property="og:url"         content="https://manual-impressao-3d.free.nf/">
+<meta property="og:url"         content="https://manual-3d.pt/">
 <meta property="og:title"       content="Manual de Impressão 3D">
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4562191239161971" crossorigin="anonymous"></script>
 <meta property="og:description" content="Guia educativo completo de impressão 3D — do iniciante ao avançado.">
 <meta property="og:image"       content="https://manual-impressao-3d.free.nf/og-manual.jpg">
 <meta name="twitter:card"       content="summary_large_image">
