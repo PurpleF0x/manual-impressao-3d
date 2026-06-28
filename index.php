@@ -24,6 +24,7 @@ if (isLoggedIn()) {
 <link rel="icon" type="image/x-icon"  href="/favicons/favicon-manual.ico">
 <link rel="icon" type="image/svg+xml" href="/favicons/favicon-manual.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-manual-32.png">
+<link rel="apple-touch-icon" sizes="192x192" href="/favicon-192.png">
 
 <!-- ═══ OG TAGS — MANUAL (index.php, manual-impressao-3d.html) ═══ -->
 <meta property="og:type"        content="website">
@@ -39,6 +40,19 @@ if (isLoggedIn()) {
 <meta property="og:image"       content="https://manual-3d.pt/og-manual.jpg">
 <meta name="twitter:card"       content="summary_large_image">
 <meta name="twitter:image"      content="https://manual-3d.pt/og-manual.jpg">
+
+<!-- Structured Data for Google -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Manual de Impressão 3D",
+  "url": "https://manual-3d.pt/",
+  "logo": "https://manual-3d.pt/og-manual.jpg",
+  "description": "Guia educativo completo de impressão 3D — do iniciante ao avançado."
+}
+</script>
+
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <!-- ═══════════════════════════════════════════════════════
