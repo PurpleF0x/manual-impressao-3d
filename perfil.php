@@ -1468,6 +1468,11 @@ function updateBadgeCount(input) {
 }
 
 async function claimProfileMission(key) {
+    const btn = event ? event.target : null;
+    if (btn && btn.tagName === 'BUTTON') {
+        btn.disabled = true;
+        btn.textContent = '...';
+    }
     try {
         const res = await fetch('api/missions.php', {
             method: 'POST',
@@ -1483,9 +1488,15 @@ async function claimProfileMission(key) {
                 colors: ['#00ff88', '#ff6b35', '#7c3aed', '#00e5ff']
             });
             new Audio('assets/audio/success.mp3').play();
-            setTimeout(() => location.reload(), 1500);
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            if (btn) btn.disabled = false;
+            alert(data.error || 'Erro ao reclamar.');
         }
-    } catch(e) { console.error(e); }
+    } catch(e) {
+        console.error(e);
+        if (btn) btn.disabled = false;
+    }
 }
 
 // MANTER TAB APÓS SUBMIT

@@ -472,20 +472,20 @@ function getAvailableBadges(int $userId): array {
     $db = getDB();
     $badges = [];
 
-    // Garantir que o utilizador tem os emblemas de nível básicos (Auto-grant)
-    try {
-        $stmt = $db->prepare("SELECT karma_total FROM users WHERE id = ?");
-        $stmt->execute([$userId]);
-        $xp = (int)$stmt->fetchColumn();
+    // Verificação de badges de nível apenas uma vez por dia/sessão
+    if (!isset($_SESSION['badges_checked_today'])) {
+        try {
+            $stmt = $db->prepare("SELECT karma_total FROM users WHERE id = ?");
+            $stmt->execute([$userId]);
+            $xp = (int)$stmt->fetchColumn();
 
-        if ($xp >= 500) awardItem($userId, 'lvl_lendario');
-        if ($xp >= 100) awardItem($userId, 'lvl_veterano');
-        if ($xp >= 20)  awardItem($userId, 'lvl_membro');
+            if ($xp >= 500) awardItem($userId, 'lvl_lendario');
+            if ($xp >= 100) awardItem($userId, 'lvl_veterano');
+            if ($xp >= 20)  awardItem($userId, 'lvl_membro');
 
-        // Outras conquistas automáticas (ex: Pioneiro se tiver posts)
-        $posts = (int)$db->query("SELECT COUNT(*) FROM forum_posts WHERE user_id = $userId")->fetchColumn();
-        if ($posts >= 1) awardItem($userId, 'badge_pioneer');
-    } catch (Exception $e) {}
+            $_SESSION['badges_checked_today'] = true;
+        } catch (Exception $e) {}
+    }
 
     try {
         $stmt = $db->prepare("

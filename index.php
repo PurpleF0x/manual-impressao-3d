@@ -529,7 +529,7 @@ function createMissionCardHtml(key, def, progress) {
                 </div>
             </div>
             ${progress.completed && !progress.claimed ?
-                `<button class="claim-btn" onclick="claimReward('${key}')">Reclamar</button>` :
+                `<button class="claim-btn" onclick="claimReward('${key}', this)">Reclamar</button>` :
                 (progress.claimed ? '✅' : `<div style="font-size:10px; color:var(--muted)">${progress.current}/${def.goal}</div>`)
             }
         </div>
@@ -555,7 +555,13 @@ function checkPendingClaims(userMissions) {
     document.getElementById('missionNotif').style.display = pending ? 'block' : 'none';
 }
 
-async function claimReward(key) {
+async function claimReward(key, btn) {
+    if (btn) {
+        if (btn.disabled) return;
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.innerHTML = '...';
+    }
     try {
         const res = await fetch('api/missions.php', {
             method: 'POST',
@@ -564,6 +570,11 @@ async function claimReward(key) {
         });
         const data = await res.json();
         if (data.success) {
+            // Sucesso visual imediato
+            if (btn) {
+                btn.parentElement.innerHTML = '✅';
+            }
+
             // Efeito de Confetti
             confetti({
                 particleCount: 150,
@@ -575,24 +586,35 @@ async function claimReward(key) {
             // Som de sucesso
             new Audio('assets/audio/success.mp3').play();
 
+            // Atualiza os dados por trás
             loadMissions();
 
-            if (typeof showFloatingNotice === 'function') {
-                showFloatingNotice(`+${data.xp} XP e +${data.gp} GP ganhos!`);
-            } else {
-                // Fallback para uma notificação simples se showFloatingNotice não existir
-                const notification = document.createElement('div');
-                notification.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#00ff88; color:#000; padding:12px 24px; border-radius:30px; font-weight:700; z-index:10002; animation:aiSlideUp 0.3s ease;';
-                notification.innerHTML = `✨ +${data.xp} XP e +${data.gp} GP Reclamados!`;
-                document.body.appendChild(notification);
-                setTimeout(() => {
-                    notification.style.opacity = '0';
-                    notification.style.transition = 'opacity 0.5s';
-                    setTimeout(() => notification.remove(), 500);
-                }, 3000);
+            // Notificação flutuante
+            const notification = document.createElement('div');
+            notification.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#00ff88; color:#000; padding:12px 24px; border-radius:30px; font-weight:700; z-index:100000; box-shadow:0 10px 30px rgba(0,255,136,0.3);';
+            notification.innerHTML = `✨ +${data.xp} XP e +${data.gp} GP Reclamados!`;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.5s';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        } else {
+            if (btn) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.innerHTML = 'Reclamar';
             }
+            alert(data.error || 'Erro ao reclamar.');
         }
-    } catch(e) { console.error(e); }
+    } catch(e) {
+        console.error(e);
+        if (btn) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.innerHTML = 'Reclamar';
+        }
+    }
 }
 
 // Auto load missions check every 30s
