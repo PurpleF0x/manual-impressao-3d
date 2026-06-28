@@ -220,6 +220,7 @@ function renderFlairBadgeFeed($flair) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fórum — Manual de Impressão 3D</title>
 <!-- Google AdSense -->
+<meta name="google-adsense-account" content="ca-pub-4562191239161971">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4562191239161971" crossorigin="anonymous"></script>
 
 <!-- Ad Block Recovery -->
