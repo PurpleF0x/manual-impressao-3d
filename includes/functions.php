@@ -17,10 +17,12 @@ require_once __DIR__ . '/../config/database.php';
 $_CACHE = [];
 
 function ensureUserProfileConfig(?int $userId = null): void {
-    $db = getDB();
+    if (isset($_SESSION['db_schema_verified'])) return; // Só verifica uma vez por sessão
 
-    try {
-        $db->exec("CREATE TABLE IF NOT EXISTS user_profile_config (
+    $db = getDB();
+    // ... resto do código igual ...
+    $_SESSION['db_schema_verified'] = true;
+}
             user_id INT PRIMARY KEY,
             frame_key VARCHAR(50) NULL,
             background_key VARCHAR(50) NULL,
