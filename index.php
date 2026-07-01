@@ -3222,38 +3222,35 @@ if (document.getElementById('missionsWidget')) {
 
   <?php require_once 'comments_component.php'; ?>
 
-  <footer>
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 40px; margin-bottom: 30px;">
-      <div style="flex: 1; min-width: 250px;">
-        <h3 style="font-family: 'Syne'; color: #fff; margin-bottom: 12px;">Manual 3D <span>Maker</span></h3>
-        <p style="font-size: 13px; color: var(--muted); line-height: 1.6;">A plataforma educativa de referência para o ensino da fabricação aditiva. Do iniciante ao avançado, cobrimos tecnologias FDM, SLA e SLS.</p>
-        <div style="display: flex; gap: 12px; margin-top: 15px; font-size: 10px; color: var(--accent4); font-family: 'Space Mono'; align-items: center;">
-          <span style="width: 8px; height: 8px; background: var(--accent4); border-radius: 50%; box-shadow: 0 0 10px var(--accent4);"></span>
-          SISTEMA OPERACIONAL (DOMÍNIO .PT)
+  <footer style="padding: 40px 60px; border-top: 1px solid var(--border); margin-top: 50px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+
+      <!-- Lado Esquerdo: Identidade e Social -->
+      <div style="display: flex; gap: 20px; align-items: center;">
+        <div style="display: flex; gap: 15px;">
+          <a href="https://github.com/Purpl3F0x" target="_blank" style="color: var(--muted); text-decoration: none; font-size: 18px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="GitHub">
+            <svg style="width:20px;height:20px;fill:currentColor" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+          </a>
+          <a href="https://linkedin.com/in/" target="_blank" style="color: var(--muted); text-decoration: none; font-size: 18px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="LinkedIn">
+            <svg style="width:20px;height:20px;fill:currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+          </a>
         </div>
+        <div style="width: 1px; height: 15px; background: var(--border);"></div>
+        <a href="terms.php" style="color: var(--muted); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace;">Termos</a>
+        <a href="privacy.php" style="color: var(--muted); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace;">Privacidade</a>
+        <a href="suporte.php" style="color: var(--muted); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace;">Suporte</a>
       </div>
 
-      <div style="display: flex; gap: 40px;">
-        <div>
-          <h4 style="font-size: 11px; color: var(--accent); font-family: 'Space Mono'; text-transform: uppercase; margin-bottom: 15px;">Legal</h4>
-          <ul style="list-style: none; font-size: 13px;">
-            <li style="margin-bottom: 8px;"><a href="terms.php" style="color: var(--muted); text-decoration: none;">Termos de Uso</a></li>
-            <li><a href="privacy.php" style="color: var(--muted); text-decoration: none;">Privacidade</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 style="font-size: 11px; color: var(--accent); font-family: 'Space Mono'; text-transform: uppercase; margin-bottom: 15px;">Suporte</h4>
-          <ul style="list-style: none; font-size: 13px;">
-            <li style="margin-bottom: 8px;"><a href="suporte.php" style="color: var(--muted); text-decoration: none;">Centro de Ajuda</a></li>
-            <li><a href="forum/" style="color: var(--muted); text-decoration: none;">Fórum Global</a></li>
-          </ul>
-        </div>
+      <!-- Lado Direito: Copyright -->
+      <div style="text-align: right;">
+        <p style="font-size: 11px; color: var(--muted); margin: 0; font-family: 'Inter', sans-serif;">
+          © <?php echo date('Y'); ?> <strong>Manual de Impressão 3D</strong>
+        </p>
+        <p style="font-size: 9px; color: var(--muted); opacity: 0.5; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;">
+          Educação Maker · PAP 2024
+        </p>
       </div>
-    </div>
 
-    <div style="border-top: 1px solid var(--border); padding-top: 20px; text-align: center; font-size: 11px; color: var(--muted);">
-      <p>© <?php echo date('Y'); ?> Manual de Impressão 3D. Criado para Professores e Alunos.</p>
-      <p style="margin-top: 5px; opacity: 0.5;">Este documento pode ser livremente partilhado para fins educativos.</p>
     </div>
   </footer>
 
