@@ -59,14 +59,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$username, $email, $passwordHash, $fullName, $avatar]);
                 $userId = $db->lastInsertId();
                 
-                logActivity($userId, 'register', "Novo registo: $username");
+                // Redirecionar imediatamente para sucesso
+                setFlashMessage('success', 'Registo efetuado com sucesso! Já podes entrar.');
 
-                // Enviar Email de Boas-vindas
+                if (function_exists('fastcgi_finish_request')) {
+                    session_write_close();
+                    header("Location: login.php");
+                    fastcgi_finish_request();
+                }
+
                 require_once 'includes/mail_config.php';
                 sendWelcomeEmail($email, $fullName);
+                logActivity($userId, 'register', "Novo registo: $username");
 
-                setFlashMessage('success', 'Registo efetuado com sucesso! Verifica o teu email (e a pasta de SPAM).');
-                redirect('login.php');
+                if (!headers_sent()) redirect('login.php');
+                exit;
             } catch (PDOException $e) {
                 $errors[] = "Erro ao registar. Tente novamente.";
             }

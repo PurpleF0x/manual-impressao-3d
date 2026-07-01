@@ -2300,6 +2300,7 @@ if (document.getElementById('missionsWidget')) {
 
   <div class="nav-section">Materiais</div>
   <a href="#filamentos"><span class="icon">🧵</span> Tipos de Filamento</a>
+  <a href="#comparador"><span class="icon">⚖️</span> Comparador de Filamentos</a>
   <a href="#qual-usar"><span class="icon">🎯</span> Qual Filamento Usar</a>
 
   <div class="nav-section">Prática</div>
@@ -2324,6 +2325,7 @@ if (document.getElementById('missionsWidget')) {
     <div class="toc-dot" data-target="tipos-impressoras" data-label="Tipos de Impressoras"></div>
     <div class="toc-dot" data-target="iniciantes-vs-pro" data-label="Iniciantes vs Pro"></div>
     <div class="toc-dot" data-target="filamentos" data-label="Filamentos"></div>
+    <div class="toc-dot" data-target="comparador" data-label="Comparador"></div>
     <div class="toc-dot" data-target="qual-usar"  data-label="Qual Filamento?"></div>
     <div class="toc-dot" data-target="processo"   data-label="Parâmetros"></div>
     <div class="toc-dot" data-target="problemas"  data-label="Problemas Comuns"></div>
@@ -2798,6 +2800,46 @@ if (document.getElementById('missionsWidget')) {
     </div>
   </section>
 
+  <!-- COMPARADOR DE MATERIAIS -->
+  <section class="section" id="comparador">
+    <div class="section-header">
+      <div class="section-number">05B</div>
+      <div class="section-title">
+        <h2>Comparador de Materiais</h2>
+        <p>Dados técnicos para ajudar na escolha certa</p>
+      </div>
+    </div>
+    <div style="overflow-x:auto; background:var(--surface); border:1px solid var(--border); border-radius:14px;">
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Filamento</th>
+                    <th>Facilidade</th>
+                    <th>Resistência</th>
+                    <th>Resist. Térmica</th>
+                    <th>Warping</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- MODO INICIANTE -->
+                <tr class="for-beginner"><td>PLA</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐</td><td>⭐⭐</td><td>Mínimo</td></tr>
+                <tr class="for-beginner"><td>PLA+</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐</td><td>⭐⭐</td><td>Baixo</td></tr>
+                <tr class="for-beginner"><td>PETG</td><td>⭐⭐⭐⭐</td><td>⭐⭐⭐</td><td>⭐⭐⭐</td><td>Médio</td></tr>
+                <tr class="for-beginner"><td>LW-PLA</td><td>⭐⭐⭐⭐</td><td>⭐⭐</td><td>⭐⭐</td><td>Baixo</td></tr>
+
+                <!-- MODO AVANÇADO -->
+                <tr class="for-advanced"><td>ABS</td><td>⭐⭐</td><td>⭐⭐⭐⭐</td><td>⭐⭐⭐⭐</td><td>Elevado</td></tr>
+                <tr class="for-advanced"><td>ASA</td><td>⭐⭐</td><td>⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>Elevado</td></tr>
+                <tr class="for-advanced"><td>TPU</td><td>⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐</td><td>Baixo</td></tr>
+                <tr class="for-advanced"><td>Nylon (PA)</td><td>⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>Crítico</td></tr>
+                <tr class="for-advanced"><td>PC (Policarbonato)</td><td>⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>Extremo</td></tr>
+                <tr class="for-advanced"><td>Carbon Fiber (PA-CF)</td><td>⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>Crítico</td></tr>
+                <tr class="for-advanced"><td>PEEK</td><td>🚫 (Industrial)</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>Extremo</td></tr>
+            </tbody>
+        </table>
+    </div>
+  </section>
+
   <!-- QUAL FILAMENTO USAR -->
   <section class="section" id="qual-usar">
     <div class="section-header">
@@ -3164,38 +3206,6 @@ if (document.getElementById('missionsWidget')) {
     </dl>
   </section>
 
-  <!-- COMPARADOR DE MATERIAIS -->
-  <section class="section" id="comparador">
-    <div class="section-header">
-      <div class="section-number">05B</div>
-      <div class="section-title">
-        <h2>Comparador de Materiais</h2>
-        <p>Dados técnicos para ajudar na escolha certa</p>
-      </div>
-    </div>
-    <div style="overflow-x:auto; background:var(--surface); border:1px solid var(--border); border-radius:14px;">
-        <table class="comparison-table">
-            <thead>
-                <tr>
-                    <th>Filamento</th>
-                    <th>Facilidade</th>
-                    <th>Resistência</th>
-                    <th>Resist. Térmica</th>
-                    <th>Warping</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td>PLA</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐</td><td>⭐⭐</td><td>Mínimo</td></tr>
-                <tr><td>PETG</td><td>⭐⭐⭐⭐</td><td>⭐⭐⭐</td><td>⭐⭐⭐</td><td>Médio</td></tr>
-                <tr><td>ABS</td><td>⭐⭐</td><td>⭐⭐⭐⭐</td><td>⭐⭐⭐⭐</td><td>Elevado</td></tr>
-                <tr><td>ASA</td><td>⭐⭐</td><td>⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>Elevado</td></tr>
-                <tr><td>TPU</td><td>⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐</td><td>Baixo</td></tr>
-                <tr><td>Nylon</td><td>⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>Crítico</td></tr>
-            </tbody>
-        </table>
-    </div>
-  </section>
-
   <!-- CALCULADORAS -->
   <section class="section" id="ferramentas">
     <div class="card" style="background:linear-gradient(135deg, rgba(0,229,255,0.1), rgba(124,58,237,0.1)); border-color: var(--accent);">
@@ -3213,12 +3223,38 @@ if (document.getElementById('missionsWidget')) {
   <?php require_once 'comments_component.php'; ?>
 
   <footer>
-    <p>Manual de Impressão 3D — Criado para <strong>Professores e Alunos</strong> | Tecnologia: FDM · SLA · SLS</p>
-    <p style="margin-top: 8px;">
-        <a href="terms.php" style="color: var(--muted); text-decoration: none;">Termos de Utilização</a> |
-        <a href="privacy.php" style="color: var(--muted); text-decoration: none;">Política de Privacidade</a>
-    </p>
-    <p style="margin-top: 8px; opacity: 0.5;">Este documento pode ser livremente partilhado para fins educativos</p>
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 40px; margin-bottom: 30px;">
+      <div style="flex: 1; min-width: 250px;">
+        <h3 style="font-family: 'Syne'; color: #fff; margin-bottom: 12px;">Manual 3D <span>Maker</span></h3>
+        <p style="font-size: 13px; color: var(--muted); line-height: 1.6;">A plataforma educativa de referência para o ensino da fabricação aditiva. Do iniciante ao avançado, cobrimos tecnologias FDM, SLA e SLS.</p>
+        <div style="display: flex; gap: 12px; margin-top: 15px; font-size: 10px; color: var(--accent4); font-family: 'Space Mono'; align-items: center;">
+          <span style="width: 8px; height: 8px; background: var(--accent4); border-radius: 50%; box-shadow: 0 0 10px var(--accent4);"></span>
+          SISTEMA OPERACIONAL (DOMÍNIO .PT)
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 40px;">
+        <div>
+          <h4 style="font-size: 11px; color: var(--accent); font-family: 'Space Mono'; text-transform: uppercase; margin-bottom: 15px;">Legal</h4>
+          <ul style="list-style: none; font-size: 13px;">
+            <li style="margin-bottom: 8px;"><a href="terms.php" style="color: var(--muted); text-decoration: none;">Termos de Uso</a></li>
+            <li><a href="privacy.php" style="color: var(--muted); text-decoration: none;">Privacidade</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 style="font-size: 11px; color: var(--accent); font-family: 'Space Mono'; text-transform: uppercase; margin-bottom: 15px;">Suporte</h4>
+          <ul style="list-style: none; font-size: 13px;">
+            <li style="margin-bottom: 8px;"><a href="suporte.php" style="color: var(--muted); text-decoration: none;">Centro de Ajuda</a></li>
+            <li><a href="forum/" style="color: var(--muted); text-decoration: none;">Fórum Global</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div style="border-top: 1px solid var(--border); padding-top: 20px; text-align: center; font-size: 11px; color: var(--muted);">
+      <p>© <?php echo date('Y'); ?> Manual de Impressão 3D. Criado para Professores e Alunos.</p>
+      <p style="margin-top: 5px; opacity: 0.5;">Este documento pode ser livremente partilhado para fins educativos.</p>
+    </div>
   </footer>
 
 </main>
@@ -3445,8 +3481,9 @@ const sectionMap = [
   { id: "como-funciona", prev: "o-que-e", next: "tipos-impressoras" },
   { id: "tipos-impressoras", prev: "como-funciona", next: "iniciantes-vs-pro" },
   { id: "iniciantes-vs-pro", prev: "tipos-impressoras", next: "filamentos" },
-  { id: "filamentos", prev: "iniciantes-vs-pro", next: "qual-usar" },
-  { id: "qual-usar", prev: "filamentos", next: "processo" },
+  { id: "filamentos", prev: "iniciantes-vs-pro", next: "comparador" },
+  { id: "comparador", prev: "filamentos", next: "qual-usar" },
+  { id: "qual-usar", prev: "comparador", next: "processo" },
   { id: "processo", prev: "qual-usar", next: "problemas" },
   { id: "problemas", prev: "processo", next: "dicas" },
   { id: "dicas", prev: "problemas", next: "software" },

@@ -61,23 +61,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['role'] = $user['role'];
-                
-                $db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$user['id']]);
-                
-                if ($remember) {
-                    $token = bin2hex(random_bytes(32));
-                    $expires = date('Y-m-d H:i:s', strtotime('+30 days'));
-                    
-                    $db->prepare("INSERT INTO user_sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)")
-                        ->execute([$user['id'], $token, $expires]);
-                    
-                    setcookie('remember_token', $token, time() + (30 * 24 * 60 * 60), '/', '', false, true);
+
+                // Mudar para o fim do processo
+                if (function_exists('fastcgi_finish_request')) {
+                    header("Location: $redirectTo");
+                    session_write_close();
+                    fastcgi_finish_request();
                 }
-                
+
+                $db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$user['id']]);
                 logActivity($user['id'], 'login', "Login efetuado: {$user['username']}");
                 
-                setFlashMessage('success', 'Bem-vindo, ' . $user['full_name'] . '!');
-                redirect($redirectTo);
+                if (!headers_sent()) redirect($redirectTo);
+                exit;
 
                 skip_login:;
             } else {

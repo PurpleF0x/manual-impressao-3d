@@ -40,7 +40,7 @@ require_once 'includes/functions.php';
 <body>
     <div class="container">
         <h1>Política de <span>Privacidade</span></h1>
-        <p style="text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 30px;">Última atualização: Junho 2024</p>
+        <p style="text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 30px;">Última atualização: 26 de Junho de 2024</p>
         <p>Última atualização: <?php echo date('d/m/Y'); ?></p>
 
         <h2>1. Informações que Recolhemos</h2>
