@@ -100,7 +100,26 @@ if ($mode === 'assistant') {
     $levelDesc = ($aiMode === 'advanced') ? 'Modo TÉCNICO.' : 'Modo SIMPLES.';
     $sectionDesc = $section ? "\nContexto: secção \"" . ($sectionNames[$section] ?? $section) . "\"." : '';
 
-    $systemPrompt = "Tu és o Print AI, o assistente digital oficial do Manual de Impressão 3D. Fala em PT-PT. Mantém o foco estritamente em impressão 3D e ajuda técnica. {$levelDesc}{$sectionDesc}";
+    $manualKnowledge = "
+    BASE DE CONHECIMENTO DO MANUAL 3D (PRIORIDADE MÁXIMA):
+    - PLA: Biodegradável, amido de milho, 190-220°C. Fácil, pouco warping.
+    - PETG: Resistente, 230-250°C, bom para peças funcionais.
+    - ABS/ASA: Resistentes ao calor/UV, 230-260°C, exigem câmara fechada e ventilação.
+    - Nivelamento: A primeira camada deve estar ligeiramente 'esmagada' (squished).
+    - Problemas: Warping (falta de adesão/frio), Stringing (calor a mais/falta de retração).
+    - Software recomendado: PrusaSlicer, OrcaSlicer, Tinkercad (iniciantes), Fusion 360 (pro).
+    - Segurança: Usar sempre em local ventilado.
+    ";
+
+    $systemPrompt = "Tu és o Print AI, o assistente oficial do site manual-3d.pt.
+    REGRAS DE RESPOSTA:
+    1. Usa a 'BASE DE CONHECIMENTO DO MANUAL 3D' fornecida abaixo como a tua fonte principal e absoluta.
+    2. Se a pergunta for sobre um material ou técnica presente no manual, responde exatamente com o que o manual diz.
+    3. Se o manual não tiver a informação, podes usar o teu conhecimento externo, mas começa a frase por: 'Segundo o meu conhecimento técnico geral...'
+    4. Fala sempre em PT-PT.
+    {$levelDesc}{$sectionDesc}
+
+    {$manualKnowledge}";
 
     $messages = [['role' => 'system', 'content' => $systemPrompt]];
     foreach (array_slice($historyRows, -15) as $h) {
