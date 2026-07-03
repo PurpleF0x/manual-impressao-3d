@@ -98,22 +98,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
             if ((int)$rl->fetchColumn() >= 3) {
                 $error = 'Tens demasiados posts pendentes nesta comunidade. Aguarda que a equipa os reveja antes de publicares mais.';
             } else {
-                // Verificar se é moderador/admin desta comunidade → aprovação automática
-                $isMod = false;
-                $globRole = $currentUser['role'] ?? '';
-                if (in_array($globRole, array('admin','moderator','master'))) {
-                    $isMod = true;
-                } else {
+                // Verificar se é staff ou moderador desta comunidade → aprovação automática
+                $isStaff = in_array($currentUser['role'] ?? '', array('admin','moderator','master'));
+                $isCommMod = false;
+                if (!$isStaff) {
                     $modCheck = $db->prepare("SELECT role FROM forum_memberships WHERE user_id=? AND community_id=? AND role IN ('owner','admin','moderator')");
                     $modCheck->execute(array((int)$currentUser['id'], $commId));
-                    if ($modCheck->fetch()) $isMod = true;
+                    if ($modCheck->fetch()) $isCommMod = true;
                 }
 
-                // Se não for moderador, verificar se a comunidade exige aprovação
-                if (!$isMod && !empty($comm['requires_approval'])) {
-                    $postStatus = 'pending';
-                } else {
+                // Aprovação automática se for staff ou se a comunidade não exigir aprovação
+                if ($isStaff || $isCommMod || empty($comm['requires_approval'])) {
                     $postStatus = 'approved';
+                } else {
+                    $postStatus = 'pending';
                 }
 
                 $ins = $db->prepare("INSERT INTO forum_posts (community_id,user_id,title,content,type,flair,image_url,image_type,status) VALUES (?,?,?,?,'text',?,?,?,?)");

@@ -19,9 +19,9 @@ header('Content-Type: application/json; charset=utf-8');
 
 // forum/ está 1 nível abaixo da raiz
 require_once dirname(__DIR__) . '/../includes/functions.php';
-// Helper: verificar se utilizador é moderador global
+// Helper: verificar se utilizador é administrador global ou master
 function isGlobalMod($u) {
-    return $u && in_array($u['role'] ?? '', array('admin','moderator'));
+    return $u && in_array($u['role'] ?? '', array('admin','master'));
 }
 
 
