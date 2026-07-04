@@ -45,6 +45,21 @@ try {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 } catch (Exception $e) {}
 
+// Garantir tabela reported_comments
+try {
+    $db->exec("CREATE TABLE IF NOT EXISTS reported_comments (
+        id           INT AUTO_INCREMENT PRIMARY KEY,
+        comment_id   INT NOT NULL,
+        reporter_id  INT NOT NULL,
+        reason       VARCHAR(255) DEFAULT NULL,
+        description  TEXT         DEFAULT NULL,
+        status       ENUM('pendente','analisado','resolvido') DEFAULT 'pendente',
+        created_at   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (comment_id)  REFERENCES comments(id) ON DELETE CASCADE,
+        FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+} catch (Exception $e) {}
+
 $action = $input['action'] ?? '';
 
 switch ($action) {

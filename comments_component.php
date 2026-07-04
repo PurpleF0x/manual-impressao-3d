@@ -355,14 +355,13 @@ $isModUser     = $currentUser && canModerate($currentUser);
         ? '<button class="cmt-btn" onclick="toggleRepliesOnly('+id+')" style="cursor:pointer">💬 '+repCount+' resposta'+(repCount>1?'s':'')+'</button>'
         : '');
 
-    // Botão report
+    // Botão report (só se não for o autor)
     var reportBtn=(CUR_UID&&CUR_UID!==c.user_id)
       ?'<button class="cmt-btn report-btn" onclick="openReportModal('+id+')" style="margin-left:auto" title="Reportar">🚩</button>':'';
 
-    // Botões mod
-    var modBtns=IS_MOD
-      ?'<button class="cmt-btn" onclick="modAction(\'approve\','+id+')" style="color:#00e5ff">✓</button>'
-       +'<button class="cmt-btn" onclick="modAction(\'reject\','+id+')" style="color:#ff7777">✕</button>':'';
+    // Botão eliminar (para autor ou mod)
+    var deleteBtn=(CUR_UID && (CUR_UID===c.user_id || IS_MOD))
+      ?'<button class="cmt-btn" onclick="modAction(\'delete\','+id+')" style="color:#ff7777; margin-left:'+(reportBtn?'0':'auto')+'" title="Eliminar">🗑️</button>':'';
 
     // Respostas
     var repliesHtml='';
@@ -397,7 +396,7 @@ $isModUser     = $currentUser && canModerate($currentUser);
           +'<span class="cmt-cat '+catCls+'">'+(CAT_LBL[catCls]||catCls.toUpperCase())+'</span>'
         +'</div>'
         +'<div class="cmt-content">'+esc(c.content).replace(/\n/g,'<br>')+'</div>'
-        +'<div class="cmt-actions">'+likeBtn+replyBtn+modBtns+reportBtn+'</div>'
+        +'<div class="cmt-actions">'+likeBtn+replyBtn+deleteBtn+reportBtn+'</div>'
       +'</div>'
       +repliesHtml
       +formHtml
@@ -409,6 +408,9 @@ $isModUser     = $currentUser && canModerate($currentUser);
     var likeIcon=r.user_liked?'❤️':'🤍', likeCnt=r.like_count||0;
     var reportBtn=(CUR_UID&&CUR_UID!==r.user_id)
       ?'<button class="cmt-btn report-btn" onclick="openReportModal('+r.id+')" style="margin-left:auto" title="Reportar">🚩</button>':'';
+    var deleteBtn=(CUR_UID && (CUR_UID===r.user_id || IS_MOD))
+      ?'<button class="cmt-btn" onclick="modAction(\'delete\','+r.id+')" style="color:#ff7777; margin-left:'+(reportBtn?'0':'auto')+'" title="Eliminar">🗑️</button>':'';
+
     return '<div class="cmt-reply-item" id="cmt-'+r.id+'">'
       +'<div class="cmt-author-row" style="margin-bottom:8px">'
         +avatarHtml(r,32,11)
@@ -426,7 +428,7 @@ $isModUser     = $currentUser && canModerate($currentUser);
         +'<button class="cmt-btn'+(r.user_liked?' liked':'')+'" onclick="toggleLike('+r.id+',this)" data-liked="'+(r.user_liked?'1':'0')+'">'
           +likeIcon+' <span class="like-count">'+likeCnt+'</span>'
         +'</button>'
-        +reportBtn
+        +deleteBtn+reportBtn
       +'</div>'
       +'</div>';
   }

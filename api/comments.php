@@ -244,6 +244,34 @@ switch ($action) {
         }
         break;
 
+    // ── Apagar (Eliminar permanentemente) ─────────────────────────
+    case 'delete':
+        requireLogin();
+        $cid = (int)($input['comment_id'] ?? 0);
+        if ($cid < 1) { echo json_encode(['success'=>false,'error'=>'ID inválido.']); exit; }
+
+        $db = getDB();
+        $stmt = $db->prepare("SELECT user_id FROM comments WHERE id = ?");
+        $stmt->execute([$cid]);
+        $comment = $stmt->fetch();
+
+        if (!$comment) { echo json_encode(['success'=>false,'error'=>'Comentário não encontrado.']); exit; }
+
+        $isAuthor = (int)$comment['user_id'] === (int)$user['id'];
+        $isStaff = canModerate($user);
+
+        if (!$isAuthor && !$isStaff) {
+            echo json_encode(['success'=>false,'error'=>'Sem permissão para eliminar este comentário.']);
+            exit;
+        }
+
+        // Eliminar comentário (on delete cascade deve tratar dos likes/reports se configurado, senão fazemos manual)
+        $db->prepare("DELETE FROM comments WHERE id = ?")->execute([$cid]);
+
+        logActivity((int)$user['id'], 'comment_deleted', "comment_id={$cid}");
+        echo json_encode(['success'=>true, 'message'=>'Comentário eliminado com sucesso.']);
+        break;
+
     // ── Like ─────────────────────────────────────────────────────
     case 'like':
         requireLogin();

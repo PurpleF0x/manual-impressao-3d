@@ -89,7 +89,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
     }
 
     if ($action === 'update_info') {
-        // ... (código existente) ...
+        $name = trim($_POST['name'] ?? '');
+        $desc = trim($_POST['description'] ?? '');
+        $icon = trim($_POST['icon'] ?? $comm['icon']);
+        $color = trim($_POST['banner_color'] ?? $comm['banner_color']);
+        $approval = isset($_POST['requires_approval']) ? 1 : 0;
+
+        if (mb_strlen($name) >= 3 && mb_strlen($name) <= 80) {
+            $db->prepare("UPDATE forum_communities SET name=?, description=?, icon=?, banner_color=?, requires_approval=? WHERE id=?")
+               ->execute(array($name, $desc ?: null, $icon, $color, $approval, $commId));
+
+            // Atualizar variável local para refletir na página sem refresh manual
+            $comm['name'] = $name;
+            $comm['description'] = $desc;
+            $comm['icon'] = $icon;
+            $comm['banner_color'] = $color;
+            $comm['requires_approval'] = $approval;
+
+            $flash = 'Informações atualizadas.';
+        } else {
+            $flash = 'O nome deve ter entre 3 e 80 caracteres.';
+            $flashType = 'error';
+        }
     }
 
     // Ações de Moderação de Posts
