@@ -3272,6 +3272,7 @@ if (document.getElementById('missionsWidget')) {
           </a>
         </div>
         <div style="width: 1px; height: 15px; background: var(--border);"></div>
+        <a href="sobre.php" style="color: var(--accent); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace; font-weight: bold;">Sobre</a>
         <a href="terms.php" style="color: var(--muted); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace;">Termos</a>
         <a href="privacy.php" style="color: var(--muted); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace;">Privacidade</a>
         <a href="suporte.php" style="color: var(--muted); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace;">Suporte</a>

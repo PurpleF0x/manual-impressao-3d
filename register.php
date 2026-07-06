@@ -89,6 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="icon" type="image/svg+xml" href="/favicons/favicon-login.svg">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-login-32.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-adsense-ads-free" content="true">
     <title>Registo - Manual de Impressão 3D</title>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
