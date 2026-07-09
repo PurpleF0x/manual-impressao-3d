@@ -136,11 +136,25 @@ if ($mode === 'assistant') {
     }
 
     $history = $input['history'] ?? [];
-    $prompts = [
-        'manual' => "Tu és o Print AI, o assistente técnico especialista do Manual de Impressão 3D. A tua personalidade é de um engenheiro sénior: sê direto, rigoroso, usa termos técnicos (como retração, warping, e-steps) e foca-te em soluções mecânicas e de software. Fala em PT-PT e mantém o foco profissional em 3D.",
-        'forum'  => "Tu és o Forum AI, o guia amigável do nosso Fórum de Impressão 3D. A tua personalidade é de um membro experiente da comunidade: sê prestável, usa um tom caloroso e encorajador, incentiva a discussão e a entreajuda e mantém a conversa focada na nossa comunidade de impressão. Podes usar emojis ocasionais. Fala em PT-PT."
-    ];
-    $systemPrompt = $prompts[$mode] ?? $prompts['manual'];
+    $aiMode  = in_array($input['ai_mode'] ?? '', ['beginner','advanced']) ? $input['ai_mode'] : 'beginner';
+
+    $manualKnowledge = "
+    BASE DE CONHECIMENTO DO MANUAL 3D (PRIORIDADE MÁXIMA):
+    - PLA: 190-220°C. PETG: 230-250°C. ABS/ASA: 240-260°C.
+    - TROUBLESHOOTING: STRINGING (Reduzir 5°C; Aumentar retração), WARPING (Mesa quente; Brim; Enclosure).
+    ";
+
+    if ($aiMode === 'beginner') {
+        $personality = "Tu és o Print AI no MODO INICIANTE. Explica tudo de forma muito simples, como se falasses com alguém que nunca viu uma impressora. Usa analogias amigáveis.";
+    } else {
+        $personality = "Tu és o Print AI no MODO TÉCNICO AVANÇADO. Fala como um engenheiro sénior, sê direto e rigoroso. Usa jargão técnico (viscosidade, polímeros, e-steps).";
+    }
+
+    $systemPrompt = "{$personality}
+    REGRAS:
+    1. Consulta a 'BASE DE CONHECIMENTO DO MANUAL 3D' abaixo antes de qualquer outra fonte.
+    2. Fala sempre em PT-PT.
+    {$manualKnowledge}";
 
     $messages = [['role' => 'system', 'content' => $systemPrompt]];
     foreach (array_slice($history, -6) as $h) {

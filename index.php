@@ -457,7 +457,52 @@ function appendMsg(role, text) {
 var aiConversationId = null;
 
 async function sendAIMessage() {
-    // ... rest of the function ...
+    if (aiLoading) return;
+    var input = document.getElementById('aiInput');
+    var msg = input.value.trim();
+    if (!msg) return;
+
+    appendMsg('user', msg);
+    input.value = '';
+    input.style.height = 'auto';
+    aiLoading = true;
+
+    var typing = document.createElement('div');
+    typing.className = 'ai-typing show';
+    typing.innerHTML = '<div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div>';
+    document.getElementById('aiMessages').appendChild(typing);
+    document.getElementById('aiMessages').scrollTop = document.getElementById('aiMessages').scrollHeight;
+
+    try {
+        const currentMode = localStorage.getItem('mode') || 'beginner';
+        const res = await fetch('api/ai.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: msg,
+                mode: 'manual',
+                ai_mode: currentMode,
+                history: aiHistory
+            })
+        });
+        const data = await res.json();
+        typing.remove();
+        if (data.success) {
+            appendMsg('bot', data.reply);
+            aiHistory.push({role:'user', content: msg});
+            aiHistory.push({role:'assistant', content: data.reply});
+            if (aiHistory.length > 10) aiHistory.shift();
+        } else {
+            appendMsg('bot', '⚠️ ' + (data.error || 'Erro na resposta.'));
+        }
+    } catch(e) {
+        if (document.querySelector('.ai-typing')) document.querySelector('.ai-typing').remove();
+        appendMsg('bot', '⚠️ Erro de rede ou na ligação ao servidor.');
+    } finally {
+        aiLoading = false;
+    }
 }
 
 // ── Daily Missions Logic ──
@@ -3220,13 +3265,13 @@ if (document.getElementById('missionsWidget')) {
     </div>
   </section>
 
-  <!-- ARTIGOS TÉCNICOS PARA ADSENSE/SEO -->
+  <!-- DICAS EXTRAS PARA ADSENSE/SEO -->
   <section class="section" id="artigos-tecnicos" style="border-top: 1px solid var(--border); padding-top: 40px; margin-bottom: 40px;">
     <div class="section-header">
       <div class="section-number">13</div>
       <div class="section-title">
-        <h2>Aprofundamento Técnico</h2>
-        <p>Exploração detalhada sobre o futuro da fabricação aditiva</p>
+        <h2>Dicas Extras</h2>
+        <p>Mais sobre o mundo da fabricação aditiva</p>
       </div>
     </div>
 

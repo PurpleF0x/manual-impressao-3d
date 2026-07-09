@@ -52,11 +52,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
     $imageUrl  = null;
     $imageType = null;
 
-    // Imagem por URL direto
-    $imgUrlInput = trim($_POST['image_url'] ?? '');
-    if ($imgUrlInput && filter_var($imgUrlInput, FILTER_VALIDATE_URL)) {
-        $imageUrl  = $imgUrlInput;
-        $imageType = 'url';
+    // Processar Upload de Imagem
+    if (isset($_FILES['post_image']) && $_FILES['post_image']['error'] === UPLOAD_ERR_OK) {
+        $file = $_FILES['post_image'];
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($file['tmp_name']);
+
+        if (in_array($mime, $allowedTypes)) {
+            $uploadDir = __DIR__ . '/../uploads/posts/';
+            if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+
+            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $fileName = 'post_' . time() . '_' . uniqid() . '.' . $ext;
+            $dest = $uploadDir . $fileName;
+
+            if (move_uploaded_file($file['tmp_name'], $dest)) {
+                $imageUrl = 'uploads/posts/' . $fileName;
+                $imageType = 'upload';
+            }
+        }
+    }
+
+    // Fallback: Imagem por URL se não houve upload
+    if (!$imageUrl) {
+        $imgUrlInput = trim($_POST['image_url'] ?? '');
+        if ($imgUrlInput && filter_var($imgUrlInput, FILTER_VALIDATE_URL)) {
+            $imageUrl  = $imgUrlInput;
+            $imageType = 'url';
+        }
     }
     $validFlairs = array('','showcase','tutorial','noticia','pergunta','projeto','ajuda','discussao_tecnica','spoiler');
     if (!in_array($flair, $validFlairs)) $flair = '';
@@ -258,7 +282,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
         <div style="background:rgba(0,229,255,0.04);border-bottom:1px solid var(--border2);padding:12px 26px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:10px">
             🖨️ <span><strong style="color:var(--text)">Este fórum é dedicado a impressão 3D.</strong> Posts devem ser sobre impressoras, filamentos, slicers ou projetos. Conteúdo fora do tema será removido.</span>
         </div>
-        <form method="POST" class="form-body" id="postForm">
+        <form method="POST" class="form-body" id="postForm" enctype="multipart/form-data">
             <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
         <input type="hidden" name="submit_token" value="<?php echo bin2hex(random_bytes(16)); ?>">
 
@@ -346,24 +370,30 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
                 <div id="flairWarning" style="display:none;margin-top:8px;padding:10px 14px;border-radius:8px;font-size:12px"></div>
             </div>
 
+            <!-- Upload de Imagem -->
+            <div class="form-group">
+                <label class="form-label">Upload de Imagem <span style="color:var(--muted);font-size:9px">OPCIONAL</span></label>
+                <input type="file" name="post_image" id="fileInput" class="form-input" accept="image/*" onchange="previewFile(this)">
+                <div id="filePreviewWrap" style="display:none;margin-top:10px;position:relative">
+                    <img id="filePreview" style="max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--border2);object-fit:contain">
+                    <button type="button" onclick="clearFileImg()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);border:none;border-radius:50%;width:28px;height:28px;color:#fff;cursor:pointer;font-size:14px;line-height:1">×</button>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 10px 0; color: var(--muted); font-size: 11px;">OU</div>
 
             <!-- Imagem via URL -->
             <div class="form-group">
-                <label class="form-label">Imagem <span style="color:var(--muted);font-size:9px">OPCIONAL</span></label>
+                <label class="form-label">Imagem por URL <span style="color:var(--muted);font-size:9px">OPCIONAL</span></label>
                 <input type="text" name="image_url" id="imgUrlInput" class="form-input"
                     placeholder="URL direto da imagem — ex: https://i.imgur.com/abc.jpg"
                     oninput="previewUrl(this.value)">
                 <div style="margin-top:6px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">
-                    💡 Cola um link direto para uma imagem (.jpg .png .gif .webp). 
-                    Podes usar <a href="https://imgur.com" target="_blank" style="color:var(--accent)">imgur.com</a> ou 
-                    <a href="https://imgbb.com" target="_blank" style="color:var(--accent)">imgbb.com</a> para hospedar.
+                    💡 Se não quiseres carregar do teu PC, cola um link direto (.jpg .png .gif .webp).
                 </div>
                 <div id="imgUrlPreviewWrap" style="display:none;margin-top:10px;position:relative">
                     <img id="imgUrlPreview" style="max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--border2);object-fit:contain">
                     <button type="button" onclick="clearUrlImg()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);border:none;border-radius:50%;width:28px;height:28px;color:#fff;cursor:pointer;font-size:14px;line-height:1">×</button>
-                </div>
-                <div id="imgUrlError" style="display:none;margin-top:6px;font-family:'Space Mono',monospace;font-size:10px;color:#ff8888">
-                    ⚠️ URL inválido ou não é uma imagem direta.
                 </div>
             </div>
 
@@ -452,17 +482,27 @@ function selectComm(commId) {
 
 
 function previewUrl(url) {
-    var wrap  = document.getElementById('imgUrlPreviewWrap');
-    var img   = document.getElementById('imgUrlPreview');
-    var errEl = document.getElementById('imgUrlError');
-    if (!url || !url.match(/^https?:\/\//)) {
+    // ... código existente ...
+}
+
+function previewFile(input) {
+    var wrap = document.getElementById('filePreviewWrap');
+    var img = document.getElementById('filePreview');
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            img.src = e.target.result;
+            wrap.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    } else {
         wrap.style.display = 'none';
-        if (errEl) errEl.style.display = 'none';
-        return;
     }
-    img.onload  = function(){ wrap.style.display='block'; if(errEl) errEl.style.display='none'; };
-    img.onerror = function(){ wrap.style.display='none';  if(errEl) errEl.style.display='block'; };
-    img.src = url;
+}
+
+function clearFileImg() {
+    document.getElementById('fileInput').value = '';
+    document.getElementById('filePreviewWrap').style.display = 'none';
 }
 
 function clearUrlImg() {

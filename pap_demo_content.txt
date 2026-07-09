@@ -1,0 +1,46 @@
+# CONTEÚDO PARA DEMONSTRAÇÃO - PAP MANUAL 3D
+
+Este ficheiro contém textos prontos para copiar e colar durante a apresentação,
+evitando erros de digitação e poupando tempo.
+
+-----------------------------------------------------------
+1. CRIAÇÃO DE COMUNIDADE (Exemplo: Resina UV)
+-----------------------------------------------------------
+Nome: Resina e Estereolitografia (SLA)
+Slug: resina-uv
+Ícone: 🧪
+Cor: #7c3aed (Roxo)
+Descrição: Espaço dedicado a utilizadores de impressoras de resina. Dicas de lavagem, cura e segurança com fotopolímeros.
+
+-----------------------------------------------------------
+2. POST NO FÓRUM (Exemplo: Dica técnica)
+-----------------------------------------------------------
+Título: Como evitar bolhas na impressão de Resina?
+Flair: 💡 Dica
+Conteúdo:
+Muitas vezes as bolhas surgem por agitar a resina e imprimir logo de seguida.
+Dica: Deixa a resina descansar no tanque (vat) por 10-15 minutos antes de começar a impressão para que o ar saia naturalmente.
+
+-----------------------------------------------------------
+3. COMENTÁRIO NO MANUAL (Exemplo: Dúvida sobre PLA)
+-----------------------------------------------------------
+Categoria: ❓ Dúvida
+Conteúdo:
+Estou a tentar imprimir PLA a 230°C mas estou com muito stringing. No manual diz que o ideal é 190-210°C. Devo baixar a temperatura ou aumentar a retração?
+
+-----------------------------------------------------------
+4. PERGUNTA PARA A PRINT AI (Exemplo de Troubleshooting)
+-----------------------------------------------------------
+Pergunta: Tenho warping num canto da peça em ABS, o que faço?
+
+(Resposta esperada: Ela deve sugerir fechar a impressora ou usar brim, citando o manual).
+
+-----------------------------------------------------------
+5. DADOS DE TESTE PARA CALCULADORA
+-----------------------------------------------------------
+Preço do Rolo: 20€
+Peso do Rolo: 1000g
+Peso da Peça: 45g
+Consumo da Impressora: 150W
+Preço kWh: 0.22€
+Tempo de Impressão: 3h 30m

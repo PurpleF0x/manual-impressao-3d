@@ -580,6 +580,7 @@ if (!empty($_POST['action'])) {
 
 <!-- USER BAR -->
 <div class="user-bar">
+  <a href="index.php" class="btn-auth btn-profile" style="margin-right: auto; border-color: var(--muted); color: var(--muted);">← Manual</a>
   <div class="user-info">
     <div class="user-avatar">
       <?php if (!empty($avUrl) && file_exists(__DIR__.'/'.$avUrl)): ?>
@@ -1358,13 +1359,17 @@ if (!empty($_POST['action'])) {
 </div>
 
 <!-- FOOTER -->
-<footer>
-  <p>Manual de Impressão 3D — Perfil de <strong><?php echo sanitize($user['full_name']); ?></strong></p>
-  <p style="margin-top: 8px;">
-    <a href="terms.php" style="color: var(--muted); text-decoration: none;">Termos de Utilização</a> |
-    <a href="privacy.php" style="color: var(--muted); text-decoration: none;">Política de Privacidade</a>
-  </p>
-  <p style="margin-top:6px;opacity:0.5;">© <?php echo date('Y'); ?> Manual Educativo de Impressão 3D</p>
+<footer style="display: flex; justify-content: space-between; align-items: center; padding: 40px 60px 120px;">
+  <div style="text-align: left;">
+    <p style="font-size: 11px; color: var(--muted); margin: 0; font-family: 'Space Mono', monospace;">© 2026 <strong>Manual de Impressão 3D</strong></p>
+  </div>
+  <div style="text-align: right;">
+    <p style="margin: 0; font-size: 12px; color: var(--muted);">
+      <a href="terms.php" style="color: var(--muted); text-decoration: none;">Termos</a> |
+      <a href="privacy.php" style="color: var(--muted); text-decoration: none;">Privacidade</a>
+    </p>
+    <p style="margin-top:4px; opacity:0.5; font-size: 10px;">Este documento pode ser livremente partilhado.</p>
+  </div>
 </footer>
 
 </main>

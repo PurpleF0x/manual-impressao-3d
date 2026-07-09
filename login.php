@@ -256,11 +256,13 @@ $backHref  = strpos($redirectTo, 'forum') !== false ? $redirectTo : 'index.php';
              data-width="360">
         </div>
 
-        <div class="auth-footer">
-            <p>Ainda não tens conta? <a href="register.php">Criar Conta</a></p>
-            <p style="margin-top:15px; font-size:12px; opacity:0.7;">
-                Precisa de ajuda? <a href="suporte.php" style="color:var(--accent); text-decoration:none; font-weight:600;">Centro de Suporte</a>
-            </p>
+        <div class="auth-footer" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 20px; margin-top: 20px;">
+            <p style="margin:0; font-size: 11px;">© 2024 Manual de Impressão 3D</p>
+            <div style="display: flex; gap: 10px;">
+                <a href="register.php" style="font-size: 13px;">Criar Conta</a>
+                <span style="color: var(--muted);">|</span>
+                <a href="suporte.php" style="font-size: 13px;">Suporte</a>
+            </div>
         </div>
     </div>
 

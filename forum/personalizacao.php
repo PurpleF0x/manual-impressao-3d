@@ -81,9 +81,14 @@ try {
 $coins = (int)$config['coins'];
 
 // ── Inventário ────────────────────────────────────────────────
-$invQ = $db->prepare("SELECT si.* FROM user_inventory ui JOIN shop_items si ON si.id=ui.item_id WHERE ui.user_id=? ORDER BY si.category,si.price");
-$invQ->execute(array($uid));
-$myItems   = $invQ->fetchAll();
+if ($currentUser['role'] === 'master') {
+    $invQ = $db->query("SELECT * FROM shop_items WHERE is_active=1 ORDER BY category, price");
+    $myItems = $invQ->fetchAll();
+} else {
+    $invQ = $db->prepare("SELECT si.* FROM user_inventory ui JOIN shop_items si ON si.id=ui.item_id WHERE ui.user_id=? ORDER BY si.category,si.price");
+    $invQ->execute(array($uid));
+    $myItems = $invQ->fetchAll();
+}
 $myFrames  = array_values(array_filter($myItems, function($i){ return $i['category']==='frame'; }));
 $myBgs     = array_values(array_filter($myItems, function($i){ return $i['category']==='background'; }));
 $myAccents = array_values(array_filter($myItems, function($i){ return $i['category']==='accent'; }));
@@ -105,8 +110,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
         if ($field === 'frame_key') {
             if ($value === '') $value = null;
             if ($value) {
-                $chk = $db->prepare("SELECT 1 FROM user_inventory ui JOIN shop_items si ON si.id=ui.item_id WHERE si.item_key=? AND si.category='frame' AND ui.user_id=?");
-                $chk->execute(array($value,$uid));
+                if ($currentUser['role'] === 'master') {
+                    $chk = $db->prepare("SELECT 1 FROM shop_items WHERE item_key=? AND category='frame'");
+                    $chk->execute(array($value));
+                } else {
+                    $chk = $db->prepare("SELECT 1 FROM user_inventory ui JOIN shop_items si ON si.id=ui.item_id WHERE si.item_key=? AND si.category='frame' AND ui.user_id=?");
+                    $chk->execute(array($value,$uid));
+                }
                 if (!$chk->fetch()) $value = null;
             }
             $db->prepare("UPDATE user_profile_config SET frame_key=? WHERE user_id=?")->execute(array($value,$uid));
@@ -115,8 +125,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
         } elseif ($field === 'background_key') {
             if ($value === '') $value = null;
             if ($value) {
-                $chk = $db->prepare("SELECT 1 FROM user_inventory ui JOIN shop_items si ON si.id=ui.item_id WHERE si.item_key=? AND si.category='background' AND ui.user_id=?");
-                $chk->execute(array($value,$uid));
+                if ($currentUser['role'] === 'master') {
+                    $chk = $db->prepare("SELECT 1 FROM shop_items WHERE item_key=? AND category='background'");
+                    $chk->execute(array($value));
+                } else {
+                    $chk = $db->prepare("SELECT 1 FROM user_inventory ui JOIN shop_items si ON si.id=ui.item_id WHERE si.item_key=? AND si.category='background' AND ui.user_id=?");
+                    $chk->execute(array($value,$uid));
+                }
                 if (!$chk->fetch()) $value = null;
             }
             $db->prepare("UPDATE user_profile_config SET background_key=? WHERE user_id=?")->execute(array($value,$uid));
@@ -131,8 +146,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
         } elseif ($field === 'accent_color') {
             if ($value === '') $value = null;
             if ($value) {
-                $chk = $db->prepare("SELECT 1 FROM user_inventory ui JOIN shop_items si ON si.id=ui.item_id WHERE si.css_value=? AND si.category='accent' AND ui.user_id=?");
-                $chk->execute(array($value,$uid));
+                if ($currentUser['role'] === 'master') {
+                    $chk = $db->prepare("SELECT 1 FROM shop_items WHERE css_value=? AND category='accent'");
+                    $chk->execute(array($value));
+                } else {
+                    $chk = $db->prepare("SELECT 1 FROM user_inventory ui JOIN shop_items si ON si.id=ui.item_id WHERE si.css_value=? AND si.category='accent' AND ui.user_id=?");
+                    $chk->execute(array($value,$uid));
+                }
                 if (!$chk->fetch()) $value = null;
             }
             $db->prepare("UPDATE user_profile_config SET accent_color=? WHERE user_id=?")->execute(array($value,$uid));
@@ -145,8 +165,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
             // Validar se pertencem ao inventário
             $validBadges = [];
             foreach ($badges as $bid) {
-                $chk = $db->prepare("SELECT 1 FROM user_inventory WHERE item_id=? AND user_id=?");
-                $chk->execute(array($bid, $uid));
+                if ($currentUser['role'] === 'master') {
+                    $chk = $db->prepare("SELECT 1 FROM shop_items WHERE id=? AND category IN ('badge','medal')");
+                    $chk->execute(array($bid));
+                } else {
+                    $chk = $db->prepare("SELECT 1 FROM user_inventory ui JOIN shop_items si ON si.id=ui.item_id WHERE ui.item_id=? AND ui.user_id=? AND si.category IN ('badge','medal')");
+                    $chk->execute(array($bid, $uid));
+                }
                 if ($chk->fetch()) $validBadges[] = (int)$bid;
             }
             $val = json_encode($validBadges);
