@@ -10,6 +10,11 @@ function avPath($url) {
     if (strpos($url,'http')===0) return $url;
     return '../' . ltrim($url, '/');
 }
+function postImagePath($url) {
+    if (!$url) return '';
+    if (preg_match('#^https?://#i', $url) || str_starts_with($url, '../') || str_starts_with($url, '/')) return $url;
+    return '../' . ltrim($url, '/');
+}
 
 $currentUser = isLoggedIn() ? getCurrentUser() : null;
 $db = getDB();
@@ -432,7 +437,24 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .flair-showcase{background:rgba(0,229,255,0.08);color:#00e5ff;border:1px solid rgba(0,229,255,0.2)}
 .flair-humor{background:rgba(0,229,255,0.08);color:#00e5ff;border:1px solid rgba(0,229,255,0.2)}
 .flair-spoiler{background:rgba(255,204,0,0.1);color:#ffcc00;border:1px solid rgba(255,204,0,0.3)}
-@media(max-width:1100px){.layout{grid-template-columns:1fr 260px}}@media(max-width:900px){.layout{grid-template-columns:1fr}.topbar{padding:0 16px}.layout{padding:16px 20px}}
+@media(max-width:1100px){.layout{grid-template-columns:1fr 260px}}
+@media(max-width:900px){
+    .layout{grid-template-columns:1fr;padding:16px 20px}
+    .topbar{padding:10px 16px;height:auto;min-height:58px;flex-wrap:wrap;align-items:center;gap:10px}
+    .topbar-search{order:3;flex-basis:100%;max-width:none}
+    .topbar-actions{gap:8px}
+}
+@media(max-width:560px){
+    .topbar{padding:10px 12px;gap:8px}
+    .topbar-logo{letter-spacing:2px;font-size:10px}
+    .topbar-actions{margin-left:0;flex:1;justify-content:flex-end;min-width:0}
+    .topbar-btn{padding:7px 10px;font-size:9px}
+    .topbar-btn:not(.primary){max-width:92px;overflow:hidden;text-overflow:ellipsis}
+    .topbar-avatar{width:30px;height:30px}
+    .feed-header{align-items:stretch;flex-direction:column}
+    .feed-tabs{overflow-x:auto}
+    .create-post-btn{margin-left:0;justify-content:center}
+}
 
 /* ── Preferências ── */
 .prefs-btn {
@@ -676,7 +698,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                     <?php endif; ?>
                     <?php if (!empty($post['image_url'])): ?>
                     <div style="margin-bottom:10px">
-                        <img src="<?php echo htmlspecialchars($post['image_url']); ?>" alt=""
+                        <img src="<?php echo htmlspecialchars(postImagePath($post['image_url'])); ?>" alt=""
                              style="max-height:160px;max-width:100%;border-radius:8px;border:1px solid var(--border2);object-fit:cover">
                     </div>
                     <?php endif; ?>

@@ -199,7 +199,20 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .empty-posts{text-align:center;padding:50px 20px;color:var(--muted)}
 .empty-posts .icon{font-size:48px;margin-bottom:14px}
 
-@media(max-width:900px){.layout{grid-template-columns:1fr}.comm-header-inner{flex-direction:column;align-items:flex-start}.comm-banner{height:120px}.comm-header{padding:0 16px}.layout{padding:0 16px 40px}}
+@media(max-width:900px){
+    .topbar{padding:10px 16px;height:auto;min-height:58px;flex-wrap:wrap;gap:10px}
+    .topbar-btn{white-space:nowrap}
+    .layout{grid-template-columns:1fr;padding:0 16px 40px}
+    .comm-header-inner{flex-direction:column;align-items:flex-start}
+    .comm-banner{height:120px}
+    .comm-header{padding:0 16px}
+}
+@media(max-width:560px){
+    .topbar{padding:10px 12px;gap:8px}
+    .topbar-logo{letter-spacing:2px;font-size:10px}
+    .topbar-btn{padding:7px 10px;font-size:9px;max-width:96px;overflow:hidden;text-overflow:ellipsis}
+    .topbar-av{width:30px;height:30px}
+}
 
 /* ── Preferências ── */
 .prefs-btn {

@@ -9,6 +9,11 @@ function avPath($url) {
     if (strpos($url,'http')===0) return $url;
     return '../' . ltrim($url, '/');
 }
+function postImagePath($url) {
+    if (!$url) return '';
+    if (preg_match('#^https?://#i', $url) || str_starts_with($url, '../') || str_starts_with($url, '/')) return $url;
+    return '../' . ltrim($url, '/');
+}
 
 $currentUser = isLoggedIn() ? getCurrentUser() : null;
 $db  = getDB();
@@ -391,7 +396,23 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .comm-view-link{display:block;text-align:center;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-top:8px;text-decoration:none;transition:color 0.2s}
 .comm-view-link:hover{color:var(--accent)}
 
-@media(max-width:900px){.layout{grid-template-columns:1fr;padding:16px}.topbar{padding:0 16px}.post-title{font-size:18px}}
+@media(max-width:900px){
+    .layout{grid-template-columns:1fr;padding:16px}
+    .topbar{padding:10px 16px;height:auto;min-height:58px;flex-wrap:wrap;gap:10px}
+    .breadcrumb{order:3;flex-basis:100%;font-size:11px}
+    .post-title{font-size:18px}
+}
+@media(max-width:560px){
+    .topbar{padding:10px 12px;gap:8px}
+    .topbar-logo{letter-spacing:2px;font-size:10px}
+    .topbar-right{gap:8px;margin-left:auto;min-width:0}
+    .topbar-btn{padding:7px 10px;font-size:9px}
+    .topbar-btn:not(.primary){max-width:92px;overflow:hidden;text-overflow:ellipsis}
+    .topbar-av{width:30px;height:30px}
+    .post-top{flex-direction:column}
+    .post-vote-col{width:100%;flex-direction:row;justify-content:center;padding:12px}
+    .post-content-col{padding:18px}
+}
 
 /* ── Preferências ── */
 .prefs-btn {
@@ -632,7 +653,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <?php endif; ?>
             <?php if (!empty($post['image_url'])): ?>
             <div style="margin-bottom:18px">
-                <img src="<?php echo htmlspecialchars($post['image_url']); ?>" alt="Imagem do post"
+                <img src="<?php echo htmlspecialchars(postImagePath($post['image_url'])); ?>" alt="Imagem do post"
                      style="max-width:100%;max-height:500px;border-radius:12px;border:1px solid var(--border2);object-fit:contain;display:block;cursor:pointer"
                      onclick="this.style.maxHeight=this.style.maxHeight==='none'?'500px':'none'"
                      title="Clica para expandir">

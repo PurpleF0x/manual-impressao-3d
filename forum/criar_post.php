@@ -55,23 +55,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
     // Processar Upload de Imagem
     if (isset($_FILES['post_image']) && $_FILES['post_image']['error'] === UPLOAD_ERR_OK) {
         $file = $_FILES['post_image'];
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        $allowedTypes = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'image/webp' => 'webp'
+        ];
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mime = $finfo->file($file['tmp_name']);
 
-        if (in_array($mime, $allowedTypes)) {
+        if ($file['size'] > 5 * 1024 * 1024) {
+            $error = 'A imagem nÃ£o pode ultrapassar 5MB.';
+        } elseif (isset($allowedTypes[$mime])) {
             $uploadDir = __DIR__ . '/../uploads/posts/';
             if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
-            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $ext = $allowedTypes[$mime];
             $fileName = 'post_' . time() . '_' . uniqid() . '.' . $ext;
             $dest = $uploadDir . $fileName;
 
             if (move_uploaded_file($file['tmp_name'], $dest)) {
                 $imageUrl = 'uploads/posts/' . $fileName;
                 $imageType = 'upload';
+            } else {
+                $error = 'NÃ£o foi possÃ­vel guardar a imagem. Tenta novamente.';
             }
+        } else {
+            $error = 'Formato de imagem invÃ¡lido. Usa JPG, PNG, GIF ou WebP.';
         }
+    } elseif (isset($_FILES['post_image']) && $_FILES['post_image']['error'] !== UPLOAD_ERR_NO_FILE) {
+        $error = 'NÃ£o foi possÃ­vel carregar a imagem. Confirma o tamanho e tenta novamente.';
     }
 
     // Fallback: Imagem por URL se não houve upload
@@ -96,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
     }
     if ($submitToken) $_SESSION['last_submit_token'] = $submitToken;
 
-    if ($commId < 1)         $error = 'Seleciona uma comunidade.';
+    if (!$error && $commId < 1) $error = 'Seleciona uma comunidade.';
     elseif (mb_strlen($title) < 3)  $error = 'O título precisa de ter pelo menos 3 caracteres.';
     elseif (mb_strlen($title) > 300) $error = 'O título não pode ter mais de 300 caracteres.';
     else {
@@ -242,7 +255,17 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
 .sc-comm-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sc-comm-meta{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);margin-top:1px}
 
-@media(max-width:800px){.layout{grid-template-columns:1fr}.topbar{padding:0 16px}.layout{padding:16px}}
+@media(max-width:800px){
+    .layout{grid-template-columns:1fr;padding:16px}
+    .topbar{padding:10px 16px;height:auto;min-height:58px;flex-wrap:wrap;gap:10px}
+}
+@media(max-width:560px){
+    .topbar{padding:10px 12px;gap:8px}
+    .topbar-logo{letter-spacing:2px;font-size:10px}
+    .topbar-right{gap:8px;margin-left:auto}
+    .topbar-btn{padding:7px 10px;font-size:9px}
+    .topbar-av{width:30px;height:30px}
+}
 
 /* Flair grid */
 .flair-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }

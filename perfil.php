@@ -576,6 +576,7 @@ if (!empty($_POST['action'])) {
 <body>
 <?php renderUserNotice(); ?>
 
+<button class="menu-toggle" id="menuToggle" onclick="toggleProfileMenu()" aria-label="Abrir menu" aria-expanded="false">&#9776;</button>
 <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeProfileMenu()"></div>
 
 <!-- USER BAR -->
