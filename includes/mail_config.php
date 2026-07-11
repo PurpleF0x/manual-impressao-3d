@@ -41,7 +41,7 @@ function sendEmail(
     ]);
 
     $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_CODE);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
     return ($httpCode >= 200 && $httpCode < 300);
