@@ -76,35 +76,26 @@ if ($openUser) {
 // Buscar a última mensagem de cada conversa
 $stmt = $db->prepare("
     SELECT
-        other_id,
+        u.id as other_id,
         u.full_name, u.username, u.avatar_url,
-        last_msg, last_time,
-        SUM(unread) as unread_count
-    FROM (
+        m.content as last_msg,
+        m.created_at as last_time,
+        (SELECT COUNT(*) FROM private_messages WHERE sender_id = u.id AND receiver_id = ? AND read_at IS NULL) as unread_count
+    FROM users u
+    JOIN (
         SELECT
             CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END as other_id,
-            content as last_msg,
-            created_at as last_time,
-            CASE WHEN receiver_id = ? AND read_at IS NULL THEN 1 ELSE 0 END as unread
+            MAX(id) as max_id
         FROM private_messages
         WHERE sender_id = ? OR receiver_id = ?
-    ) t
-    JOIN users u ON u.id = t.other_id
-    GROUP BY other_id, u.full_name, u.username, u.avatar_url, last_msg, last_time
+        GROUP BY other_id
+    ) last_msgs ON u.id = last_msgs.other_id
+    JOIN private_messages m ON m.id = last_msgs.max_id
     ORDER BY last_time DESC
     LIMIT 50
 ");
 $stmt->execute([$uid, $uid, $uid, $uid]);
-$conversations = $stmt->fetchAll();
-
-// Deduplicar — manter só a conversa mais recente por utilizador
-$seen = array(); $convList = array();
-foreach ($conversations as $c) {
-    if (!isset($seen[$c['other_id']])) {
-        $seen[$c['other_id']] = true;
-        $convList[] = $c;
-    }
-}
+$convList = $stmt->fetchAll();
 
 // ── Mensagens da conversa aberta ─────────────────────────────
 $messages = array();
@@ -161,10 +152,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;displ
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");opacity:0.4}
 
 /* Topbar */
-.topbar{flex-shrink:0;position:relative;z-index:100;background:rgba(10,10,15,0.95);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:14px;height:58px}
+.topbar{flex-shrink:0;position:relative;z-index:100;background:rgba(10,10,15,0.95);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;gap:24px;height:58px}
 .topbar-logo{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:3px;text-transform:uppercase;text-decoration:none;white-space:nowrap}
 .topbar-logo span{color:var(--muted)}
-.topbar-right{display:flex;align-items:center;gap:10px;margin-left:auto}
+.topbar-right{display:flex;align-items:center;gap:10px}
 .topbar-btn{background:none;border:1px solid var(--border2);border-radius:8px;padding:7px 14px;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;white-space:nowrap}
 .topbar-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,0.05)}
 .topbar-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent3),var(--accent));display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#000;overflow:hidden;text-decoration:none;flex-shrink:0}
@@ -295,7 +286,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     .chat-area{display:<?php echo $openUser?'flex':'none'; ?>}
 }
 .bc-bar{background:var(--surface);border-bottom:1px solid var(--border2);padding:8px 32px;position:relative;z-index:5}
-.bc-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);flex-wrap:wrap}
+.bc-inner{display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);flex-wrap:wrap}
 .bc-link{color:var(--muted);text-decoration:none;transition:color 0.15s}.bc-link:hover{color:var(--accent)}
 .bc-sep{opacity:0.4}.bc-current{color:var(--text)}
 </style>
@@ -386,7 +377,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             ?>
             <a href="mensagens.php?user=<?php echo $conv['other_id']; ?>" class="conv-item <?php echo $isActive?'active':''; ?>">
                 <div class="conv-av">
-                    <?php if(!empty($conv['avatar_url'])): ?><img src="<?php echo sanitize($conv['avatar_url']); ?>" alt=""><?php else: echo sanitize($ci); endif; ?>
+                    <?php $cav=$conv['avatar_url']??''; if($cav): ?><img src="<?php echo sanitize(avPath($cav)); ?>" alt=""><?php else: echo sanitize($ci); endif; ?>
                 </div>
                 <div class="conv-info">
                     <div class="conv-name"><?php echo sanitize($conv['full_name']); ?></div>
@@ -415,7 +406,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             ?>
             <div class="sugg-item">
                 <div class="sugg-av">
-                    <?php if (!empty($sug['avatar_url'])): ?><img src="<?php echo sanitize($sug['avatar_url']); ?>" alt=""><?php else: echo sanitize($si); endif; ?>
+                    <?php $sav=$sug['avatar_url']??''; if ($sav): ?><img src="<?php echo sanitize(avPath($sav)); ?>" alt=""><?php else: echo sanitize($si); endif; ?>
                 </div>
                 <div class="sugg-info">
                     <div class="sugg-name"><?php echo sanitize($sug['full_name']); ?></div>
@@ -438,7 +429,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         <!-- Header -->
         <div class="chat-header">
             <div class="chat-header-av">
-                <?php $oav=$openUser['avatar_url']??''; if($oav): ?><img src="<?php echo sanitize($oav); ?>" alt=""><?php else: echo mb_substr($openUser['full_name'],0,2); endif; ?>
+                <?php $oav=$openUser['avatar_url']??''; if($oav): ?><img src="<?php echo sanitize(avPath($oav)); ?>" alt=""><?php else: echo mb_substr($openUser['full_name'],0,2); endif; ?>
             </div>
             <div class="chat-header-info">
                 <div class="chat-header-name"><?php echo sanitize($openUser['full_name']); ?></div>
@@ -471,7 +462,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                     echo '<div class="msg-group ' . $side . '">';
                     echo '<div class="msg-group-header">';
                     echo '<div class="msg-group-av">';
-                    if (!empty($sender['avatar'])) echo '<img src="' . htmlspecialchars($sender['avatar']) . '" alt="">';
+                    if (!empty($sender['avatar'])) echo '<img src="' . htmlspecialchars(avPath($sender['avatar'])) . '" alt="">';
                     else echo htmlspecialchars($initials);
                     echo '</div>';
                     echo '<span class="msg-group-name">' . htmlspecialchars($sender['name']) . '</span>';
@@ -482,7 +473,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                     echo '</div>';
                     foreach ($msgs as $i => $m) {
                         $isLast = $i === count($msgs)-1;
-                        echo '<div class="msg-bubble' . ($isLast?' last':'') . ' ' . $side . '">';
+                        echo '<div id="msg-' . (int)$m['id'] . '" class="msg-bubble' . ($isLast?' last':'') . ' ' . $side . '">';
                         echo htmlspecialchars($m['content']);
                         echo '</div>';
                     }
@@ -590,6 +581,7 @@ async function sendMessage() {
             input.value = '';
             input.style.height = 'auto';
             appendMessage(data.message);
+            lastMsgId = Math.max(lastMsgId, parseInt(data.message.id));
             scrollToBottom();
         } else {
             alert('⚠️ ' + (data.error || 'Erro ao enviar.'));
@@ -602,9 +594,15 @@ async function sendMessage() {
 }
 
 // ── Adicionar mensagem ao DOM ─────────────────────────────────
+function avPath(url) {
+    if (!url) return '';
+    if (url.indexOf('http') === 0) return url;
+    return '../' + url.replace(/^\/+/, '');
+}
+
 function appendMessage(msg) {
     var container = document.getElementById('messagesContainer');
-    if (!container) return;
+    if (!container || document.getElementById('msg-' + msg.id)) return;
 
     // Remover empty state se existir
     var empty = container.querySelector('div[style*="text-align:center"]');
@@ -619,6 +617,7 @@ function appendMessage(msg) {
     if (lastGroup && lastGroup.classList.contains(side)) {
         // Adicionar ao grupo existente
         var bubble = document.createElement('div');
+        bubble.id = 'msg-' + msg.id;
         bubble.className = 'msg-bubble ' + side;
         bubble.textContent = msg.content;
         // Remover 'last' do anterior
@@ -638,7 +637,7 @@ function appendMessage(msg) {
         avDiv.className = 'msg-group-av';
         if (msg.sender_avatar) {
             var img = document.createElement('img');
-            img.src = msg.sender_avatar;
+            img.src = avPath(msg.sender_avatar);
             avDiv.appendChild(img);
         } else {
             avDiv.textContent = initials;
@@ -657,6 +656,7 @@ function appendMessage(msg) {
         header.appendChild(timeSpan);
 
         var bubble = document.createElement('div');
+        bubble.id = 'msg-' + msg.id;
         bubble.className = 'msg-bubble last ' + side;
         bubble.textContent = msg.content;
 
@@ -750,7 +750,7 @@ async function searchUsers(q) {
             avDiv.className = 'search-av';
             if (u.avatar_url) {
                 var img = document.createElement('img');
-                img.src = u.avatar_url;
+                img.src = avPath(u.avatar_url);
                 img.style.width = '100%';
                 img.style.height = '100%';
                 img.style.objectFit = 'cover';
