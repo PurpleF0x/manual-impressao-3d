@@ -488,6 +488,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 @keyframes iceShimmer{0%{box-shadow:0 0 8px #a0e4ff}100%{box-shadow:0 0 16px #e0f8ff,0 0 36px rgba(160,228,255,0.7)}}
 @keyframes electricPulse{0%{box-shadow:0 0 4px #ffff00}100%{box-shadow:0 0 10px #ffff00,0 0 24px rgba(255,255,0,0.8)}}
 @media(max-width:900px){.layout{grid-template-columns:1fr}.stats-inner{gap:0;flex-wrap:wrap}.stat-item{min-width:50%}.hero-body{padding:0 20px}.stats-inner{padding:0 20px}.layout{padding:20px}}
+
+.bc-bar{background:var(--surface);border-bottom:1px solid var(--border2);padding:8px 32px;position:relative;z-index:5}
+.bc-inner{display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);flex-wrap:wrap}
+.bc-link{color:var(--muted);text-decoration:none;transition:color 0.15s}.bc-link:hover{color:var(--accent)}
+.bc-sep{opacity:0.4}.bc-current{color:var(--text)}
 </style>
 </head>
 <body>
@@ -517,6 +522,15 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         <?php endif; ?>
     </div>
 </nav>
+<!-- Breadcrumb -->
+<div class="bc-bar">
+    <div class="bc-inner">
+        <a href="../index.php" class="bc-link">📖 Manual</a>
+        <span class="bc-sep">›</span>
+        <a href="index.php" class="bc-link">🌐 Fórum</a>
+        <span class="bc-sep">›</span><span class="bc-current">👤 Perfil: <?php echo sanitize($user['username']); ?></span>
+    </div>
+</div>
 
 <!-- Banner -->
 <div class="hero-banner" <?php if($bannerUrl): ?>style="background:url('<?php echo htmlspecialchars($bannerUrl); ?>') center/cover no-repeat"<?php endif; ?>>

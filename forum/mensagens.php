@@ -455,17 +455,17 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                 $groupSender = null;
 
                 function flushGroup($msgs, $sender, $myUid) {
-                    if (empty($msgs)) return;
-                    $isMine = (int)$sender['id'] === $myUid;
+                    if (empty($msgs) || !$sender) return;
+                    $isMine = (int)($sender['id'] ?? 0) === $myUid;
                     $side = $isMine ? 'mine' : 'theirs';
-                    $initials = mb_substr($sender['full_name']??'??',0,2);
+                    $initials = mb_substr($sender['full_name']??$sender['name']??'??',0,2);
                     echo '<div class="msg-group ' . $side . '">';
                     echo '<div class="msg-group-header">';
                     echo '<div class="msg-group-av">';
                     if (!empty($sender['avatar'])) echo '<img src="' . htmlspecialchars(avPath($sender['avatar'])) . '" alt="">';
                     else echo htmlspecialchars($initials);
                     echo '</div>';
-                    echo '<span class="msg-group-name">' . htmlspecialchars($sender['name']) . '</span>';
+                    echo '<span class="msg-group-name">' . htmlspecialchars($sender['name'] ?? $sender['full_name'] ?? 'Utilizador') . '</span>';
                     $lastMsg = end($msgs);
                     $diff = time() - strtotime($lastMsg['created_at']);
                     $timeStr = $diff < 3600 ? floor($diff/60).'min' : ($diff < 86400 ? floor($diff/3600).'h' : date('H:i', strtotime($lastMsg['created_at'])));
@@ -486,7 +486,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                         // Flush grupo anterior
                         if (!empty($groupMsgs)) {
                             flushGroup($groupMsgs, $groupSender, $uid);
-                            $groupMsgs = array(); $groupSender = null;
+                            $groupMsgs = array();
                         }
                         // Divisor de dia
                         $today = date('Y-m-d');
@@ -497,7 +497,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                         echo '<div class="msg-day-divider"><span>' . $dayLabel . '</span></div>';
                         $prevDate = $msgDate;
                     }
-                    if ((int)$msg['sender_id'] !== $prevSenderId) {
+                    if ((int)$msg['sender_id'] !== $prevSenderId || $groupSender === null) {
                         if (!empty($groupMsgs)) {
                             flushGroup($groupMsgs, $groupSender, $uid);
                             $groupMsgs = array();

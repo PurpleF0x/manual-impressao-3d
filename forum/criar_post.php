@@ -281,6 +281,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
 .flair-spoiler { }
 .flair-spoiler.selected { border-color: #ffcc00; color: #ffcc00; background: rgba(255,204,0,0.08); }
 
+.bc-bar{background:var(--surface);border-bottom:1px solid var(--border2);padding:8px 32px;position:relative;z-index:5}
+.bc-inner{display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);flex-wrap:wrap}
+.bc-link{color:var(--muted);text-decoration:none;transition:color 0.15s}.bc-link:hover{color:var(--accent)}
+.bc-sep{opacity:0.4}.bc-current{color:var(--text)}
 </style>
 </head>
 <body>
@@ -294,6 +298,15 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
         </a>
     </div>
 </nav>
+<!-- Breadcrumb -->
+<div class="bc-bar">
+    <div class="bc-inner">
+        <a href="../index.php" class="bc-link">📖 Manual</a>
+        <span class="bc-sep">›</span>
+        <a href="index.php" class="bc-link">🌐 Fórum</a>
+        <span class="bc-sep">›</span><span class="bc-current">✏️ Criar Post</span>
+    </div>
+</div>
 
 <div class="layout">
 <main>

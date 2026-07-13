@@ -236,7 +236,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .danger-zone{border:1px solid rgba(255,68,68,0.2);border-radius:12px;padding:18px;background:rgba(255,68,68,0.03)}
 .danger-title{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:#ff8888;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
 .bc-bar{background:var(--surface);border-bottom:1px solid var(--border2);padding:8px 32px;position:relative;z-index:5}
-.bc-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);flex-wrap:wrap}
+.bc-inner{display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);flex-wrap:wrap}
 .bc-link{color:var(--muted);text-decoration:none;transition:color 0.15s}.bc-link:hover{color:var(--accent)}
 .bc-sep{opacity:0.4}.bc-current{color:var(--text)}
 </style>

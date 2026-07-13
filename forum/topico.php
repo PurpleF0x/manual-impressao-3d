@@ -547,7 +547,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 }
 
 .bc-bar{background:var(--surface);border-bottom:1px solid var(--border2);padding:8px 32px;position:relative;z-index:5}
-.bc-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);flex-wrap:wrap}
+.bc-inner{display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);flex-wrap:wrap}
+.bc-link{color:var(--muted);text-decoration:none;transition:color 0.15s}.bc-link:hover{color:var(--accent)}
+.bc-sep{opacity:0.4}.bc-current{color:var(--text)}
 .bc-link{color:var(--muted);text-decoration:none;transition:color 0.15s}.bc-link:hover{color:var(--accent)}
 .bc-sep{opacity:0.4}.bc-current{color:var(--text)}
 </style>
@@ -604,13 +606,15 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </nav>
 
 <!-- Breadcrumb -->
-<div class="bc-bar" style="">
+<div class="bc-bar">
     <div class="bc-inner">
-        <a href="index.php" style="color:var(--muted);text-decoration:none" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">🌐 Fórum</a>
-        <span>›</span>
-        <a href="comunidade.php?slug=<?php echo urlencode($post['comm_slug'] ?? ''); ?>" style="color:var(--muted);text-decoration:none" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'"><?php echo $post['comm_icon'] ?? ''; ?> <?php echo sanitize($post['community_name'] ?? ''); ?></a>
-        <span>›</span>
-        <span style="color:var(--text)"><?php echo sanitize(mb_substr($post['title'],0,55)).(mb_strlen($post['title'])>55?'…':''); ?></span>
+        <a href="../index.php" class="bc-link">📖 Manual</a>
+        <span class="bc-sep">›</span>
+        <a href="index.php" class="bc-link">🌐 Fórum</a>
+        <span class="bc-sep">›</span>
+        <a href="comunidade.php?slug=<?php echo urlencode($post['comm_slug'] ?? ''); ?>" class="bc-link"><?php echo $post['comm_icon'] ?? ''; ?> <?php echo sanitize($post['community_name'] ?? ''); ?></a>
+        <span class="bc-sep">›</span>
+        <span class="bc-current"><?php echo sanitize(mb_substr($post['title'],0,55)).(mb_strlen($post['title'])>55?'…':''); ?></span>
     </div>
 </div>
 
