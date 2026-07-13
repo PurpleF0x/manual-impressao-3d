@@ -237,10 +237,10 @@ function renderFlairBadgeFeed($flair) {
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");opacity:0.4}
 
-.topbar{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;gap:24px;height:58px}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;gap:20px;height:58px}
 .topbar-logo{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:3px;text-transform:uppercase;text-decoration:none;white-space:nowrap}
 .topbar-logo span{color:var(--muted)}
-.topbar-search{width:320px;position:relative}
+.topbar-search{flex:1;max-width:420px;position:relative}
 .topbar-search input{
     width:100%;
     background:rgba(26,26,38,0.5);
@@ -355,7 +355,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     text-align: center;
     color: var(--muted);
 }
-.topbar-actions{display:flex;align-items:center;gap:10px}
+.topbar-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
 .topbar-btn{background:none;border:1px solid var(--border2);border-radius:8px;padding:7px 14px;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;white-space:nowrap}
 .topbar-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,0.05)}
 .topbar-btn.primary{background:var(--accent);color:#000;border-color:transparent;font-weight:700}
