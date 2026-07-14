@@ -406,7 +406,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
                 <div id="flairWarning" style="display:none;margin-top:8px;padding:10px 14px;border-radius:8px;font-size:12px"></div>
             </div>
 
-            <!-- Upload de Imagem (Desativado temporariamente) -->
+E            <!-- Upload de Imagem (Desativado temporariamente) -->
             <!--
             <div class="form-group">
                 <label class="form-label">Upload de Imagem <span style="color:var(--muted);font-size:9px">OPCIONAL</span></label>

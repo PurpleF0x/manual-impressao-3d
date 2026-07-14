@@ -1,0 +1,28 @@
+# Configurações de IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Configurações Locais e Segredos
+.env
+config.local.php
+secrets.json
+*.log
+
+# Uploads e Ficheiros de Utilizador
+uploads/avatars/*
+uploads/posts/*
+!uploads/avatars/.gitkeep
+!uploads/posts/.gitkeep
+
+# Base de Dados (Dumps com dados reais)
+sql/if0_41343921_manual_3d.sql
+*.sql.gz
+
+# Dependências
+vendor/
+
+# Sistema
+.DS_Store
+Thumbs.db

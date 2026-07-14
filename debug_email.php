@@ -5,7 +5,7 @@
 require_once 'includes/functions.php';
 require_once 'includes/mail_config.php';
 
-$emailTeste = '3d.escolas@gmail.com'; // O teu email de teste
+$emailTeste = 'manual3d.projetos@gmail.com'; // Altera para o teu email de teste
 
 echo "<h1>Painel de Teste de Comunicações</h1>";
 echo "<p>Domínio Configurado: <strong>" . SITE_URL . "</strong></p>";
