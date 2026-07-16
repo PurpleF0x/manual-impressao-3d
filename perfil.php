@@ -1366,6 +1366,7 @@ if (!empty($_POST['action'])) {
   </div>
   <div style="text-align: right;">
     <p style="margin: 0; font-size: 12px; color: var(--muted);">
+      <a href="contacto.php" style="color: var(--muted); text-decoration: none;">Contacto</a> |
       <a href="terms.php" style="color: var(--muted); text-decoration: none;">Termos</a> |
       <a href="privacy.php" style="color: var(--muted); text-decoration: none;">Privacidade</a>
     </p>

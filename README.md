@@ -54,5 +54,7 @@ Para o funcionamento pleno em produção, configurar as seguintes chaves:
 - `GOOGLE_CLIENT_ID`: Para o sistema de Login com Google.
 
 ---
-**Desenvolvido por Martim — PAP 2023/2024**  
+**Contacto & Parcerias:** [contacto@manual-3d.pt](mailto:contacto@manual-3d.pt)
+
+**Desenvolvido por Martim — PAP 2023/2024 (Nota: 20)**
 *Uma plataforma desenhada para transformar a aprendizagem da impressão 3D numa jornada interativa e profissional.*

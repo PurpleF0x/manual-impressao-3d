@@ -253,6 +253,17 @@ function truncate(string $text, int $length = 100): string {
     return strlen($text) <= $length ? $text : substr($text, 0, $length) . '…';
 }
 
+/**
+ * Helper: Resolve o caminho do avatar de forma universal
+ */
+function avPath(?string $url): string {
+    if (!$url) return '';
+    if (str_starts_with($url, 'http')) return $url;
+    // Se estivermos dentro de uma subpasta (como /forum/), precisamos subir um nível
+    $prefix = (str_contains($_SERVER['SCRIPT_NAME'], '/forum/')) ? '../' : '';
+    return $prefix . ltrim($url, '/');
+}
+
 function generateCSRFToken(): string {
     if (!isset($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));

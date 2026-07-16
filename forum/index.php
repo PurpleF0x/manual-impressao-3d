@@ -4,13 +4,7 @@
  */
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/user_notices.php';
-// Helper: path do avatar relativo ao forum/
-function avPath($url) {
-    if (!$url) return '';
-    if (strpos($url,'http')===0) return $url;
-    return '../' . ltrim($url, '/');
-}
-function postImagePath($url) {
+// Helper: path do imagem de post relativo ao forum/
     if (!$url) return '';
     if (preg_match('#^https?://#i', $url) || str_starts_with($url, '../') || str_starts_with($url, '/')) return $url;
     return '../' . ltrim($url, '/');

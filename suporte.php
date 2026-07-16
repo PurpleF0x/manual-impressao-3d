@@ -61,15 +61,18 @@ require_once 'includes/functions.php';
         </div>
 
         <div class="contact-box">
-            <p>Não encontraste resposta? Envia-nos um email direto.</p>
-            <a href="mailto:3d.escolas@gmail.com?subject=Suporte Manual 3D" class="btn-mail">ENVIAR EMAIL DE AJUDA</a>
-            <div class="copy-email" onclick="copyEmail()">Ou clica aqui para copiar o email: 3d.escolas@gmail.com</div>
+            <p>Não encontraste resposta? Usa o nosso formulário ou envia-nos um email direto.</p>
+            <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+                <a href="contacto.php" class="btn-mail" style="background:#7c3aed; color:#fff;">FORMULÁRIO DE CONTACTO</a>
+                <a href="mailto:contacto@manual-3d.pt?subject=Suporte Manual 3D" class="btn-mail">ENVIAR EMAIL</a>
+            </div>
+            <div class="copy-email" onclick="copyEmail()">Ou clica aqui para copiar o email: contacto@manual-3d.pt</div>
         </div>
     </div>
 
     <script>
         function copyEmail() {
-            navigator.clipboard.writeText('3d.escolas@gmail.com');
+            navigator.clipboard.writeText('contacto@manual-3d.pt');
             alert('Email copiado para a área de transferência!');
         }
     </script>

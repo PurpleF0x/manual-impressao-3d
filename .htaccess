@@ -1,0 +1,19 @@
+# Ativar motor de reescrita
+RewriteEngine On
+
+# 1. Redirecionar para HTTPS (opcional se o Render já o faz, mas bom ter por segurança)
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# 2. Remover a extensão .php do URL
+# Se pedirem /contacto, o servidor lê contacto.php internamente
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+
+# 3. Página de Erro 404 Personalizada
+ErrorDocument 404 /404.php
+
+# 4. Impedir listagem de pastas (Segurança)
+Options -Indexes
