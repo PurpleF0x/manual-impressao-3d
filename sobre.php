@@ -38,7 +38,7 @@ require_once 'includes/functions.php';
         <p>Este projeto foi idealizado e desenvolvido por <strong>Martim Sá</strong>, com o intuito de aplicar competências de desenvolvimento full-stack, gestão de bases de dados e integração de inteligência artificial num contexto prático e útil para a comunidade.</p>
 
         <div style="margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); text-align: center;">
-            © 2024 Manual de Impressão 3D · Todos os direitos reservados.
+            © 2026 Manual de Impressão 3D · Todos os direitos reservados.
         </div>
     </div>
 </body>

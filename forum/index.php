@@ -5,6 +5,7 @@
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/user_notices.php';
 // Helper: path do imagem de post relativo ao forum/
+function postImagePath($url) {
     if (!$url) return '';
     if (preg_match('#^https?://#i', $url) || str_starts_with($url, '../') || str_starts_with($url, '/')) return $url;
     return '../' . ltrim($url, '/');

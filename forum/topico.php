@@ -3,12 +3,7 @@
  * forum/topico.php — Página de um tópico/post com respostas
  */
 require_once __DIR__ . '/../includes/functions.php';
-// Helper: path do avatar relativo ao forum/
-function avPath($url) {
-    if (!$url) return '';
-    if (strpos($url,'http')===0) return $url;
-    return '../' . ltrim($url, '/');
-}
+
 function postImagePath($url) {
     if (!$url) return '';
     if (preg_match('#^https?://#i', $url) || str_starts_with($url, '../') || str_starts_with($url, '/')) return $url;
