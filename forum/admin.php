@@ -473,9 +473,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <span style="color:var(--muted);font-size:12px">/ Painel Admin</span>
     <span class="role-pill <?php echo $role; ?>"><?php echo strtoupper($role); ?></span>
     <div class="topbar-right">
-        <a href="../index.php" class="topbar-btn">← Manual</a>
-        <a href="mensagens.php" class="topbar-btn">💬<?php if($unreadMsgs>0): ?><span style="background:var(--accent2);color:#fff;border-radius:100px;font-size:9px;padding:1px 5px"><?php echo $unreadMsgs; ?></span><?php endif; ?></a>
-        <a href="perfil.php?id=<?php echo $uid; ?>" class="topbar-av">
+        <a href="/" class="topbar-btn">← Manual</a>
+        <a href="mensagens" class="topbar-btn">💬<?php if($unreadMsgs>0): ?><span style="background:var(--accent2);color:#fff;border-radius:100px;font-size:9px;padding:1px 5px"><?php echo $unreadMsgs; ?></span><?php endif; ?></a>
+        <a href="perfil?id=<?php echo $uid; ?>" class="topbar-av">
             <?php $av=$currentUser['avatar_url']??''; if($av): ?><img src="<?php echo sanitize(avPath($av)); ?>" alt=""><?php else: echo mb_substr($currentUser['full_name'],0,2); endif; ?>
         </a>
     </div>
@@ -483,9 +483,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 <!-- Breadcrumb -->
 <div class="bc-bar">
     <div class="bc-inner">
-        <a href="../index.php" class="bc-link">📖 Manual</a>
+        <a href="/" class="bc-link">📖 Manual</a>
         <span class="bc-sep">›</span>
-        <a href="index.php" class="bc-link">🌐 Fórum</a>
+        <a href="/forum/" class="bc-link">🌐 Fórum</a>
         <span class="bc-sep">›</span><span class="bc-current">⚔️ Administração</span>
     </div>
 </div>
@@ -508,9 +508,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <a href="?tab=logs"        class="nav-link <?php echo $tab==='logs'?'active':''; ?>"><span class="icon">📋</span> Logs de Auditoria</a>
     <div class="nav-divider"></div>
     <div class="sidebar-title">Links Rápidos</div>
-    <a href="index.php"        class="nav-link"><span class="icon">🌐</span> Fórum</a>
-    <a href="../moderacao.php" class="nav-link"><span class="icon">🛡️</span> Moderação Manual</a>
-    <a href="loja.php"         class="nav-link"><span class="icon">🛒</span> Loja</a>
+    <a href="/forum/"        class="nav-link active"><span class="icon">🌐</span> Fórum</a>
+    <a href="/moderacao" class="nav-link"><span class="icon">🛡️</span> Moderação Manual</a>
+    <a href="loja"         class="nav-link"><span class="icon">🛒</span> Loja</a>
 </nav>
 
 <!-- Conteúdo -->
@@ -636,7 +636,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                 <button class="act-btn coins" onclick="openModal('coins',<?php echo $u['id']; ?>,'<?php echo addslashes(sanitize($u['full_name'])); ?>')">🪙 Moedas</button>
                 <button class="act-btn ban" style="border-color:#ff4444; color:#ff4444" onclick="if(confirm('ELIMINAR DEFINITIVAMENTE? Esta ação não pode ser revertida e apagará todos os dados, posts e comentários desta pessoa.')) quickAction('delete_user',<?php echo $u['id']; ?>)">🗑️ ELIMINAR</button>
                 <?php endif; ?>
-                <a href="perfil.php?id=<?php echo $u['id']; ?>" class="act-btn" style="text-decoration:none">👤</a>
+                <a href="perfil?id=<?php echo $u['id']; ?>" class="act-btn" style="text-decoration:none">👤</a>
             </div>
             <?php elseif ($isMe): ?>
             <span style="font-size:11px;color:var(--muted)">—</span>
@@ -668,8 +668,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         <div class="comm-meta">c/<?php echo sanitize($comm['slug']); ?> · <?php echo number_format($comm['member_count']); ?> membros · <?php echo number_format($comm['post_count']); ?> posts · Owner: <?php echo sanitize($comm['owner_name'] ?? '?'); ?></div>
     </div>
     <div style="display:flex;gap:6px;flex-shrink:0">
-        <a href="comunidade.php?slug=<?php echo urlencode($comm['slug']); ?>" class="act-btn" style="text-decoration:none">👁️ Ver</a>
-        <a href="gerir_comunidade.php?id=<?php echo $comm['id']; ?>" class="act-btn name" style="text-decoration:none">⚙️ Gerir</a>
+        <a href="comunidade?slug=<?php echo urlencode($comm['slug']); ?>" class="act-btn" style="text-decoration:none">👁️ Ver</a>
+        <a href="gerir_comunidade?id=<?php echo $comm['id']; ?>" class="act-btn name" style="text-decoration:none">⚙️ Gerir</a>
         <?php if (amMaster($currentUser) && $comm['is_active']): ?>
         <form method="POST" style="margin:0" onsubmit="return confirm('Desativar esta comunidade?')">
             <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">

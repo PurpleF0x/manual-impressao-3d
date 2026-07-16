@@ -2,7 +2,7 @@
 require_once 'includes/functions.php';
 
 if (isLoggedIn()) {
-    redirect('index.php');
+    redirect('/index');
 }
 
 $errors = [];
@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if (function_exists('fastcgi_finish_request')) {
                     session_write_close();
-                    header("Location: login.php");
+                    header("Location: /login");
                     fastcgi_finish_request();
                 }
 
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 sendWelcomeEmail($email, $fullName);
                 logActivity($userId, 'register', "Novo registo: $username");
 
-                if (!headers_sent()) redirect('login.php');
+                if (!headers_sent()) redirect('/login');
                 exit;
             } catch (PDOException $e) {
                 $errors[] = "Erro ao registar. Tente novamente.";
@@ -361,7 +361,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="auth-container">
-        <a href="index.php" class="back-link">← Voltar ao Manual</a>
+        <a href="/index" class="back-link">← Voltar ao Manual</a>
         
         <div class="auth-header">
             <div class="auth-logo">Manual Educativo</div>
@@ -435,7 +435,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="checkbox-group" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px;">
                 <input type="checkbox" id="accept_terms" name="accept_terms" required style="width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer; margin-top: 3px;">
                 <label for="accept_terms" style="color: var(--muted); font-size: 13px; cursor: pointer; line-height: 1.5;">
-                    Li e aceito os <a href="terms.php" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600;">Termos de Utilização</a> e a <a href="privacy.php" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600;">Política de Privacidade</a>.
+                    Li e aceito os <a href="/terms" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600;">Termos de Utilização</a> e a <a href="/privacy" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600;">Política de Privacidade</a>.
                 </label>
             </div>
 
@@ -443,7 +443,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
 
         <div class="auth-footer">
-            <p>Já tens conta? <a href="login.php">Fazer Login</a></p>
+            <p>Já tens conta? <a href="/login">Fazer Login</a></p>
         </div>
     </div>
 

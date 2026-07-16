@@ -51,7 +51,7 @@ require_once 'includes/functions.php';
 </head>
 <body class="mode-beginner">
     <div class="container">
-        <a href="index.php#ferramentas" class="back-link">&larr; Voltar ao Manual</a>
+        <a href="/index#ferramentas" class="back-link">&larr; Voltar ao Manual</a>
         <h1>Calculadoras Maker</h1>
         <p class="subtitle">Estima custos por tipo de filamento. O modo Iniciante usa presets seguros; o modo Avancado deixa ajustar densidade, diametro e parametros tecnicos.</p>
 

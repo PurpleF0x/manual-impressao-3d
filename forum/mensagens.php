@@ -32,7 +32,7 @@ if (isset($_GET['ajax_search'])) {
     exit;
 }
 
-if (!isLoggedIn()) { header('Location: ../login.php'); exit; }
+if (!isLoggedIn()) { header('Location: /login'); exit; }
 $currentUser = getCurrentUser();
 $uid = (int)$currentUser['id'];
 $db  = getDB();
@@ -288,11 +288,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 <body>
 
 <nav class="topbar">
-    <a href="index.php" class="topbar-logo">3D<span>/</span>FÓRUM</a>
+    <a href="/forum/" class="topbar-logo">3D<span>/</span>FÓRUM</a>
     <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">/ Mensagens</div>
     <div class="topbar-right">
-        <a href="index.php" class="topbar-btn">← Fórum</a>
-        <a href="perfil.php?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
+        <a href="/forum/" class="topbar-btn">← Fórum</a>
+        <a href="perfil?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
             <?php $av=$currentUser['avatar_url']??''; if($av): ?><img src="<?php echo sanitize(avPath($av)); ?>" alt=""><?php else: echo mb_substr($currentUser['full_name'],0,2); endif; ?>
         </a>
     </div>
@@ -300,9 +300,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 <!-- Breadcrumb -->
 <div class="bc-bar">
     <div class="bc-inner">
-        <a href="../index.php" class="bc-link">📖 Manual</a>
+        <a href="/" class="bc-link">📖 Manual</a>
         <span class="bc-sep">›</span>
-        <a href="index.php" class="bc-link">🌐 Fórum</a>
+        <a href="/forum/" class="bc-link">🌐 Fórum</a>
         <span class="bc-sep">›</span><span class="bc-current">✉️ Mensagens</span>
     </div>
 </div>
@@ -369,7 +369,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                     else $timeStr=date('d/m',strtotime($conv['last_time']));
                 }
             ?>
-            <a href="mensagens.php?user=<?php echo $conv['other_id']; ?>" class="conv-item <?php echo $isActive?'active':''; ?>">
+            <a href="mensagens?user=<?php echo $conv['other_id']; ?>" class="conv-item <?php echo $isActive?'active':''; ?>">
                 <div class="conv-av">
                     <?php $cav=$conv['avatar_url']??''; if($cav): ?><img src="<?php echo sanitize(avPath($cav)); ?>" alt=""><?php else: echo sanitize($ci); endif; ?>
                 </div>
@@ -408,7 +408,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                         <?php echo $commonText; ?><?php if ($commNames): ?> · <?php echo sanitize($commNames); ?><?php endif; ?>
                     </div>
                 </div>
-                <a href="mensagens.php?user=<?php echo $sug['id']; ?>" class="sugg-msg-btn">💬 Msg</a>
+                <a href="mensagens?user=<?php echo $sug['id']; ?>" class="sugg-msg-btn">💬 Msg</a>
             </div>
             <?php endforeach; ?>
         </div>
@@ -430,7 +430,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                 <div class="chat-header-username">@<?php echo sanitize($openUser['username']); ?></div>
             </div>
             <div class="chat-header-actions">
-                <a href="perfil.php?id=<?php echo $openUser['id']; ?>" class="chat-action-btn">👤 Perfil</a>
+                <a href="perfil?id=<?php echo $openUser['id']; ?>" class="chat-action-btn">👤 Perfil</a>
             </div>
         </div>
 
@@ -737,7 +737,7 @@ async function searchUsers(q) {
         wrap.innerHTML = '';
         data.forEach(function(u) {
             var a = document.createElement('a');
-            a.href = 'mensagens.php?user=' + parseInt(u.id);
+            a.href = 'mensagens?user=' + parseInt(u.id);
             a.className = 'search-result-item';
 
             var avDiv = document.createElement('div');

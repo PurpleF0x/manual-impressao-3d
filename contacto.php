@@ -31,13 +31,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p><strong>Mensagem:</strong><br>" . nl2br($mensagem) . "</p>
             ";
 
-            // Enviar para o teu novo email de projetos
-            $enviado = sendEmail('manual3d.projetos@gmail.com', 'Admin Manual 3D', "CONTACTO: $assunto", getEmailTemplate($corpoHtml));
+            // Enviar para o teu novo email de contacto profissional
+            $enviado = sendEmail('contacto@manual-3d.pt', 'Admin Manual 3D', "CONTACTO: $assunto", getEmailTemplate($corpoHtml));
 
             if ($enviado) {
                 $success = true;
             } else {
-                $error = 'Ocorreu um erro ao enviar a mensagem. Tente mais tarde ou envie direto para manual3d.projetos@gmail.com';
+                $error = 'Ocorreu um erro ao enviar a mensagem. Tente mais tarde ou envie direto para contacto@manual-3d.pt';
             }
         }
     }
@@ -95,7 +95,7 @@ $csrf = generateCSRFToken();
 </head>
 <body>
     <div class="container">
-        <a href="index.php" class="back-link">← Voltar</a>
+        <a href="/index" class="back-link">← Voltar</a>
         <h1>Entra em <span>Contacto</span></h1>
         <p class="subtitle">Dúvidas, parcerias ou propostas de publicidade.</p>
 
@@ -103,7 +103,7 @@ $csrf = generateCSRFToken();
             <div class="alert alert-success">
                 ✨ <strong>Mensagem enviada!</strong> Obrigado pelo contacto. Responderei o mais brevemente possível.
             </div>
-            <a href="index.php" class="btn-submit" style="text-align:center; text-decoration:none; display:block;">Voltar ao Manual</a>
+            <a href="/index" class="btn-submit" style="text-align:center; text-decoration:none; display:block;">Voltar ao Manual</a>
         <?php else: ?>
             <?php if ($error): ?>
                 <div class="alert alert-error">⚠️ <?php echo $error; ?></div>

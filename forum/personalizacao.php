@@ -9,7 +9,7 @@ function avPath($url) {
     if (strpos($url,'http')===0) return $url;
     return '../' . ltrim($url, '/');
 }
-if (!isLoggedIn()) { header('Location: ../login.php?redirect=forum/personalizacao.php'); exit; }
+if (!isLoggedIn()) { header('Location: /login?redirect=forum/personalizacao'); exit; }
 $currentUser = getCurrentUser();
 $uid = (int)$currentUser['id'];
 $db  = getDB();
@@ -348,12 +348,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 <body>
 
 <nav class="topbar">
-    <a href="index.php" class="topbar-logo">3D<span>/</span>FÓRUM</a>
+    <a href="/forum/" class="topbar-logo">3D<span>/</span>FÓRUM</a>
     <span style="color:var(--muted);font-size:12px">/ Personalização</span>
     <div class="topbar-right">
         <div class="coins-pill">🪙 <?php echo number_format($coins); ?></div>
-        <a href="mensagens.php" class="topbar-btn">💬<?php if($unreadMsgs>0): ?> <span style="background:var(--accent2);color:#fff;border-radius:100px;font-size:9px;padding:1px 5px"><?php echo $unreadMsgs; ?></span><?php endif; ?></a>
-        <a href="perfil.php?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
+        <a href="mensagens" class="topbar-btn">💬<?php if($unreadMsgs>0): ?> <span style="background:var(--accent2);color:#fff;border-radius:100px;font-size:9px;padding:1px 5px"><?php echo $unreadMsgs; ?></span><?php endif; ?></a>
+        <a href="perfil?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
             <?php $av=$currentUser['avatar_url']??''; if($av): ?><img src="<?php echo sanitize(avPath($av)); ?>" alt=""><?php else: echo $initials; endif; ?>
         </a>
     </div>
@@ -361,9 +361,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 <!-- Breadcrumb -->
 <div class="bc-bar">
     <div class="bc-inner">
-        <a href="../index.php" class="bc-link">📖 Manual</a>
+        <a href="/" class="bc-link">📖 Manual</a>
         <span class="bc-sep">›</span>
-        <a href="index.php" class="bc-link">🌐 Fórum</a>
+        <a href="/forum/" class="bc-link">🌐 Fórum</a>
         <span class="bc-sep">›</span><span class="bc-current">🎨 Personalização</span>
     </div>
 </div>
@@ -377,7 +377,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
 <!-- ── Sidebar esquerda ── -->
 <nav class="nav-sidebar">
-    <a href="perfil.php?id=<?php echo $uid; ?>" class="nav-back">← Voltar ao perfil</a>
+    <a href="perfil?id=<?php echo $uid; ?>" class="nav-back">← Voltar ao perfil</a>
     <div class="nav-divider"></div>
     <div class="nav-section-label">Personalização</div>
 
@@ -406,10 +406,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
     <div class="nav-divider2"></div>
     <div class="nav-section-label">Loja</div>
-    <a href="loja.php" class="nav-shop-btn">
+    <a href="loja" class="nav-shop-btn">
         <span class="nav-item-icon">🛒</span> Loja de Itens
     </a>
-    <a href="loja.php" class="nav-item" style="font-size:11px;padding:6px 20px;color:var(--muted)">
+    <a href="loja" class="nav-item" style="font-size:11px;padding:6px 20px;color:var(--muted)">
         <span></span> 🪙 <?php echo number_format($coins); ?> moedas disponíveis
     </a>
 </nav>
@@ -431,14 +431,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             </div>
         </div>
         <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Para alterar a foto de perfil, vai às definições do teu perfil no manual.</p>
-        <a href="../perfil.php" style="background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:10px 18px;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;text-decoration:none;transition:all 0.2s;display:inline-block" onmouseover="this.style.color='var(--accent)';this.style.borderColor='rgba(0,229,255,0.3)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border2)'">Ir para Definições do Perfil →</a>
+        <a href="/perfil" style="background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:10px 18px;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;text-decoration:none;transition:all 0.2s;display:inline-block" onmouseover="this.style.color='var(--accent)';this.style.borderColor='rgba(0,229,255,0.3)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border2)'">Ir para Definições do Perfil →</a>
     </div>
 
 <?php elseif ($section === 'frame'): ?>
     <div class="content-title">Frame do Avatar</div>
     <div class="content-sub">Seleciona uma frame para aparecer à volta do teu avatar. As frames são desbloqueadas na loja.</div>
     <?php if (empty($myFrames)): ?>
-    <div class="empty-inv"><div class="empty-inv-icon">🖼️</div><p>Ainda não tens frames desbloqueadas.</p><a href="loja.php" class="goto-shop">🛒 Ir à Loja</a></div>
+    <div class="empty-inv"><div class="empty-inv-icon">🖼️</div><p>Ainda não tens frames desbloqueadas.</p><a href="loja" class="goto-shop">🛒 Ir à Loja</a></div>
     <?php else: ?>
     <div class="items-grid">
         <!-- Nenhuma frame -->
@@ -481,7 +481,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <div class="content-title">Fundo da Página</div>
     <div class="content-sub">Escolhe o fundo que aparece no teu perfil público. Visível para todos os utilizadores.</div>
     <?php if (empty($myBgs)): ?>
-    <div class="empty-inv"><div class="empty-inv-icon">🌌</div><p>Ainda não tens fundos desbloqueados.</p><a href="loja.php" class="goto-shop">🛒 Ir à Loja</a></div>
+    <div class="empty-inv"><div class="empty-inv-icon">🌌</div><p>Ainda não tens fundos desbloqueados.</p><a href="loja" class="goto-shop">🛒 Ir à Loja</a></div>
     <?php else: ?>
     <div class="items-grid">
         <!-- Padrão -->
@@ -556,7 +556,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <div class="content-title">Cor de Destaque</div>
     <div class="content-sub">Escolhe a cor de destaque que aparece no teu perfil público. Altera links, bordas e elementos de UI.</div>
     <?php if (empty($myAccents)): ?>
-    <div class="empty-inv"><div class="empty-inv-icon">🎨</div><p>Ainda não tens cores desbloqueadas.</p><a href="loja.php" class="goto-shop">🛒 Ir à Loja</a></div>
+    <div class="empty-inv"><div class="empty-inv-icon">🎨</div><p>Ainda não tens cores desbloqueadas.</p><a href="loja" class="goto-shop">🛒 Ir à Loja</a></div>
     <?php else: ?>
     <div class="accent-grid" style="margin-bottom:28px">
         <!-- Padrão -->
@@ -590,7 +590,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <div class="content-sub">Seleciona até 3 badges/insígnias para destacar no teu perfil.</div>
 
     <?php if (empty($myItems)): ?>
-        <div class="empty-inv"><div class="empty-inv-icon">🏅</div><p>Ainda não tens badges desbloqueados.</p><a href="loja.php" class="goto-shop">🛒 Ir à Loja</a></div>
+        <div class="empty-inv"><div class="empty-inv-icon">🏅</div><p>Ainda não tens badges desbloqueados.</p><a href="loja" class="goto-shop">🛒 Ir à Loja</a></div>
     <?php else: ?>
         <form method="POST">
             <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
@@ -684,7 +684,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">Moedas</div>
         <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900;color:#ffcc00;margin-bottom:4px">🪙 <?php echo number_format($coins); ?></div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:10px">+10 por post · +3 por resposta · +2 por voto</div>
-        <a href="loja.php" style="display:block;text-align:center;background:rgba(255,204,0,0.1);border:1px solid rgba(255,204,0,0.25);border-radius:8px;padding:8px;color:#ffcc00;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;text-decoration:none;transition:all 0.2s" onmouseover="this.style.background='rgba(255,204,0,0.2)'" onmouseout="this.style.background='rgba(255,204,0,0.1)'">🛒 Ir à Loja</a>
+        <a href="loja" style="display:block;text-align:center;background:rgba(255,204,0,0.1);border:1px solid rgba(255,204,0,0.25);border-radius:8px;padding:8px;color:#ffcc00;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;text-decoration:none;transition:all 0.2s" onmouseover="this.style.background='rgba(255,204,0,0.2)'" onmouseout="this.style.background='rgba(255,204,0,0.1)'">🛒 Ir à Loja</a>
     </div>
 </aside>
 

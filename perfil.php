@@ -581,7 +581,7 @@ if (!empty($_POST['action'])) {
 
 <!-- USER BAR -->
 <div class="user-bar">
-  <a href="index.php" class="btn-auth btn-profile" style="margin-right: auto; border-color: var(--muted); color: var(--muted);">← Manual</a>
+  <a href="/index" class="btn-auth btn-profile" style="margin-right: auto; border-color: var(--muted); color: var(--muted);">← Manual</a>
   <div class="user-info">
     <div class="user-avatar">
       <?php if (!empty($avUrl) && file_exists(__DIR__.'/'.$avUrl)): ?>
@@ -593,8 +593,8 @@ if (!empty($_POST['action'])) {
     <span class="user-name"><?php echo sanitize($user['full_name']); ?></span>
     <span class="user-role <?php echo $user['role']; ?>"><?php echo $user['role']; ?></span>
   </div>
-  <a href="perfil.php" class="btn-auth btn-profile">Perfil</a>
-  <a href="logout.php" class="btn-auth btn-logout">Sair</a>
+  <a href="/perfil" class="btn-auth btn-profile">Perfil</a>
+  <a href="/logout" class="btn-auth btn-logout">Sair</a>
 </div>
 
 <!-- PROGRESS BAR -->
@@ -1184,7 +1184,7 @@ if (!empty($_POST['action'])) {
         <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:<?php echo $forumStats['vote_score']>=0?'var(--accent4)':'#ff7777'; ?>"><?php echo ($forumStats['vote_score']>=0?'+':'').$forumStats['vote_score']; ?></div>
       </div>
       <div style="background:var(--surface);border:1px solid rgba(124,58,237,0.2);border-radius:12px;padding:18px 20px;display:flex;align-items:center;justify-content:center">
-        <a href="forum/" style="font-family:'Space Mono',monospace;font-size:10px;color:#a78bfa;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:6px;transition:opacity 0.2s" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+        <a href="/forum/" style="font-family:'Space Mono',monospace;font-size:10px;color:#a78bfa;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:6px;transition:opacity 0.2s" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
           <span style="font-size:24px">🌐</span>
           IR AO FÓRUM →
         </a>
@@ -1206,11 +1206,11 @@ if (!empty($_POST['action'])) {
           <div class="item-view">
             <div class="item-main" style="flex:1;min-width:0">
               <!-- Comunidade -->
-              <a href="forum/comunidade.php?slug=<?php echo urlencode($fp['community_slug']); ?>" style="display:inline-flex;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);text-decoration:none;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;transition:color 0.2s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">
+              <a href="/forum/comunidade?slug=<?php echo urlencode($fp['community_slug']); ?>" style="display:inline-flex;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);text-decoration:none;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;transition:color 0.2s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">
                 <?php echo $fp['community_icon']; ?> <?php echo sanitize($fp['community_name']); ?>
               </a>
               <!-- Título -->
-              <a href="forum/topico.php?id=<?php echo $fp['id']; ?>" style="display:block;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#fff;text-decoration:none;margin-bottom:6px;line-height:1.3;transition:color 0.2s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='#fff'">
+              <a href="/forum/topico?id=<?php echo $fp['id']; ?>" style="display:block;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#fff;text-decoration:none;margin-bottom:6px;line-height:1.3;transition:color 0.2s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='#fff'">
                 <?php if ($fp['is_pinned']): ?><span style="font-size:11px">📌</span> <?php endif; ?>
                 <?php if ($fp['is_locked']): ?><span style="font-size:11px">🔒</span> <?php endif; ?>
                 <?php echo sanitize($fp['title']); ?>
@@ -1247,7 +1247,7 @@ if (!empty($_POST['action'])) {
           <div class="item-view">
             <div class="item-main" style="flex:1;min-width:0">
               <!-- Post pai -->
-              <a href="forum/topico.php?id=<?php echo $fr['post_id']; ?>" style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);text-decoration:none;margin-bottom:6px;transition:color 0.2s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">
+              <a href="/forum/topico?id=<?php echo $fr['post_id']; ?>" style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);text-decoration:none;margin-bottom:6px;transition:color 0.2s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">
                 <span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase">↩ RESPOSTA EM</span>
                 <span style="font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px"><?php echo sanitize($fr['post_title']); ?></span>
               </a>
@@ -1272,7 +1272,7 @@ if (!empty($_POST['action'])) {
       <div class="empty-state">
         <div class="empty-icon">🌐</div>
         <p>Ainda não participaste no fórum.</p>
-        <p style="margin-top:8px;font-size:12px"><a href="forum/" style="color:#a78bfa">→ Explorar o fórum global</a></p>
+        <p style="margin-top:8px;font-size:12px"><a href="/forum/" style="color:#a78bfa">→ Explorar o fórum global</a></p>
       </div>
     </div>
     <?php endif; ?>
@@ -1301,7 +1301,7 @@ if (!empty($_POST['action'])) {
         <div class="empty-state">
           <div class="empty-icon">💬</div>
           <p>Ainda não tens comentários aprovados.</p>
-          <p style="margin-top:8px;font-size:12px"><a href="index.php#comentarios" style="color:var(--accent)">→ Vai à comunidade e participa!</a></p>
+          <p style="margin-top:8px;font-size:12px"><a href="/index#comentarios" style="color:var(--accent)">→ Vai à comunidade e participa!</a></p>
         </div>
       <?php else: ?>
         <!-- Resumo -->
@@ -1347,7 +1347,7 @@ if (!empty($_POST['action'])) {
                 <div style="font-size:14px;color:var(--text);line-height:1.7;margin-bottom:10px"><?php echo nl2br(sanitize(mb_substr($c['content'], 0, 300))); ?><?php echo mb_strlen($c['content']) > 300 ? '…' : ''; ?></div>
                 <div style="display:flex;align-items:center;gap:14px">
                   <span style="font-size:12px;color:var(--muted)">❤️ <?php echo (int)($c['like_count'] ?? 0); ?> likes</span>
-                  <a href="index.php#comentarios" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);text-decoration:none">→ Ver na comunidade</a>
+                  <a href="/index#comentarios" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);text-decoration:none">→ Ver na comunidade</a>
                 </div>
               </div>
             </div>
@@ -1366,9 +1366,9 @@ if (!empty($_POST['action'])) {
   </div>
   <div style="text-align: right;">
     <p style="margin: 0; font-size: 12px; color: var(--muted);">
-      <a href="contacto.php" style="color: var(--muted); text-decoration: none;">Contacto</a> |
-      <a href="terms.php" style="color: var(--muted); text-decoration: none;">Termos</a> |
-      <a href="privacy.php" style="color: var(--muted); text-decoration: none;">Privacidade</a>
+      <a href="/contacto" style="color: var(--muted); text-decoration: none;">Contacto</a> |
+      <a href="/terms" style="color: var(--muted); text-decoration: none;">Termos</a> |
+      <a href="/privacy" style="color: var(--muted); text-decoration: none;">Privacidade</a>
     </p>
     <p style="margin-top:4px; opacity:0.5; font-size: 10px;">Este documento pode ser livremente partilhado.</p>
   </div>

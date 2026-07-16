@@ -23,7 +23,7 @@ require_once 'includes/functions.php';
 </head>
 <body>
     <div class="container">
-        <a href="index.php" class="back-link">← Voltar ao Manual</a>
+        <a href="/index" class="back-link">← Voltar ao Manual</a>
         <h1>Sobre o <span>Projeto</span></h1>
 
         <p>O <strong>Manual de Impressão 3D</strong> é uma plataforma educativa desenvolvida como Prova de Aptidão Profissional (PAP). O seu objetivo principal é centralizar o conhecimento técnico sobre a fabricação aditiva, tornando-o acessível tanto para alunos como para professores e entusiastas.</p>

@@ -2302,12 +2302,12 @@ if (document.getElementById('missionsWidget')) {
       <span class="user-role <?php echo $user['role']; ?>"><?php echo $user['role']; ?></span>
     </div>
     
-    <a href="perfil.php" class="btn-auth btn-profile">Perfil</a>
-    <a href="logout.php" class="btn-auth btn-logout">Sair</a>
+    <a href="/perfil" class="btn-auth btn-profile">Perfil</a>
+    <a href="/logout" class="btn-auth btn-logout">Sair</a>
   <?php else: ?>
-    <a href="login.php" class="btn-auth btn-login">Entrar</a>
-    <a href="register.php" class="btn-auth btn-register">Criar Conta</a>
-  <?php endif; ?>
+    <a href="/login" class="btn-auth btn-login">Entrar</a>
+    <a href="/register" class="btn-auth btn-register">Criar Conta</a>
+<?php endif; ?>
 </div>
 
 <div class="progress-bar">
@@ -2357,7 +2357,7 @@ if (document.getElementById('missionsWidget')) {
   <div class="nav-section">Comunidade</div>
   <a href="#comentarios"><span class="icon">💬</span> Dúvidas & Comentários</a>
   <a href="forum/" style="color:#a78bfa;border-left-color:rgba(124,58,237,0.5)"><span class="icon">🌐</span> Fórum Global</a>
-  <a href="ai.php" style="color:#00e5ff;border-left-color:rgba(0,229,255,0.4)"><span class="icon">🤖</span> Print AI <span class="nav-badge beg">IA</span></a>
+  <a href="/ai" style="color:#00e5ff;border-left-color:rgba(0,229,255,0.4)"><span class="icon">🤖</span> Print AI <span class="nav-badge beg">IA</span></a>
 </nav>
 
 <div class="floating-toc" id="floatingToc">
@@ -3257,10 +3257,10 @@ if (document.getElementById('missionsWidget')) {
                 <h3 style="margin:0; font-family:'Syne'">Ferramentas de Cálculo</h3>
                 <p style="color:var(--muted); font-size:14px">Estima o custo do filamento e o gasto elétrico de cada impressão.</p>
             </div>
-            <a href="calculadora.php" class="btn-auth btn-profile" style="background:var(--accent); color:#000; border:none; padding:12px 24px">ABRIR CALCULADORA</a>
+            <a href="/calculadora" class="btn-auth btn-profile" style="background:var(--accent); color:#000; border:none; padding:12px 24px">ABRIR CALCULADORA</a>
         </div>
     </div>
-  </section>
+</section>
 
 
   <?php require_once 'comments_component.php'; ?>
@@ -3286,11 +3286,11 @@ if (document.getElementById('missionsWidget')) {
           </a>
         </div>
         <div style="width: 1px; height: 15px; background: var(--border);"></div>
-        <a href="sobre.php" style="color: var(--accent); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace; font-weight: bold;">Sobre</a>
-        <a href="contacto.php" style="color: var(--muted); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace;">Contacto</a>
-        <a href="terms.php" style="color: var(--muted); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace;">Termos</a>
-        <a href="privacy.php" style="color: var(--muted); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace;">Privacidade</a>
-        <a href="suporte.php" style="color: var(--muted); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace;">Suporte</a>
+        <a href="/sobre" style="color: var(--accent); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace; font-weight: bold;">Sobre</a>
+        <a href="/contacto" style="color: var(--muted); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace;">Contacto</a>
+        <a href="/terms" style="color: var(--muted); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace;">Termos</a>
+        <a href="/privacy" style="color: var(--muted); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace;">Privacidade</a>
+        <a href="/suporte" style="color: var(--muted); text-decoration: none; font-size: 11px; font-family: 'Space Mono', monospace;">Suporte</a>
       </div>
 
     </div>

@@ -141,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
                       . "<p><strong>Utilizador:</strong> " . htmlspecialchars($targetName) . "</p>"
                       . "<p><strong>Banido por:</strong> " . htmlspecialchars($user['full_name']) . "</p>"
                       . ($adminMessage ? "<p><strong>Motivo:</strong> " . htmlspecialchars($adminMessage) . "</p>" : "")
-                      . "<a href='https://manual-3d.pt/moderacao.php' style='background:#ff4444;color:#fff;padding:10px 22px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin-top:12px'>Ver Moderacao</a></div>";
+                      . "<a href='https://manual-3d.pt/moderacao' style='background:#ff4444;color:#fff;padding:10px 22px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin-top:12px'>Ver Moderacao</a></div>";
                 sendEmail($adm['email'], $adm['full_name'], "Utilizador banido: {$targetName}", $html);
             }
             $flash = array('type'=>'danger','msg'=>"Utilizador {$targetName} banido permanentemente.");

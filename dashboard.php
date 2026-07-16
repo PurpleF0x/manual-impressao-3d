@@ -90,11 +90,11 @@ $currentStage = $stages[min($plantLevel, count($stages)-1)];
             <div class="sidebar-logo">MANUAL <span>3D</span></div>
             <nav>
                 <a href="#" class="nav-item active">🏠 Dashboard</a>
-                <a href="index.php" class="nav-item">📖 Continuar Manual</a>
-                <a href="forum/index.php" class="nav-item">🌐 Fórum Global</a>
-                <a href="perfil.php" class="nav-item">👤 O meu Perfil</a>
-                <a href="calculadora.php" class="nav-item">🧮 Calculadoras</a>
-                <a href="moderacao.php" class="nav-item">🛡️ Moderação</a>
+                <a href="/index" class="nav-item">📖 Continuar Manual</a>
+                <a href="/forum/" class="nav-item">🌐 Fórum Global</a>
+                <a href="/perfil" class="nav-item">👤 O meu Perfil</a>
+                <a href="/calculadora" class="nav-item">🧮 Calculadoras</a>
+                <a href="/moderacao" class="nav-item">🛡️ Moderação</a>
             </nav>
         </aside>
 
@@ -143,7 +143,7 @@ $currentStage = $stages[min($plantLevel, count($stages)-1)];
                                 <h4 style="font-family:'Syne'">Membro Ativo</h4>
                                 <p style="font-size:12px; color:var(--muted)">Publica 1 comentário hoje para ganhar 20 XP e 10 GP.</p>
                             </div>
-                            <a href="index.php#comentarios" class="tool-btn" style="margin-left:auto; padding:10px 20px; font-size:11px">IR AGORA</a>
+                            <a href="/index#comentarios" class="tool-btn" style="margin-left:auto; padding:10px 20px; font-size:11px">IR AGORA</a>
                         </div>
                     </div>
                 </section>
@@ -152,14 +152,14 @@ $currentStage = $stages[min($plantLevel, count($stages)-1)];
                     <div class="card">
                         <div class="widget-title">🛠️ Ferramentas Rápidas</div>
                         <div class="tools-list">
-                            <a href="calculadora.php" class="tool-btn">
+                            <a href="/calculadora" class="tool-btn">
                                 <span class="tool-icon">💰</span>
                                 <div>
                                     <div style="font-weight:700">Calculadora</div>
                                     <div style="font-size:10px; color:var(--muted)">Custos e Energia</div>
                                 </div>
                             </a>
-                            <a href="forum/criar_post.php" class="tool-btn">
+                            <a href="/forum/criar_post" class="tool-btn">
                                 <span class="tool-icon">✏️</span>
                                 <div>
                                     <div style="font-weight:700">Novo Post</div>

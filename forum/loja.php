@@ -9,7 +9,7 @@ function avPath($url) {
     if (strpos($url,'http')===0) return $url;
     return '../' . ltrim($url, '/');
 }
-if (!isLoggedIn()) { header('Location: ../login.php?redirect=forum/loja.php'); exit; }
+if (!isLoggedIn()) { header('Location: /login?redirect=forum/loja'); exit; }
 $currentUser = getCurrentUser();
 $uid = (int)$currentUser['id'];
 $db  = getDB();
@@ -296,13 +296,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 <body>
 
 <nav class="topbar">
-    <a href="index.php" class="topbar-logo">3D<span>/</span>FÓRUM</a>
+    <a href="/forum/" class="topbar-logo">3D<span>/</span>FÓRUM</a>
     <span style="color:var(--muted);font-size:12px">/ Loja</span>
     <div class="topbar-right">
         <div class="coins-badge">🪙 <?php echo number_format($coins); ?></div>
-        <a href="../index.php" class="topbar-btn">← Manual</a>
-        <a href="mensagens.php" class="topbar-btn">💬<?php if($unreadMsgs>0): ?> <span class="notif-badge"><?php echo $unreadMsgs; ?></span><?php endif; ?></a>
-        <a href="perfil.php?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
+        <a href="/" class="topbar-btn">← Manual</a>
+        <a href="mensagens" class="topbar-btn">💬<?php if($unreadMsgs>0): ?> <span class="notif-badge"><?php echo $unreadMsgs; ?></span><?php endif; ?></a>
+        <a href="perfil?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
             <?php $av=$currentUser['avatar_url']??''; if($av): ?><img src="<?php echo sanitize(avPath($av)); ?>" alt=""><?php else: echo mb_substr($currentUser['full_name'],0,2); endif; ?>
         </a>
     </div>
@@ -310,9 +310,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 <!-- Breadcrumb -->
 <div class="bc-bar">
     <div class="bc-inner">
-        <a href="../index.php" class="bc-link">📖 Manual</a>
+        <a href="/" class="bc-link">📖 Manual</a>
         <span class="bc-sep">›</span>
-        <a href="index.php" class="bc-link">🌐 Fórum</a>
+        <a href="/forum/" class="bc-link">🌐 Fórum</a>
         <span class="bc-sep">›</span><span class="bc-current">🛒 Loja</span>
     </div>
 </div>

@@ -600,27 +600,27 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         <div id="globalSearchResults" class="global-search-results"></div>
     </div>
     <div class="topbar-actions">
-        <a href="../index.php" class="topbar-btn">← Manual</a>
-        <?php if ($currentUser && in_array($currentUser['role']??'',['master','admin','moderator'])): ?><a href="admin.php" class="topbar-btn" style="color:#ff6b35;border-color:rgba(255,107,53,0.3)">⚔️ Admin</a><?php endif; ?>
+        <a href="/" class="topbar-btn">← Manual</a>
+        <?php if ($currentUser && in_array($currentUser['role']??'',['master','admin','moderator'])): ?><a href="admin" class="topbar-btn" style="color:#ff6b35;border-color:rgba(255,107,53,0.3)">⚔️ Admin</a><?php endif; ?>
         <?php if ($currentUser): ?>
-            <a href="mensagens.php" class="topbar-btn">
+            <a href="mensagens" class="topbar-btn">
                 💬 Mensagens
                 <?php if ($unreadMsgs > 0): ?><span class="notif-badge"><?php echo $unreadMsgs; ?></span><?php endif; ?>
             </a>
-            <a href="perfil.php?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-avatar">
+            <a href="perfil?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-avatar">
                 <?php $av=$currentUser['avatar_url']??''; if($av): ?><img src="<?php echo sanitize(avPath($av)); ?>" alt=""><?php else: echo mb_substr($currentUser['full_name'],0,2); endif; ?>
             </a>
         <?php else: ?>
-            <a href="../login.php?redirect=forum/index.php" class="topbar-btn primary">Entrar</a>
+            <a href="/login?redirect=forum/" class="topbar-btn primary">Entrar</a>
         <?php endif; ?>
     </div>
 </nav>
 <!-- Breadcrumb -->
 <div class="bc-bar">
     <div class="bc-inner">
-        <a href="../index.php" class="bc-link">📖 Manual</a>
+        <a href="/" class="bc-link">📖 Manual</a>
         <span class="bc-sep">›</span>
-        <a href="index.php" class="bc-link">🌐 Fórum</a>
+        <a href="/forum/" class="bc-link">🌐 Fórum</a>
     </div>
 </div>
 
@@ -635,7 +635,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                 <?php endif; ?>
             </div>
             <?php if ($currentUser): ?>
-            <a href="criar_post.php" class="create-post-btn">✏️ NOVO POST</a>
+            <a href="criar_post" class="create-post-btn">✏️ NOVO POST</a>
             <?php endif; ?>
         </div>
 
@@ -683,11 +683,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                     <button class="vote-btn down <?php echo $userVote===-1?'active':''; ?>" onclick="votePost(<?php echo $post['id']; ?>,-1,this)">▼</button>
                 </div>
                 <div class="post-body">
-                    <a href="comunidade.php?slug=<?php echo urlencode($post['community_slug']); ?>" class="post-community">
+                    <a href="comunidade?slug=<?php echo urlencode($post['community_slug']); ?>" class="post-community">
                         <?php echo $post['community_icon']; ?> <?php echo sanitize($post['community_name']); ?>
                     </a>
                     <?php if (!empty($post['flair'])): ?><?php echo renderFlairBadgeFeed($post['flair']); ?> <?php endif; ?>
-                    <a href="topico.php?id=<?php echo $post['id']; ?>" class="post-title"><?php echo sanitize($post['title']); ?></a>
+                    <a href="topico?id=<?php echo $post['id']; ?>" class="post-title"><?php echo sanitize($post['title']); ?></a>
                     <?php if (!empty($post['content'])): ?>
                     <div class="post-excerpt"><?php echo sanitize(mb_substr($post['content'],0,200)); ?></div>
                     <?php endif; ?>
@@ -698,7 +698,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                     </div>
                     <?php endif; ?>
                     <div class="post-meta">
-                        <a href="perfil.php?id=<?php echo $post['user_id']; ?>" class="post-author">
+                        <a href="perfil?id=<?php echo $post['user_id']; ?>" class="post-author">
                             <div class="post-author-av"><?php if(!empty($post['avatar_url'])): ?><img src="<?php echo sanitize(avPath($post['avatar_url'])); ?>" alt=""><?php else: echo sanitize($initials); endif; ?></div>
                             <?php echo sanitize($post['username']); ?>
                         </a>
@@ -723,7 +723,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <div class="create-comm-icon">🏗️</div>
             <div class="create-comm-title">Cria a tua comunidade</div>
             <div class="create-comm-sub">Reúne pessoas com os mesmos interesses em impressão 3D.</div>
-            <a href="criar_comunidade.php" class="create-comm-btn">+ CRIAR AGORA</a>
+            <a href="criar_comunidade" class="create-comm-btn">+ CRIAR AGORA</a>
         </div>
         <?php endif; ?>
 
@@ -735,7 +735,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <?php foreach (array_slice($communities,0,8) as $comm):
                 $isJoined = in_array((int)$comm['id'], $myCommIds);
             ?>
-            <a href="comunidade.php?slug=<?php echo urlencode($comm['slug']); ?>" class="comm-row">
+            <a href="comunidade?slug=<?php echo urlencode($comm['slug']); ?>" class="comm-row">
                 <div class="comm-icon-wrap" style="background:linear-gradient(135deg,<?php echo htmlspecialchars($comm['banner_color']); ?>22,<?php echo htmlspecialchars($comm['banner_color']); ?>44)">
                     <?php echo $comm['icon']; ?>
                 </div>
@@ -758,14 +758,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         <div class="sidebar-card">
             <div class="sidebar-card-header">
                 <span class="sidebar-card-title">📖 Manual</span>
-                <a href="../index.php" class="sidebar-card-action">Ver tudo →</a>
+                <a href="/" class="sidebar-card-action">Ver tudo →</a>
             </div>
             <div style="padding:12px 18px;display:flex;flex-direction:column;gap:6px">
-                <a href="../index.php#filamentos" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:12px;padding:6px 8px;border-radius:8px;transition:background 0.15s" onmouseover="this.style.background='rgba(0,229,255,0.06)'" onmouseout="this.style.background='transparent'"><span>🧪</span> Materiais &amp; Filamentos</a>
-                <a href="../index.php#tipos-impressoras" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:12px;padding:6px 8px;border-radius:8px;transition:background 0.15s" onmouseover="this.style.background='rgba(0,229,255,0.06)'" onmouseout="this.style.background='transparent'"><span>🖨️</span> Tipos de Impressoras</a>
-                <a href="../index.php#processo" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:12px;padding:6px 8px;border-radius:8px;transition:background 0.15s" onmouseover="this.style.background='rgba(0,229,255,0.06)'" onmouseout="this.style.background='transparent'"><span>⚙️</span> Parâmetros de Impressão</a>
-                <a href="../index.php#problemas" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:12px;padding:6px 8px;border-radius:8px;transition:background 0.15s" onmouseover="this.style.background='rgba(0,229,255,0.06)'" onmouseout="this.style.background='transparent'"><span>🔧</span> Troubleshooting</a>
-                <a href="../index.php#software" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:12px;padding:6px 8px;border-radius:8px;transition:background 0.15s" onmouseover="this.style.background='rgba(0,229,255,0.06)'" onmouseout="this.style.background='transparent'"><span>💻</span> Software &amp; Slicers</a>
+                <a href="/#filamentos" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:12px;padding:6px 8px;border-radius:8px;transition:background 0.15s" onmouseover="this.style.background='rgba(0,229,255,0.06)'" onmouseout="this.style.background='transparent'"><span>🧪</span> Materiais &amp; Filamentos</a>
+                <a href="/#tipos-impressoras" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:12px;padding:6px 8px;border-radius:8px;transition:background 0.15s" onmouseover="this.style.background='rgba(0,229,255,0.06)'" onmouseout="this.style.background='transparent'"><span>🖨️</span> Tipos de Impressoras</a>
+                <a href="/#processo" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:12px;padding:6px 8px;border-radius:8px;transition:background 0.15s" onmouseover="this.style.background='rgba(0,229,255,0.06)'" onmouseout="this.style.background='transparent'"><span>⚙️</span> Parâmetros de Impressão</a>
+                <a href="/#problemas" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:12px;padding:6px 8px;border-radius:8px;transition:background 0.15s" onmouseover="this.style.background='rgba(0,229,255,0.06)'" onmouseout="this.style.background='transparent'"><span>🔧</span> Troubleshooting</a>
+                <a href="/#software" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:12px;padding:6px 8px;border-radius:8px;transition:background 0.15s" onmouseover="this.style.background='rgba(0,229,255,0.06)'" onmouseout="this.style.background='transparent'"><span>💻</span> Software &amp; Slicers</a>
             </div>
         </div>
 

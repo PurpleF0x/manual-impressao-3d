@@ -42,7 +42,7 @@ require_once 'includes/functions.php';
 </head>
 <body>
     <div class="container">
-        <a href="index.php" class="back-link">← Voltar ao Início</a>
+        <a href="/index" class="back-link">← Voltar ao Início</a>
         <h1>Suporte ao <span>Utilizador</span></h1>
 
         <div class="faq-item">
@@ -63,16 +63,16 @@ require_once 'includes/functions.php';
         <div class="contact-box">
             <p>Não encontraste resposta? Usa o nosso formulário ou envia-nos um email direto.</p>
             <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-                <a href="contacto.php" class="btn-mail" style="background:#7c3aed; color:#fff;">FORMULÁRIO DE CONTACTO</a>
-                <a href="mailto:contacto@manual-3d.pt?subject=Suporte Manual 3D" class="btn-mail">ENVIAR EMAIL</a>
+                <a href="/contacto" class="btn-mail" style="background:#7c3aed; color:#fff;">FORMULÁRIO DE CONTACTO</a>
+                <a href="mailto:suporte@manual-3d.pt?subject=Suporte Manual 3D" class="btn-mail">ENVIAR EMAIL</a>
             </div>
-            <div class="copy-email" onclick="copyEmail()">Ou clica aqui para copiar o email: contacto@manual-3d.pt</div>
+            <div class="copy-email" onclick="copyEmail()">Ou clica aqui para copiar o email: suporte@manual-3d.pt</div>
         </div>
     </div>
 
     <script>
         function copyEmail() {
-            navigator.clipboard.writeText('contacto@manual-3d.pt');
+            navigator.clipboard.writeText('suporte@manual-3d.pt');
             alert('Email copiado para a área de transferência!');
         }
     </script>

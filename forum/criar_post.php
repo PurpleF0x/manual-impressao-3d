@@ -290,10 +290,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
 <body>
 
 <nav class="topbar">
-    <a href="index.php" class="topbar-logo">3D<span>/</span>FÓRUM</a>
+    <a href="/forum/" class="topbar-logo">3D<span>/</span>FÓRUM</a>
     <div class="topbar-right">
-        <a href="index.php" class="topbar-btn">← Fórum</a>
-        <a href="perfil.php?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
+        <a href="/forum/" class="topbar-btn">← Fórum</a>
+        <a href="perfil?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
             <?php $av=$currentUser['avatar_url']??''; if($av): ?><img src="<?php echo sanitize(avPath($av)); ?>" alt=""><?php else: echo mb_substr($currentUser['full_name'],0,2); endif; ?>
         </a>
     </div>
@@ -301,9 +301,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
 <!-- Breadcrumb -->
 <div class="bc-bar">
     <div class="bc-inner">
-        <a href="../index.php" class="bc-link">📖 Manual</a>
+        <a href="/" class="bc-link">📖 Manual</a>
         <span class="bc-sep">›</span>
-        <a href="index.php" class="bc-link">🌐 Fórum</a>
+        <a href="/forum/" class="bc-link">🌐 Fórum</a>
         <span class="bc-sep">›</span><span class="bc-current">✏️ Criar Post</span>
     </div>
 </div>
@@ -437,7 +437,7 @@ E            <!-- Upload de Imagem (Desativado temporariamente) -->
 
             <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
                 <button type="submit" class="submit-btn" id="submitBtn">📨 SUBMETER POST</button>
-                <a href="<?php echo $preComm ? 'comunidade.php?slug='.urlencode($preComm['slug']) : 'index.php'; ?>" class="cancel-btn">Cancelar</a>
+                <a href="<?php echo $preComm ? 'comunidade?slug='.urlencode($preComm['slug']) : '/forum/'; ?>" class="cancel-btn">Cancelar</a>
             </div>
             <div style="margin-top:14px;padding:12px 16px;background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.2);border-radius:10px;font-size:12px;color:var(--muted);display:flex;align-items:flex-start;gap:8px">
                 <span style="font-size:15px;flex-shrink:0">🛡️</span>
@@ -501,7 +501,7 @@ function onCommChange(sel) {
     document.getElementById('cpIcon').textContent = opt.dataset.icon || '💬';
     document.getElementById('cpName').textContent = opt.dataset.name || '';
     var cpLink = document.getElementById('cpLink');
-    cpLink.href = 'comunidade.php?slug=' + encodeURIComponent(opt.dataset.slug || '');
+    cpLink.href = 'comunidade?slug=' + encodeURIComponent(opt.dataset.slug || '');
     preview.classList.add('show');
 }
 

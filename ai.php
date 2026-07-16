@@ -253,12 +253,12 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
 <div class="app-layout">
     <nav class="rails-sidebar">
         <button class="rails-btn" onclick="toggleSidebar()" title="Abrir/Fechar Histórico"><i class="fas fa-folder"></i></button>
-        <a href="ai.php" class="rails-btn new" title="Nova Conversa"><i class="fas fa-plus"></i></a>
+        <a href="/ai" class="rails-btn new" title="Nova Conversa"><i class="fas fa-plus"></i></a>
         <div class="rails-spacer"></div>
-        <a href="forum/" class="rails-btn" title="Fórum"><i class="fas fa-globe"></i></a>
-        <a href="index.php" class="rails-btn" title="Manual"><i class="fas fa-book"></i></a>
+        <a href="/forum/" class="rails-btn" title="Fórum"><i class="fas fa-globe"></i></a>
+        <a href="/index" class="rails-btn" title="Manual"><i class="fas fa-book"></i></a>
         <?php if ($currentUser): ?>
-        <a href="forum/perfil.php?id=<?= (int)$currentUser['id'] ?>" class="rails-avatar">
+        <a href="/forum/perfil?id=<?= (int)$currentUser['id'] ?>" class="rails-avatar">
             <?php if (!empty($currentUser['avatar_url'])): ?>
                 <img src="<?= sanitize($currentUser['avatar_url']) ?>" alt="">
             <?php else: ?>
@@ -274,7 +274,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
         </div>
         <div class="sidebar-list" id="convList">
             <?php foreach ($conversations as $conv): $isActive = (int)$conv['id'] === $activeConvId; ?>
-            <a href="ai.php?conv=<?= (int)$conv['id'] ?>" class="conv-item <?= $isActive ? 'active' : '' ?>" id="ci-<?= (int)$conv['id'] ?>">
+            <a href="/ai?conv=<?= (int)$conv['id'] ?>" class="conv-item <?= $isActive ? 'active' : '' ?>" id="ci-<?= (int)$conv['id'] ?>">
                 <i class="far fa-file-alt"></i>
                 <div class="conv-title"><?= sanitize($conv['title']) ?></div>
                 <button class="conv-delete" onclick="deleteConv(event,<?= (int)$conv['id'] ?>)">×</button>
@@ -373,7 +373,7 @@ async function deleteConv(e, id) {
         if(data.success) {
             const el = document.getElementById('ci-'+id);
             if(el) el.remove();
-            if(CONV_ID === id) window.location.href = 'ai.php';
+            if(CONV_ID === id) window.location.href = '/ai';
         }
     } catch(e) { alert('Erro ao eliminar.'); }
 }
@@ -443,7 +443,7 @@ async function send() {
         if(document.getElementById('typing-indicator')) document.getElementById('typing-indicator').remove();
         if(data.success) {
             appendMsg('assistant', data.reply);
-            if(!CONV_ID && data.conversation_id) { CONV_ID = data.conversation_id; window.history.replaceState(null,'','ai.php?conv='+CONV_ID); }
+            if(!CONV_ID && data.conversation_id) { CONV_ID = data.conversation_id; window.history.replaceState(null,'','/ai?conv='+CONV_ID); }
         }
     } catch(e) {
         if(document.getElementById('typing-indicator')) document.getElementById('typing-indicator').remove();

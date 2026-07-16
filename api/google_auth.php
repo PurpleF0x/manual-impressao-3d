@@ -7,14 +7,14 @@ require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../config/google_config.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ../login.php');
+    header('Location: /login');
     exit;
 }
 
 $idToken = $_POST['credential'] ?? '';
 
 if (empty($idToken)) {
-    header('Location: ../login.php?error=google_failed');
+    header('Location: /login?error=google_failed');
     exit;
 }
 
@@ -24,14 +24,14 @@ if (empty($idToken)) {
  */
 $parts = explode('.', $idToken);
 if (count($parts) < 2) {
-    header('Location: ../login.php?error=invalid_token');
+    header('Location: /login?error=invalid_token');
     exit;
 }
 
 $payload = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $parts[1])), true);
 
 if (!$payload || $payload['aud'] !== GOOGLE_CLIENT_ID) {
-    header('Location: ../login.php?error=auth_error');
+    header('Location: /login?error=auth_error');
     exit;
 }
 
@@ -78,5 +78,5 @@ $_SESSION['role'] = $user['role'];
 
 logActivity($user['id'], 'login_google', "Login via Google efetuado");
 
-header('Location: ../index.php');
+header('Location: /');
 exit;

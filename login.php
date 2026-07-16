@@ -3,7 +3,7 @@ require_once 'includes/functions.php';
 
 // Destino após login — padrão: index.php
 // O fórum passa ?redirect=forum/ para voltar ao fórum
-$redirectTo = 'index.php';
+$redirectTo = '/index';
 if (!empty($_GET['redirect'])) {
     // Validar: só permite paths relativos simples (sem http, sem ..)
     $raw = $_GET['redirect'];
@@ -102,7 +102,7 @@ if (!isLoggedIn() && isset($_COOKIE['remember_token'])) {
 
 // Label do botão "voltar" conforme origem
 $backLabel = strpos($redirectTo, 'forum') !== false ? '← Voltar ao Fórum' : '← Voltar ao Manual';
-$backHref  = strpos($redirectTo, 'forum') !== false ? $redirectTo : 'index.php';
+$backHref  = strpos($redirectTo, 'forum') !== false ? $redirectTo : '/index';
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -216,7 +216,7 @@ $backHref  = strpos($redirectTo, 'forum') !== false ? $redirectTo : 'index.php';
             </div>
 
             <div class="forgot-password">
-                <a href="recuperar_password.php">Esqueceste-te da palavra-passe?</a>
+                <a href="/recuperar_password">Esqueceste-te da palavra-passe?</a>
             </div>
 
             <div class="checkbox-group">
@@ -227,7 +227,7 @@ $backHref  = strpos($redirectTo, 'forum') !== false ? $redirectTo : 'index.php';
             <div class="checkbox-group" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px;">
                 <input type="checkbox" id="accept_terms" name="accept_terms" required style="width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer; margin-top: 3px;">
                 <label for="accept_terms" style="color: var(--muted); font-size: 13px; cursor: pointer; line-height: 1.5;">
-                    Aceito os <a href="terms.php" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600;">Termos</a> e a <a href="privacy.php" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600;">Política de Privacidade</a>.
+                    Aceito os <a href="/terms" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600;">Termos</a> e a <a href="/privacy" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600;">Política de Privacidade</a>.
                 </label>
             </div>
 
@@ -243,7 +243,7 @@ $backHref  = strpos($redirectTo, 'forum') !== false ? $redirectTo : 'index.php';
              data-client_id="<?php require_once 'config/google_config.php'; echo GOOGLE_CLIENT_ID; ?>"
              data-context="signin"
              data-ux_mode="popup"
-             data-login_uri="https://manual-3d.pt/api/google_auth.php"
+             data-login_uri="https://manual-3d.pt/api/google_auth"
              data-auto_prompt="false">
         </div>
         <div class="g_id_signin"
@@ -257,11 +257,11 @@ $backHref  = strpos($redirectTo, 'forum') !== false ? $redirectTo : 'index.php';
         </div>
 
         <div class="auth-footer" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 20px; margin-top: 20px;">
-            <p style="margin:0; font-size: 11px;">© 2024 Manual de Impressão 3D</p>
+            <p style="margin:0; font-size: 11px;">© 2026 Manual de Impressão 3D</p>
             <div style="display: flex; gap: 10px;">
-                <a href="register.php" style="font-size: 13px;">Criar Conta</a>
+                <a href="/register" style="font-size: 13px;">Criar Conta</a>
                 <span style="color: var(--muted);">|</span>
-                <a href="suporte.php" style="font-size: 13px;">Suporte</a>
+                <a href="/suporte" style="font-size: 13px;">Suporte</a>
             </div>
         </div>
     </div>

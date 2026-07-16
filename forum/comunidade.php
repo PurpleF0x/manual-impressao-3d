@@ -349,12 +349,12 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 <body>
 
 <nav class="topbar">
-    <a href="index.php" class="topbar-logo">3D<span>/</span>FÓRUM</a>
+    <a href="/forum/" class="topbar-logo">3D<span>/</span>FÓRUM</a>
     <span style="color:var(--muted);font-size:12px">/ <?php echo sanitize($community['name']); ?></span>
     <div class="ms-actions">
-        <a href="../index.php" class="topbar-btn">← Manual</a>
+        <a href="/" class="topbar-btn">← Manual</a>
         
-        <?php if ($currentUser && in_array($currentUser['role']??'',['master','admin','moderator'])): ?><a href="admin.php" class="topbar-btn" style="color:#ff6b35;border-color:rgba(255,107,53,0.3)">⚔️ Admin</a><?php endif; ?>
+        <?php if ($currentUser && in_array($currentUser['role']??'',['master','admin','moderator'])): ?><a href="admin" class="topbar-btn" style="color:#ff6b35;border-color:rgba(255,107,53,0.3)">⚔️ Admin</a><?php endif; ?>
 
 <!-- Botão de preferências no topbar (inserir antes do último item do topbar-actions/topbar-right) -->
 <div style="position:relative" id="prefsWrap">
@@ -380,12 +380,12 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 </div>
 
         <?php if ($currentUser): ?>
-            <a href="mensagens.php" class="topbar-btn">💬</a>
-            <a href="perfil.php?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
+            <a href="mensagens" class="topbar-btn">💬</a>
+            <a href="perfil?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
                 <?php $av=$currentUser['avatar_url']??''; if($av): ?><img src="<?php echo sanitize(avPath($av)); ?>" alt=""><?php else: echo mb_substr($currentUser['full_name'],0,2); endif; ?>
             </a>
         <?php else: ?>
-            <a href="../login.php?redirect=forum/index.php" class="topbar-btn primary">Entrar</a>
+            <a href="/login?redirect=forum/comunidade?slug=<?php echo urlencode($slug); ?>" class="topbar-btn primary">Entrar</a>
         <?php endif; ?>
     </div>
 </nav>
@@ -393,9 +393,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 <!-- Breadcrumb -->
 <div class="bc-bar">
     <div class="bc-inner">
-        <a href="../index.php" class="bc-link">📖 Manual</a>
+        <a href="/" class="bc-link">📖 Manual</a>
         <span class="bc-sep">›</span>
-        <a href="index.php" class="bc-link">🌐 Fórum</a>
+        <a href="/forum/" class="bc-link">🌐 Fórum</a>
         <span class="bc-sep">›</span><span class="bc-current"><?php echo $community['icon']; ?> <?php echo sanitize($community['name']); ?></span>
     </div>
 </div>
@@ -424,7 +424,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
         </button>
         <?php endif; ?>
         <?php if ($canMod): ?>
-        <a href="gerir_comunidade.php?id=<?php echo $commId; ?>" class="topbar-btn" style="margin-left:auto">⚙️ Gerir</a>
+        <a href="gerir_comunidade?id=<?php echo $commId; ?>" class="topbar-btn" style="margin-left:auto">⚙️ Gerir</a>
         <?php endif; ?>
     </div>
     <?php if (!empty($community['description'])): ?>
@@ -438,7 +438,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
             <a href="?slug=<?php echo urlencode($slug); ?>&sort=recente" class="<?php echo $sort==='recente'?'active':''; ?>">⏱ Recente</a>
             <a href="?slug=<?php echo urlencode($slug); ?>&sort=popular" class="<?php echo $sort==='popular'?'active':''; ?>">🔥 Popular</a>
             <?php if ($currentUser): ?>
-            <a href="criar_post.php?comm=<?php echo urlencode($slug); ?>" class="new-post-btn">✏️ NOVO POST</a>
+            <a href="criar_post?comm=<?php echo urlencode($slug); ?>" class="new-post-btn">✏️ NOVO POST</a>
             <?php endif; ?>
         </div>
 
@@ -462,7 +462,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
         <div style="margin-bottom:16px;padding:13px 18px;background:rgba(255,204,0,0.06);border:1px solid rgba(255,204,0,0.2);border-radius:12px;font-size:13px;color:#ffcc00;display:flex;align-items:center;gap:10px">
             <span style="font-size:16px;flex-shrink:0">⏳</span>
             <span><strong><?php echo $pendCount; ?> post<?php echo $pendCount!==1?'s':''; ?> pendente<?php echo $pendCount!==1?'s':''; ?></strong> aguarda<?php echo $pendCount===1?'':'m'; ?> aprovação.</span>
-            <a href="gerir_comunidade.php?id=<?php echo $commId; ?>" style="margin-left:auto;font-family:'Space Mono',monospace;font-size:10px;color:#ffcc00;text-decoration:none;border:1px solid rgba(255,204,0,0.3);padding:5px 12px;border-radius:7px;white-space:nowrap">Moderar →</a>
+            <a href="gerir_comunidade?id=<?php echo $commId; ?>" style="margin-left:auto;font-family:'Space Mono',monospace;font-size:10px;color:#ffcc00;text-decoration:none;border:1px solid rgba(255,204,0,0.3);padding:5px 12px;border-radius:7px;white-space:nowrap">Moderar →</a>
         </div>
         <?php endif; ?>
         <?php endif; ?>
@@ -472,7 +472,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
             <div class="icon">📭</div>
             <p>Ainda não há posts aqui.<br>Sê o primeiro a publicar!</p>
             <?php if ($currentUser): ?>
-            <a href="criar_post.php?comm=<?php echo urlencode($slug); ?>" style="display:inline-block;margin-top:16px;background:var(--comm-color);color:#000;padding:10px 22px;border-radius:8px;text-decoration:none;font-family:'Space Mono',monospace;font-size:11px;font-weight:700">CRIAR POST</a>
+            <a href="criar_post?comm=<?php echo urlencode($slug); ?>" style="display:inline-block;margin-top:16px;background:var(--comm-color);color:#000;padding:10px 22px;border-radius:8px;text-decoration:none;font-family:'Space Mono',monospace;font-size:11px;font-weight:700">CRIAR POST</a>
             <?php endif; ?>
         </div>
         <?php else: ?>
@@ -496,12 +496,12 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
                     <?php if (!empty($post['flair'])): echo renderFlairBadgeComm($post['flair']); endif; ?>
                 </div>
                 <?php endif; ?>
-                <a href="topico.php?id=<?php echo $post['id']; ?>" class="post-title"><?php echo sanitize($post['title']); ?></a>
+                <a href="topico?id=<?php echo $post['id']; ?>" class="post-title"><?php echo sanitize($post['title']); ?></a>
                 <?php if (!empty($post['content'])): ?>
                 <div class="post-excerpt"><?php echo sanitize(mb_substr($post['content'], 0, 200)); ?></div>
                 <?php endif; ?>
                 <div class="post-meta">
-                    <a href="perfil.php?id=<?php echo $post['user_id']; ?>" class="post-author">
+                    <a href="perfil?id=<?php echo $post['user_id']; ?>" class="post-author">
                         <div class="post-author-av"><?php if (!empty($post['avatar_url'])): ?><img src="<?php echo sanitize(avPath($post['avatar_url'])); ?>" alt=""><?php else: echo sanitize($initials); endif; ?></div>
                         <?php echo sanitize($post['username']); ?>
                     </a>
@@ -523,7 +523,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
         <div class="sidebar-card" style="padding:18px;margin-bottom:16px">
             <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Sobre</div>
             <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px"><?php echo !empty($community['description']) ? sanitize($community['description']) : 'Sem descrição.'; ?></p>
-            <div style="font-size:12px;color:var(--muted)">Criada por <a href="perfil.php?id=<?php echo $community['created_by']; ?>" style="color:var(--accent);text-decoration:none">@<?php echo sanitize($community['owner_name']); ?></a></div>
+            <div style="font-size:12px;color:var(--muted)">Criada por <a href="perfil?id=<?php echo $community['created_by']; ?>" style="color:var(--accent);text-decoration:none">@<?php echo sanitize($community['owner_name']); ?></a></div>
         </div>
 
         <?php if (!empty($topMembers)): ?>
@@ -534,7 +534,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
             <?php foreach ($topMembers as $m):
                 $mi = mb_substr($m['full_name'] ?? '??', 0, 2);
             ?>
-            <a href="perfil.php?id=<?php echo $m['id']; ?>" class="member-row">
+            <a href="perfil?id=<?php echo $m['id']; ?>" class="member-row">
                 <div class="member-av"><?php if (!empty($m['avatar_url'])): ?><img src="<?php echo sanitize(avPath($m['avatar_url'])); ?>" alt=""><?php else: echo sanitize($mi); endif; ?></div>
                 <div class="member-info">
                     <div class="member-name"><?php echo sanitize($m['full_name']); ?></div>

@@ -10,7 +10,7 @@ function avPath($url) {
     return '../' . ltrim($url, '/');
 }
 
-if (!isLoggedIn()) { header('Location: ../login.php'); exit; }
+if (!isLoggedIn()) { header('Location: /login'); exit; }
 $currentUser = getCurrentUser();
 $db = getDB();
 
@@ -149,10 +149,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
 <body>
 
 <nav class="topbar">
-    <a href="index.php" class="topbar-logo">3D<span>/</span>FÓRUM</a>
+    <a href="/forum/" class="topbar-logo">3D<span>/</span>FÓRUM</a>
     <div class="topbar-right">
-        <a href="index.php" class="topbar-btn">← Fórum</a>
-        <a href="perfil.php?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
+        <a href="/forum/" class="topbar-btn">← Fórum</a>
+        <a href="perfil?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
             <?php $av=$currentUser['avatar_url']??''; if($av): ?><img src="<?php echo sanitize(avPath($av)); ?>" alt=""><?php else: echo mb_substr($currentUser['full_name'],0,2); endif; ?>
         </a>
     </div>
@@ -160,9 +160,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
 <!-- Breadcrumb -->
 <div class="bc-bar">
     <div class="bc-inner">
-        <a href="../index.php" class="bc-link">📖 Manual</a>
+        <a href="/" class="bc-link">📖 Manual</a>
         <span class="bc-sep">›</span>
-        <a href="index.php" class="bc-link">🌐 Fórum</a>
+        <a href="/forum/" class="bc-link">🌐 Fórum</a>
         <span class="bc-sep">›</span><span class="bc-current">➕ Criar Comunidade</span>
     </div>
 </div>
@@ -225,7 +225,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
                         maxlength="50" required
                         value="<?php echo sanitize($_POST['slug'] ?? ''); ?>"
                         oninput="onSlugChange(this.value)">
-                    <div class="slug-preview"><span class="slug-preview-base">forum/comunidade.php?slug=</span><span id="slugDisplay">…</span></div>
+                    <div class="slug-preview"><span class="slug-preview-base">forum/comunidade?slug=</span><span id="slugDisplay">…</span></div>
                     <div class="form-hint">Só letras minúsculas, números, - e _. Não pode ser alterado depois.</div>
                 </div>
 
@@ -269,7 +269,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
 
         <div class="form-actions">
             <button type="submit" class="submit-btn">🏗️ CRIAR COMUNIDADE</button>
-            <a href="index.php" class="cancel-btn">Cancelar</a>
+            <a href="/forum/" class="cancel-btn">Cancelar</a>
         </div>
     </form>
 </div>

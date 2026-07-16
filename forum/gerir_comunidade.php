@@ -4,7 +4,7 @@
  */
 require_once __DIR__ . '/../includes/functions.php';
 
-if (!isLoggedIn()) { header('Location: ../login.php?redirect=forum/index.php'); exit; }
+if (!isLoggedIn()) { header('Location: /login?redirect=forum/'); exit; }
 $currentUser = getCurrentUser();
 $uid = (int)$currentUser['id'];
 $db  = getDB();
@@ -13,7 +13,7 @@ $db  = getDB();
 try { $db->exec("ALTER TABLE forum_communities ADD COLUMN IF NOT EXISTS description VARCHAR(500) DEFAULT NULL"); } catch(Exception $e){}
 
 $commId = (int)($_GET['id'] ?? 0);
-if ($commId < 1) { header('Location: index.php'); exit; }
+if ($commId < 1) { header('Location: /forum/'); exit; }
 
 // Buscar comunidade
 $stmt = $db->prepare("SELECT * FROM forum_communities WHERE id=? AND is_active=1");
@@ -244,18 +244,18 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 <body>
 
 <nav class="topbar">
-    <a href="index.php" class="topbar-logo">3D<span>/</span>FÓRUM</a>
-    <span style="color:var(--muted);font-size:12px">/ <a href="comunidade.php?slug=<?php echo urlencode($comm['slug']); ?>" style="color:var(--muted);text-decoration:none"><?php echo $comm['icon']; ?> <?php echo sanitize($comm['name']); ?></a> / Gerir</span>
+    <a href="/forum/" class="topbar-logo">3D<span>/</span>FÓRUM</a>
+    <span style="color:var(--muted);font-size:12px">/ <a href="comunidade?slug=<?php echo urlencode($comm['slug']); ?>" style="color:var(--muted);text-decoration:none"><?php echo $comm['icon']; ?> <?php echo sanitize($comm['name']); ?></a> / Gerir</span>
     <div class="topbar-right">
-        <a href="comunidade.php?slug=<?php echo urlencode($comm['slug']); ?>" class="topbar-btn">← Voltar à comunidade</a>
+        <a href="comunidade?slug=<?php echo urlencode($comm['slug']); ?>" class="topbar-btn">← Voltar à comunidade</a>
     </div>
 </nav>
 <!-- Breadcrumb -->
 <div class="bc-bar">
     <div class="bc-inner">
-        <a href="../index.php" class="bc-link">📖 Manual</a>
+        <a href="/" class="bc-link">📖 Manual</a>
         <span class="bc-sep">›</span>
-        <a href="index.php" class="bc-link">🌐 Fórum</a>
+        <a href="/forum/" class="bc-link">🌐 Fórum</a>
         <span class="bc-sep">›</span><span class="bc-current">⚙️ Gerir Comunidade</span>
     </div>
 </div>

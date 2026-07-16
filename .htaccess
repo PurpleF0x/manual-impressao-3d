@@ -7,13 +7,16 @@ RewriteCond %{HTTPS} off
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # 2. Redirecionar pedidos de .php para o URL limpo (Ex: contacto.php -> contacto)
+# EXCLUSÃO: Não redirecionar pastas de API para manter compatibilidade com Google/Webhooks
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteCond %{REQUEST_URI} !^/forum/api/
 RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /([^\ ]+)\.php
-RewriteRule ^(.+)\.php$ /$1 [L,R=301]
+RewriteRule ^(.+)\.php$ /$1 [L,R=301,QSA]
 
 # 3. Internamente ler o ficheiro .php se ele existir (Ex: /contacto -> contacto.php)
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME}\.php -f
-RewriteRule ^([^\.]+)$ $1.php [NC,L]
+RewriteRule ^([^\.]+)$ $1.php [NC,L,QSA]
 
 # 4. Página de Erro 404 Personalizada
 ErrorDocument 404 /404.php
