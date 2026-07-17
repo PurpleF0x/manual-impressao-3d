@@ -49,6 +49,14 @@ $chapterSequence = [
     'software', 'glossario', 'ferramentas'
 ];
 
+function findSlugById($targetId) {
+    global $chapterMap;
+    foreach ($chapterMap as $slug => $data) {
+        if ($data['id'] === $targetId) return $slug;
+    }
+    return null;
+}
+
 function getChapterNav($currentId) {
     global $chapterSequence, $chapterMap, $onlyShowId;
     $idx = array_search($currentId, $chapterSequence);
@@ -61,10 +69,10 @@ function getChapterNav($currentId) {
 
     // Anterior
     if ($prev) {
-        $prevSlug = array_search($prev, array_column($chapterMap, 'id', 'slug'));
+        $prevSlug = ($prev === 'inicio') ? null : findSlugById($prev);
         // Se estivermos em modo standalone, o link deve ser a URL limpa. Na homepage, mantemos a âncora.
         $href = ($onlyShowId && $prevSlug) ? "/manual/$prevSlug" : ($prev === 'inicio' ? '#' : "#$prev");
-        $label = ($prev === 'inicio') ? 'Início' : ($chapterMap[$prevSlug]['title'] ?? 'Capítulo Anterior');
+        $label = ($prev === 'inicio') ? 'Início' : ($prevSlug ? $chapterMap[$prevSlug]['title'] : 'Capítulo Anterior');
         // Simplificar label para o botão
         $cleanLabel = str_replace(' — Guia Completo', '', str_replace(' — Guia Educativo Completo', '', $label));
         $html .= '<a href="'.$href.'" class="section-nav-btn"><div><span class="section-nav-label">← Anterior</span>'.$cleanLabel.'</div></a>';
@@ -74,9 +82,9 @@ function getChapterNav($currentId) {
 
     // Próximo
     if ($next) {
-        $nextSlug = array_search($next, array_column($chapterMap, 'id', 'slug'));
+        $nextSlug = findSlugById($next);
         $href = ($onlyShowId && $nextSlug) ? "/manual/$nextSlug" : "#$next";
-        $label = $chapterMap[$nextSlug]['title'] ?? 'Próximo Capítulo';
+        $label = $nextSlug ? $chapterMap[$nextSlug]['title'] : 'Próximo Capítulo';
         $cleanLabel = str_replace(' — Guia Completo', '', str_replace(' — Guia Educativo Completo', '', $label));
         $html .= '<a href="'.$href.'" class="section-nav-btn next"><div><span class="section-nav-label">Próximo →</span>'.$cleanLabel.'</div></a>';
     }
@@ -2434,7 +2442,7 @@ if (document.getElementById('missionsWidget')) {
   
   <div class="nav-section">Comunidade</div>
   <a href="<?php echo $base; ?>#comentarios"><span class="icon">💬</span> Dúvidas & Comentários</a>
-  <a href="forum/" style="color:#a78bfa;border-left-color:rgba(124,58,237,0.5)"><span class="icon">🌐</span> Fórum Global</a>
+  <a href="/forum/" style="color:#a78bfa;border-left-color:rgba(124,58,237,0.5)"><span class="icon">🌐</span> Fórum Global</a>
   <a href="/ai" style="color:#00e5ff;border-left-color:rgba(0,229,255,0.4)"><span class="icon">🤖</span> Print AI <span class="nav-badge beg">IA</span></a>
 </nav>
 
