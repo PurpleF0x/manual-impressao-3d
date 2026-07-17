@@ -3,12 +3,7 @@
  * forum/loja.php — Loja de itens de personalização
  */
 require_once __DIR__ . '/../includes/functions.php';
-// Helper: path do avatar relativo ao forum/
-function avPath($url) {
-    if (!$url) return '';
-    if (strpos($url,'http')===0) return $url;
-    return '../' . ltrim($url, '/');
-}
+
 if (!isLoggedIn()) { header('Location: /login?redirect=forum/loja'); exit; }
 $currentUser = getCurrentUser();
 $uid = (int)$currentUser['id'];

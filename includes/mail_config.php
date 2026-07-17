@@ -56,7 +56,7 @@ function getEmailTemplate($content) {
     <div style='background-color: #0a0a0f; padding: 40px 20px; font-family: sans-serif; color: #e8e8f0;'>
         <div style='max-width: 600px; margin: 0 auto; background: #111118; border: 1px solid #1a1a26; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5);'>
             <div style='padding: 30px; text-align: center; border-bottom: 1px solid #1a1a26;'>
-                <h1 style='color: #00e5ff; margin: 0; font-size: 24px; letter-spacing: 1px;'>MANUAL 3D</h1>
+                <img src='" . SITE_URL . "/og-manual.png' alt='Manual 3D' style='width: 100%; max-width: 600px; display: block; margin: 0 auto;'>
             </div>
             <div style='padding: 40px 30px;'>
                 {$content}

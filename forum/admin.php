@@ -4,12 +4,7 @@
  * Hierarquia: master > admin > moderator > user
  */
 require_once __DIR__ . '/../includes/functions.php';
-// Helper: path do avatar relativo ao forum/
-function avPath($url) {
-    if (!$url) return '';
-    if (strpos($url,'http')===0) return $url;
-    return '../' . ltrim($url, '/');
-}
+
 if (!isLoggedIn()) { header('Location: ../login.php?redirect=forum/admin.php'); exit; }
 $currentUser = getCurrentUser();
 $uid  = (int)$currentUser['id'];
