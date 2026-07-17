@@ -693,7 +693,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                     <?php endif; ?>
                     <div class="post-meta">
                         <a href="perfil?id=<?php echo $post['user_id']; ?>" class="post-author">
-                            <div class="post-author-av"><?php if(!empty($post['avatar_url'])): ?><img src="<?php echo sanitize(avPath($post['avatar_url'])); ?>" alt=""><?php else: echo sanitize($initials); endif; ?></div>
+                            <div class="post-author-av"><?php if(!empty($post['avatar_url'])): ?><img src="<?php echo sanitize(avPath($post['avatar_url'])); ?>" alt="" onerror="this.style.display='none'; this.parentElement.textContent='<?php echo sanitize($initials); ?>'"><?php else: echo sanitize($initials); endif; ?></div>
                             <?php echo sanitize($post['username']); ?>
                         </a>
                         <span class="post-stat">💬 <?php echo (int)$post['reply_count']; ?></span>

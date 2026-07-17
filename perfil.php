@@ -335,7 +335,9 @@ if (!empty($_POST['action'])) {
   .user-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
   .user-name{color:var(--text);font-weight:600}
   .user-role{font-family:'Space Mono',monospace;font-size:9px;padding:2px 8px;border-radius:4px;text-transform:uppercase}
+  .user-role.owner{background:linear-gradient(135deg,#7c3aed,var(--accent2));color:#fff;font-weight:700;border:1px solid rgba(255,255,255,0.2)}
   .user-role.master{background:transparent;color:var(--text);border:1px solid var(--border);padding:1px 6px}
+  .user-role.owner{background:linear-gradient(135deg,#7c3aed,var(--accent2));color:#fff;font-weight:700;border:1px solid rgba(255,255,255,0.2)}
   .user-role.master{background:transparent;color:var(--text);border:1px solid var(--border);padding:1px 6px}
   .user-role.admin{background:rgba(255,107,53,0.2);color:var(--accent2)}
   .user-role.moderator{background:rgba(124,58,237,0.2);color:#a78bfa}
@@ -603,7 +605,7 @@ if (!empty($_POST['action'])) {
   <div class="user-info">
     <div class="user-avatar">
       <?php if (!empty($avUrl)): ?>
-        <img src="<?php echo sanitize(avPath($avUrl)); ?>?v=<?php echo time(); ?>" alt="">
+        <img src="<?php echo sanitize(avPath($avUrl)); ?>?v=<?php echo time(); ?>" alt="" onerror="this.style.display='none'; this.parentElement.textContent='<?php echo sanitize($user['avatar'] ?? '??'); ?>'">
       <?php else: ?>
         <?php echo sanitize($user['avatar'] ?? '??'); ?>
       <?php endif; ?>
@@ -635,7 +637,7 @@ if (!empty($_POST['action'])) {
   <div class="hero-avatar-wrap">
     <div class="hero-avatar">
       <?php if (!empty($avUrl)): ?>
-        <img src="<?php echo sanitize(avPath($avUrl)); ?>?v=<?php echo time(); ?>" alt="Foto de perfil">
+        <img src="<?php echo sanitize(avPath($avUrl)); ?>?v=<?php echo time(); ?>" alt="Foto de perfil" onerror="this.style.display='none'; this.parentElement.textContent='<?php echo sanitize($user['avatar'] ?? '??'); ?>'">
       <?php else: ?>
         <?php echo sanitize($user['avatar'] ?? '??'); ?>
       <?php endif; ?>

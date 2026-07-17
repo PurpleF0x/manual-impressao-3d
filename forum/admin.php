@@ -11,8 +11,8 @@ $uid  = (int)$currentUser['id'];
 $role = $currentUser['role'] ?? 'user';
 $db   = getDB();
 
-// ── Migração: adicionar role 'master' ao ENUM ─────────────────
-try { $db->exec("ALTER TABLE users MODIFY COLUMN role ENUM('master','admin','moderator','user') DEFAULT 'user'"); } catch(Exception $e){}
+// ── Migração: adicionar role 'owner' e 'master' ao ENUM ───────
+try { $db->exec("ALTER TABLE users MODIFY COLUMN role ENUM('owner','master','admin','moderator','user') DEFAULT 'user'"); } catch(Exception $e){}
 
 // ── Tabela de logs de auditoria ───────────────────────────────
 try { $db->exec("CREATE TABLE IF NOT EXISTS admin_logs (
@@ -27,9 +27,10 @@ try { $db->exec("CREATE TABLE IF NOT EXISTS admin_logs (
 
 // ── Helpers de permissão ──────────────────────────────────────
 function rl($r) {
-    return array('master'=>4,'admin'=>3,'moderator'=>2,'user'=>1)[$r] ?? 1;
+    return array('owner'=>5, 'master'=>4, 'admin'=>3, 'moderator'=>2, 'user'=>1)[$r] ?? 1;
 }
-function amMaster($u)    { return ($u['role']??'') === 'master'; }
+function amOwner($u)     { return ($u['role']??'') === 'owner'; }
+function amMaster($u)    { return in_array($u['role']??'', ['owner', 'master'], true); }
 function amAdmin($u)     { return rl($u['role']??'') >= 3; }
 function amMod($u)       { return rl($u['role']??'') >= 2; }
 function amCanManage($actor, $target) {
@@ -300,7 +301,8 @@ try { $um = $db->prepare("SELECT COUNT(*) FROM private_messages WHERE receiver_i
 
 function roleBadge($r) {
     $map = array(
-        'master'    => array('var(--muted)','rgba(255,255,255,0.05)','&#128081;'),
+        'owner'     => array('#7c3aed','rgba(124,58,237,0.1)','&#128081;'),
+    'master'    => array('var(--muted)','rgba(255,255,255,0.05)','&#128142;'),
         'admin'     => array('#ff6b35','rgba(107,53,0.15)','&#128737;'),
         'moderator' => array('#a78bfa','rgba(58,237,0.15)','&#9876;'),
         'user'      => array('#888899','rgba(136,136,153,0.1)','&#128100;'),
@@ -349,6 +351,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .topbar-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent3),var(--accent));display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:#000;overflow:hidden;text-decoration:none}
 .topbar-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .role-pill{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;padding:4px 10px;border-radius:20px}
+.role-pill.owner{background:rgba(124,58,237,0.12);color:var(--accent3);border:1px solid rgba(124,58,237,0.2)}
 .role-pill.master{background:rgba(255,204,0,0.12);color:var(--master);border:1px solid rgba(255,204,0,0.3)}
 .role-pill.admin{background:rgba(255,107,53,0.12);color:var(--admin);border:1px solid rgba(255,107,53,0.3)}
 .role-pill.moderator{background:rgba(167,139,250,0.12);color:var(--mod);border:1px solid rgba(167,139,250,0.3)}

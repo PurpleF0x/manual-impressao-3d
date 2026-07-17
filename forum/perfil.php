@@ -540,7 +540,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:-56px;padding-bottom:0">
         <div class="hero-av-wrap">
             <div class="hero-av">
-                <?php if (!empty($user['avatar_url'])): ?><img src="<?php echo sanitize(avPath($user['avatar_url'])); ?>" alt=""><?php else: echo sanitize($initials); endif; ?>
+                <?php if (!empty($user['avatar_url'])): ?><img src="<?php echo sanitize(avPath($user['avatar_url'])); ?>" alt="" onerror="this.style.display='none'; this.parentElement.textContent='<?php echo sanitize($initials); ?>'"><?php else: echo sanitize($initials); endif; ?>
             </div>
             <?php if ($frameCSS): ?><style>.hero-av{<?php echo htmlspecialchars($frameCSS); ?>}</style><?php endif; ?>
         </div>

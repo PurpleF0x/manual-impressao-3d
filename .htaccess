@@ -13,13 +13,20 @@ RewriteCond %{REQUEST_URI} !^/forum/api/
 RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /([^\ ]+)\.php
 RewriteRule ^(.+)\.php$ /$1 [L,R=301,QSA]
 
+# --- REGRAS ESPECÍFICAS (Antes das genéricas) ---
+
+# Redirecionamento amigável para capítulos do manual
+RewriteRule ^manual/([a-zA-Z0-9-]+)$ index.php?chapter=$1 [L,QSA]
+
+# Redirecionamento amigável para finalizar registo
+RewriteRule ^finalizar-registo$ finalizar_registo.php [L,QSA]
+
+# --- REGRAS GENÉRICAS ---
+
 # 3. Internamente ler o ficheiro .php se ele existir (Ex: /contacto -> contacto.php)
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME}\.php -f
 RewriteRule ^([^\.]+)$ $1.php [NC,L,QSA]
-
-# Redirecionamento amigável para finalizar registo
-RewriteRule ^finalizar-registo$ finalizar_registo.php [L,QSA]
 
 # 4. Página de Erro 404 Personalizada
 ErrorDocument 404 /404.php

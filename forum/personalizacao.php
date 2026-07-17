@@ -76,7 +76,7 @@ try {
 $coins = (int)$config['coins'];
 
 // ── Inventário ────────────────────────────────────────────────
-if ($currentUser['role'] === 'master') {
+if (in_array($currentUser['role'], ['owner', 'master'], true)) {
     $invQ = $db->query("SELECT * FROM shop_items WHERE is_active=1 ORDER BY category, price");
     $myItems = $invQ->fetchAll();
 } else {
@@ -105,7 +105,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
         if ($field === 'frame_key') {
             if ($value === '') $value = null;
             if ($value) {
-                if ($currentUser['role'] === 'master') {
+                // Owners e Masters têm acesso a todos os itens ativos (GOD MODE)
+                if (in_array($currentUser['role'], ['owner', 'master'], true)) {
                     $chk = $db->prepare("SELECT 1 FROM shop_items WHERE item_key=? AND category='frame'");
                     $chk->execute(array($value));
                 } else {
@@ -120,7 +121,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
         } elseif ($field === 'background_key') {
             if ($value === '') $value = null;
             if ($value) {
-                if ($currentUser['role'] === 'master') {
+                // Owners e Masters têm acesso a todos os itens ativos (GOD MODE)
+                if (in_array($currentUser['role'], ['owner', 'master'], true)) {
                     $chk = $db->prepare("SELECT 1 FROM shop_items WHERE item_key=? AND category='background'");
                     $chk->execute(array($value));
                 } else {
@@ -141,7 +143,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
         } elseif ($field === 'accent_color') {
             if ($value === '') $value = null;
             if ($value) {
-                if ($currentUser['role'] === 'master') {
+                // Owners e Masters têm acesso a todos os itens ativos (GOD MODE)
+                if (in_array($currentUser['role'], ['owner', 'master'], true)) {
                     $chk = $db->prepare("SELECT 1 FROM shop_items WHERE css_value=? AND category='accent'");
                     $chk->execute(array($value));
                 } else {
@@ -160,7 +163,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
             // Validar se pertencem ao inventário
             $validBadges = [];
             foreach ($badges as $bid) {
-                if ($currentUser['role'] === 'master') {
+                // Owners e Masters têm acesso a todos os itens ativos (GOD MODE)
+                if (in_array($currentUser['role'], ['owner', 'master'], true)) {
                     $chk = $db->prepare("SELECT 1 FROM shop_items WHERE id=? AND category IN ('badge','medal')");
                     $chk->execute(array($bid));
                 } else {

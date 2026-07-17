@@ -1,48 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Homepage -->
   <url>
     <loc>https://manual-3d.pt/</loc>
-    <lastmod>2026-03-20</lastmod>
+    <lastmod>2026-03-21</lastmod>
     <priority>1.00</priority>
   </url>
+
+  <!-- Fórum da Comunidade -->
   <url>
     <loc>https://manual-3d.pt/forum/</loc>
-    <priority>0.95</priority>
-  </url>
-  <url>
-    <loc>https://manual-3d.pt/ai</loc>
     <priority>0.90</priority>
   </url>
+
+  <!-- Capítulos do Manual (URLs limpas para SEO) -->
+  <url><loc>https://manual-3d.pt/manual/o-que-e-impressao-3d</loc><priority>0.85</priority></url>
+  <url><loc>https://manual-3d.pt/manual/historia-da-impressao-3d</loc><priority>0.80</priority></url>
+  <url><loc>https://manual-3d.pt/manual/tipos-de-impressoras-3d</loc><priority>0.80</priority></url>
+  <url><loc>https://manual-3d.pt/manual/materiais-e-filamentos</loc><priority>0.80</priority></url>
+  <url><loc>https://manual-3d.pt/manual/anatomia-da-impressora</loc><priority>0.80</priority></url>
+  <url><loc>https://manual-3d.pt/manual/parametros-de-impressao</loc><priority>0.80</priority></url>
+  <url><loc>https://manual-3d.pt/manual/problemas-comuns-solucoes</loc><priority>0.80</priority></url>
+  <url><loc>https://manual-3d.pt/manual/software-essencial-3d</loc><priority>0.80</priority></url>
+  <url><loc>https://manual-3d.pt/manual/glossario-termos-tecnicos</loc><priority>0.70</priority></url>
+  <url><loc>https://manual-3d.pt/manual/ferramentas-de-calculo</loc><priority>0.75</priority></url>
+
+  <!-- Páginas de Apoio -->
   <url>
-    <loc>https://manual-3d.pt/calculadora</loc>
+    <loc>https://manual-3d.pt/ai</loc>
     <priority>0.85</priority>
   </url>
   <url>
     <loc>https://manual-3d.pt/sobre</loc>
-    <priority>0.70</priority>
-  </url>
-  <url>
-    <loc>https://manual-3d.pt/contacto</loc>
-    <priority>0.70</priority>
-  </url>
-  <url>
-    <loc>https://manual-3d.pt/suporte</loc>
     <priority>0.60</priority>
   </url>
   <url>
-    <loc>https://manual-3d.pt/login</loc>
-    <priority>0.50</priority>
-  </url>
-  <url>
-    <loc>https://manual-3d.pt/register</loc>
-    <priority>0.50</priority>
-  </url>
-  <url>
-    <loc>https://manual-3d.pt/privacy</loc>
-    <priority>0.30</priority>
-  </url>
-  <url>
-    <loc>https://manual-3d.pt/terms</loc>
-    <priority>0.30</priority>
+    <loc>https://manual-3d.pt/contacto</loc>
+    <priority>0.60</priority>
   </url>
 </urlset>

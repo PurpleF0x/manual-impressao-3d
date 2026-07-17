@@ -656,7 +656,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <div class="post-footer">
                 <a href="perfil?id=<?php echo $post['author_id']; ?>" class="post-author-row">
                     <div class="author-av">
-                        <?php if (!empty($post['avatar_url'])): ?><img src="<?php echo sanitize(avPath($post['avatar_url'])); ?>" alt=""><?php else: echo mb_substr($post['full_name'] ?? '??', 0, 2); endif; ?>
+                        <?php if (!empty($post['avatar_url'])): ?><img src="<?php echo sanitize(avPath($post['avatar_url'])); ?>" alt="" onerror="this.style.display='none'; this.parentElement.textContent='<?php echo sanitize(mb_substr($post['full_name'] ?? '??', 0, 2)); ?>'"><?php else: echo mb_substr($post['full_name'] ?? '??', 0, 2); endif; ?>
                     </div>
                     <div>
                         <div class="author-name"><?php echo sanitize($post['full_name']); ?></div>
@@ -723,7 +723,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <div class="reply-body">
         <div class="reply-author-row">
             <a href="perfil?id=<?php echo $reply['user_id']; ?>" style="display:flex;align-items:center;gap:7px;text-decoration:none">
-                <div class="reply-av"><?php if (!empty($reply['avatar_url'])): ?><img src="<?php echo sanitize(avPath($reply['avatar_url'])); ?>" alt=""><?php else: echo sanitize($rInitials); endif; ?></div>
+                <div class="reply-av"><?php if (!empty($reply['avatar_url'])): ?><img src="<?php echo sanitize(avPath($reply['avatar_url'])); ?>" alt="" onerror="this.style.display='none'; this.parentElement.textContent='<?php echo sanitize($rInitials); ?>'"><?php else: echo sanitize($rInitials); endif; ?></div>
                 <span class="reply-author-name"><?php echo sanitize($reply['full_name']); ?></span>
                 <span class="reply-author-user">@<?php echo sanitize($reply['username']); ?></span>
             </a>
@@ -764,7 +764,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                 <div class="reply-body">
                     <div class="reply-author-row">
                         <a href="perfil?id=<?php echo $child['user_id']; ?>" style="display:flex;align-items:center;gap:7px;text-decoration:none">
-                            <div class="reply-av"><?php if (!empty($child['avatar_url'])): ?><img src="<?php echo sanitize(avPath($child['avatar_url'])); ?>" alt=""><?php else: echo sanitize($cInitials); endif; ?></div>
+                            <div class="reply-av"><?php if (!empty($child['avatar_url'])): ?><img src="<?php echo sanitize(avPath($child['avatar_url'])); ?>" alt="" onerror="this.style.display='none'; this.parentElement.textContent='<?php echo sanitize($cInitials); ?>'"><?php else: echo sanitize($cInitials); endif; ?></div>
                             <span class="reply-author-name"><?php echo sanitize($child['full_name']); ?></span>
                             <span class="reply-author-user">@<?php echo sanitize($child['username']); ?></span>
                         </a>

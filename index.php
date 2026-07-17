@@ -7,6 +7,27 @@ if (isLoggedIn()) {
     $userId = (int)$_SESSION['user_id'];
     updateMissionProgress($userId, 'read_sections');
 }
+
+// --- SEO Dinâmico por Capítulo ---
+$chapterMap = [
+    'o-que-e-impressao-3d'      => ['id' => 'o-que-e', 'title' => 'O que é a Impressão 3D? — Guia Completo', 'desc' => 'Descobre o que é a fabricação aditiva, como funciona e por que está a revolucionar a indústria.'],
+    'historia-da-impressao-3d' => ['id' => 'historia', 'title' => 'História e Evolução da Impressão 3D', 'desc' => 'Desde Chuck Hull até às bio-impressoras modernas: a linha do tempo da tecnologia 3D.'],
+    'tipos-de-impressoras-3d'  => ['id' => 'tipos', 'title' => 'Tipos de Impressoras 3D (FDM, SLA, SLS)', 'desc' => 'Compara as diferentes tecnologias de impressão 3D e escolhe a melhor para o teu projeto.'],
+    'materiais-e-filamentos'   => ['id' => 'materiais', 'title' => 'Guia de Materiais: PLA, PETG, ABS e mais', 'desc' => 'Tudo sobre filamentos 3D: temperaturas, resistência e aplicações de cada material.'],
+    'anatomia-da-impressora'   => ['id' => 'partes', 'title' => 'Anatomia e Componentes da Impressora 3D', 'desc' => 'Conhece cada peça da tua máquina: extrusoras, hot-ends, motores e sensores.'],
+    'parametros-de-impressao'  => ['id' => 'processo', 'title' => 'Parâmetros de Impressão: Altura, Infill e Velocidade', 'desc' => 'Aprende a configurar o teu slicer para obter resultados profissionais em cada peça.'],
+    'problemas-comuns-solucoes' => ['id' => 'problemas', 'title' => 'Resolução de Problemas (Troubleshooting) 3D', 'desc' => 'Como resolver Warping, Stringing, Under-extrusion e outras falhas comuns.'],
+    'software-essencial-3d'    => ['id' => 'software', 'title' => 'Slicers e Software de Modelação 3D', 'desc' => 'Os melhores programas gratuitos para criar e preparar os teus modelos 3D.'],
+    'glossario-termos-tecnicos' => ['id' => 'glossario', 'title' => 'Glossário Técnico de Impressão 3D', 'desc' => 'Dicionário completo com todos os termos essenciais para a comunidade maker.'],
+    'ferramentas-de-calculo'   => ['id' => 'ferramentas', 'title' => 'Calculadora de Custos de Impressão 3D', 'desc' => 'Ferramenta gratuita para estimar o gasto de filamento e eletricidade das tuas peças.'],
+];
+
+$reqChapter = $_GET['chapter'] ?? '';
+$seo = $chapterMap[$reqChapter] ?? [
+    'id' => '',
+    'title' => 'Manual de Impressão 3D — Guia Educativo Completo',
+    'desc' => 'Aprende tudo sobre impressão 3D: manuais técnicos, fórum da comunidade maker e assistência via IA.'
+];
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -14,27 +35,15 @@ if (isLoggedIn()) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf" content="<?php echo generateCSRFToken(); ?>">
-<title>Manual de Impressão 3D</title>
-<!-- ═══ FAVICON ═══ -->
-<!-- Copiar favicon.ico, favicon.svg, favicon-32.png, favicon-192.png para a raiz htdocs/ -->
-<link rel="icon" type="image/x-icon"       href="/favicon.ico">
-<link rel="icon" type="image/x-icon"  href="/favicons/favicon-manual.ico">
-<link rel="icon" type="image/svg+xml" href="/favicons/favicon-manual.svg">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-manual-32.png">
-<link rel="apple-touch-icon" sizes="192x192" href="/favicon-192.png">
+<title><?php echo $seo['title']; ?></title>
+<meta name="description" content="<?php echo $seo['desc']; ?>">
+<link rel="canonical" href="https://manual-3d.pt/<?php echo $reqChapter ? 'manual/'.$reqChapter : ''; ?>">
 
-<!-- ═══ OG TAGS — MANUAL (index.php, manual-impressao-3d.html) ═══ -->
+<!-- OG TAGS -->
 <meta property="og:type"        content="website">
-<meta property="og:url"         content="https://manual-3d.pt/">
-<meta property="og:title"       content="Manual de Impressão 3D">
-
-<!-- Google AdSense -->
-<meta name="google-adsense-account" content="ca-pub-4562191239161971">
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4562191239161971" crossorigin="anonymous"></script>
-
-<!-- Ad Block Recovery -->
-<script async src="https://fundingchoicesmessages.google.com/i/pub-4562191239161971?ers=1"></script><script>(function() {function signalGooglefcPresent() {if (!window.frames['googlefcPresent']) {if (document.body) {const iframe = document.createElement('iframe'); iframe.style = 'width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;'; iframe.style.display = 'none'; iframe.name = 'googlefcPresent'; document.body.appendChild(iframe);} else {setTimeout(signalGooglefcPresent, 0);}}}signalGooglefcPresent();})();</script>
-<meta property="og:description" content="Guia educativo completo de impressão 3D — do iniciante ao avançado.">
+<meta property="og:url"         content="https://manual-3d.pt/<?php echo $reqChapter ? 'manual/'.$reqChapter : ''; ?>">
+<meta property="og:title"       content="<?php echo $seo['title']; ?>">
+<meta property="og:description" content="<?php echo $seo['desc']; ?>">
 <meta property="og:image"       content="https://manual-3d.pt/og-manual.png">
 <meta name="twitter:card"       content="summary_large_image">
 <meta name="twitter:image"      content="https://manual-3d.pt/og-manual.png">
@@ -754,6 +763,7 @@ if (document.getElementById('missionsWidget')) {
     border-radius: 4px;
     text-transform: uppercase;
   }
+  .user-role.owner { background: linear-gradient(135deg, #7c3aed, var(--accent2)); color: #fff; font-weight: 700; border: 1px solid rgba(255,255,255,0.2); }
   .user-role.master { background: rgba(255,204,0,0.2); color: #ffcc00; border: 1px solid rgba(255,204,0,0.3); }
   .user-role.admin { background: rgba(255,107,53,0.2); color: var(--accent2); }
   .user-role.moderator { background: rgba(124,58,237,0.2); color: #a78bfa; }
@@ -2299,7 +2309,7 @@ if (document.getElementById('missionsWidget')) {
     <div class="user-info">
       <div class="user-avatar">
         <?php if (!empty($user['avatar_url'])): ?>
-          <img src="<?php echo sanitize(avPath($user['avatar_url'])); ?>" alt="" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+          <img src="<?php echo sanitize(avPath($user['avatar_url'])); ?>" alt="" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.style.display='none'; this.parentElement.textContent='<?php echo $user['avatar']; ?>'">
         <?php else: ?>
           <?php echo $user['avatar']; ?>
         <?php endif; ?>
@@ -2414,8 +2424,6 @@ if (document.getElementById('missionsWidget')) {
     <div class="level-label" id="level-label">MODO INICIANTE</div>
     <div class="level-desc" id="level-desc">— Conteúdo simplificado para quem está a começar</div>
   </div>
-
-  <div class="ad-slot" style="max-width: 900px; margin: 20px auto;"></div>
 
   <!-- O QUE É -->
   <section class="section" id="o-que-e">
@@ -3614,6 +3622,19 @@ sectionMap.forEach(sec => {
     window.addEventListener('scroll', updateToc, { passive: true });
     updateToc();
 })();
+
+// --- Scroll Automático para Capítulo via URL ---
+window.addEventListener('DOMContentLoaded', () => {
+    const activeSectionId = '<?php echo $seo['id']; ?>';
+    if (activeSectionId) {
+        const target = document.getElementById(activeSectionId);
+        if (target) {
+            setTimeout(() => {
+                target.scrollIntoView({ behavior: 'smooth' });
+            }, 800); // Delay ligeiro para garantir renderização
+        }
+    }
+});
 </script>
 <?php require_once 'includes/welcome_popup.php'; ?>
 </body>

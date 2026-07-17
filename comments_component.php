@@ -161,7 +161,7 @@ $isModUser     = $currentUser && canModerate($currentUser);
       </div>
     </div>
 
-    <div class="stats-bar">
+    <div class="stats-bar" id="cmtStatsBar" style="display:none">
       <div class="stat">💬 <span id="cmtTotal">0</span> comentários</div>
       <div class="stat">❓ <span id="cmtQuestions">0</span> dúvidas</div>
       <div class="stat">✅ <span id="cmtReplied">0</span> com resposta</div>
@@ -303,12 +303,16 @@ $isModUser     = $currentUser && canModerate($currentUser);
   window.loadMoreComments=function(){loadComments(false);};
 
   // ── Stats ────────────────────────────────────────────────────
+  var STATS_MIN_COMMENTS = 10; // só mostra a barra de stats quando houver atividade suficiente
   function updateStats() {
     document.getElementById('cmtTotal').textContent=allComments.length;
     document.getElementById('cmtQuestions').textContent=allComments.filter(function(c){return c.category==='duvida';}).length;
     document.getElementById('cmtReplied').textContent=allComments.filter(function(c){return c.replies&&c.replies.length>0;}).length;
     var uids=[]; allComments.forEach(function(c){if(uids.indexOf(c.user_id)<0)uids.push(c.user_id);});
     document.getElementById('cmtUsers').textContent=uids.length;
+
+    var bar=document.getElementById('cmtStatsBar');
+    if (bar) bar.style.display = (allComments.length >= STATS_MIN_COMMENTS) ? 'flex' : 'none';
   }
 
   // ── Sort ─────────────────────────────────────────────────────

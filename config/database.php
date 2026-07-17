@@ -29,6 +29,15 @@ function getDB(): PDO {
 
     try {
         $pdo = new PDO($dsn, DB_USER, DB_PASS, DB_OPTIONS);
+
+        // ── Pequena migração para o novo cargo 'owner' ───────────
+        static $migrated = false;
+        if (!$migrated) {
+            $pdo->exec("ALTER TABLE users MODIFY COLUMN role ENUM('owner','master','admin','moderator','user') DEFAULT 'user'");
+            // Promover email específico
+            $pdo->exec("UPDATE users SET role = 'owner' WHERE email = 'manual3d.projetos@gmail.com'");
+            $migrated = true;
+        }
     } catch (PDOException $e) {
         die('Erro de ligação: ' . $e->getMessage());
     }

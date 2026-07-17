@@ -293,7 +293,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <div class="topbar-right">
         <a href="/forum/" class="topbar-btn">← Fórum</a>
         <a href="perfil?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
-            <?php $av=$currentUser['avatar_url']??''; if($av): ?><img src="<?php echo sanitize(avPath($av)); ?>" alt=""><?php else: echo mb_substr($currentUser['full_name'],0,2); endif; ?>
+                    <?php $av=$currentUser['avatar_url']??''; if($av): ?><img src="<?php echo sanitize(avPath($av)); ?>" alt="" onerror="this.style.display='none'; this.parentElement.textContent='<?php echo mb_substr($currentUser['full_name'],0,2); ?>'"><?php else: echo mb_substr($currentUser['full_name'],0,2); endif; ?>
         </a>
     </div>
 </nav>
@@ -371,7 +371,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             ?>
             <a href="mensagens?user=<?php echo $conv['other_id']; ?>" class="conv-item <?php echo $isActive?'active':''; ?>">
                 <div class="conv-av">
-                    <?php $cav=$conv['avatar_url']??''; if($cav): ?><img src="<?php echo sanitize(avPath($cav)); ?>" alt=""><?php else: echo sanitize($ci); endif; ?>
+                    <?php $cav=$conv['avatar_url']??''; if($cav): ?><img src="<?php echo sanitize(avPath($cav)); ?>" alt="" onerror="this.style.display='none'; this.parentElement.textContent='<?php echo sanitize($ci); ?>'"><?php else: echo sanitize($ci); endif; ?>
                 </div>
                 <div class="conv-info">
                     <div class="conv-name"><?php echo sanitize($conv['full_name']); ?></div>
@@ -423,7 +423,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         <!-- Header -->
         <div class="chat-header">
             <div class="chat-header-av">
-                <?php $oav=$openUser['avatar_url']??''; if($oav): ?><img src="<?php echo sanitize(avPath($oav)); ?>" alt=""><?php else: echo mb_substr($openUser['full_name'],0,2); endif; ?>
+                <?php $oav=$openUser['avatar_url']??''; if($oav): ?><img src="<?php echo sanitize(avPath($oav)); ?>" alt="" onerror="this.style.display='none'; this.parentElement.textContent='<?php echo mb_substr($openUser['full_name'],0,2); ?>'"><?php else: echo mb_substr($openUser['full_name'],0,2); endif; ?>
             </div>
             <div class="chat-header-info">
                 <div class="chat-header-name"><?php echo sanitize($openUser['full_name']); ?></div>
@@ -456,7 +456,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                     echo '<div class="msg-group ' . $side . '">';
                     echo '<div class="msg-group-header">';
                     echo '<div class="msg-group-av">';
-                    if (!empty($sender['avatar'])) echo '<img src="' . htmlspecialchars(avPath($sender['avatar'])) . '" alt="">';
+                    if (!empty($sender['avatar'])) echo '<img src="' . htmlspecialchars(avPath($sender['avatar'])) . '" alt="" onerror="this.style.display=\'none\'; this.parentElement.textContent=\'' . htmlspecialchars($initials) . '\'">';
                     else echo htmlspecialchars($initials);
                     echo '</div>';
                     echo '<span class="msg-group-name">' . htmlspecialchars($sender['name'] ?? $sender['full_name'] ?? 'Utilizador') . '</span>';

@@ -210,12 +210,12 @@ function getStreakColor(int $days): string {
 
 function isAdmin(): bool {
     $u = getCurrentUser();
-    return $u && in_array($u['role'], ['master', 'admin'], true);
+    return $u && in_array($u['role'], ['owner', 'master', 'admin'], true);
 }
 
 function isModerator(): bool {
     $u = getCurrentUser();
-    return $u && in_array($u['role'], ['master', 'moderator', 'admin'], true);
+    return $u && in_array($u['role'], ['owner', 'master', 'moderator', 'admin'], true);
 }
 
 /**
@@ -224,7 +224,7 @@ function isModerator(): bool {
  */
 function canModerate(?array $user = null): bool {
     if ($user === null) $user = getCurrentUser();
-    return $user && in_array($user['role'] ?? '', ['master', 'admin', 'moderator'], true);
+    return $user && in_array($user['role'] ?? '', ['owner', 'master', 'admin', 'moderator'], true);
 }
 
 function generateAvatar(string $name): string {

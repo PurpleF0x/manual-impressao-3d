@@ -535,7 +535,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
                 $mi = mb_substr($m['full_name'] ?? '??', 0, 2);
             ?>
             <a href="perfil?id=<?php echo $m['id']; ?>" class="member-row">
-                <div class="member-av"><?php if (!empty($m['avatar_url'])): ?><img src="<?php echo sanitize(avPath($m['avatar_url'])); ?>" alt=""><?php else: echo sanitize($mi); endif; ?></div>
+                <div class="member-av"><?php if (!empty($m['avatar_url'])): ?><img src="<?php echo sanitize(avPath($m['avatar_url'])); ?>" alt="" onerror="this.style.display='none'; this.parentElement.textContent='<?php echo sanitize($mi); ?>'"><?php else: echo sanitize($mi); endif; ?></div>
                 <div class="member-info">
                     <div class="member-name"><?php echo sanitize($m['full_name']); ?></div>
                 </div>
