@@ -11,12 +11,15 @@ if (isLoggedIn()) {
 // --- SEO Dinâmico por Capítulo ---
 $chapterMap = [
     'o-que-e-impressao-3d'      => ['id' => 'o-que-e', 'title' => 'O que é a Impressão 3D? — Guia Completo', 'desc' => 'Descobre o que é a fabricação aditiva, como funciona e por que está a revolucionar a indústria.'],
-    'historia-da-impressao-3d' => ['id' => 'historia', 'title' => 'História e Evolução da Impressão 3D', 'desc' => 'Desde Chuck Hull até às bio-impressoras modernas: a linha do tempo da tecnologia 3D.'],
-    'tipos-de-impressoras-3d'  => ['id' => 'tipos', 'title' => 'Tipos de Impressoras 3D (FDM, SLA, SLS)', 'desc' => 'Compara as diferentes tecnologias de impressão 3D e escolhe a melhor para o teu projeto.'],
-    'materiais-e-filamentos'   => ['id' => 'materiais', 'title' => 'Guia de Materiais: PLA, PETG, ABS e mais', 'desc' => 'Tudo sobre filamentos 3D: temperaturas, resistência e aplicações de cada material.'],
-    'anatomia-da-impressora'   => ['id' => 'partes', 'title' => 'Anatomia e Componentes da Impressora 3D', 'desc' => 'Conhece cada peça da tua máquina: extrusoras, hot-ends, motores e sensores.'],
+    'como-funciona'             => ['id' => 'como-funciona', 'title' => 'Como Funciona a Impressão 3D? Passo a Passo', 'desc' => 'Do design CAD ao pós-processamento: entende todo o fluxo de trabalho de uma impressora 3D.'],
+    'tipos-de-impressoras-3d'  => ['id' => 'tipos-impressoras', 'title' => 'Tipos de Impressoras 3D (FDM, SLA, SLS)', 'desc' => 'Compara as diferentes tecnologias de impressão 3D e escolhe a melhor para o teu projeto.'],
+    'iniciantes-vs-pro'         => ['id' => 'iniciantes-vs-pro', 'title' => 'Impressoras 3D: Iniciantes vs Profissionais', 'desc' => 'Diferenças de preço, performance e materiais entre máquinas de entrada e industriais.'],
+    'materiais-e-filamentos'   => ['id' => 'filamentos', 'title' => 'Guia de Materiais: PLA, PETG, ABS e mais', 'desc' => 'Tudo sobre filamentos 3D: temperaturas, resistência e aplicações de cada material.'],
+    'comparador-de-materiais'   => ['id' => 'comparador', 'title' => 'Comparador de Filamentos e Materiais 3D', 'desc' => 'Tabela técnica comparando resistência, facilidade de uso e warping de vários plásticos.'],
+    'qual-filamento-usar'       => ['id' => 'qual-usar', 'title' => 'Qual Filamento Escolher? Guia por Aplicação', 'desc' => 'Não sabes que material usar? Escolhe o melhor para peças decorativas, mecânicas ou exterior.'],
     'parametros-de-impressao'  => ['id' => 'processo', 'title' => 'Parâmetros de Impressão: Altura, Infill e Velocidade', 'desc' => 'Aprende a configurar o teu slicer para obter resultados profissionais em cada peça.'],
     'problemas-comuns-solucoes' => ['id' => 'problemas', 'title' => 'Resolução de Problemas (Troubleshooting) 3D', 'desc' => 'Como resolver Warping, Stringing, Under-extrusion e outras falhas comuns.'],
+    'dicas-e-boas-praticas'     => ['id' => 'dicas', 'title' => 'Dicas e Boas Práticas na Impressão 3D', 'desc' => 'Aumenta o sucesso das tuas impressões com conselhos de especialistas sobre manutenção e perfis.'],
     'software-essencial-3d'    => ['id' => 'software', 'title' => 'Slicers e Software de Modelação 3D', 'desc' => 'Os melhores programas gratuitos para criar e preparar os teus modelos 3D.'],
     'glossario-termos-tecnicos' => ['id' => 'glossario', 'title' => 'Glossário Técnico de Impressão 3D', 'desc' => 'Dicionário completo com todos os termos essenciais para a comunidade maker.'],
     'ferramentas-de-calculo'   => ['id' => 'ferramentas', 'title' => 'Calculadora de Custos de Impressão 3D', 'desc' => 'Ferramenta gratuita para estimar o gasto de filamento e eletricidade das tuas peças.'],
@@ -28,6 +31,57 @@ $seo = $chapterMap[$reqChapter] ?? [
     'title' => 'Manual de Impressão 3D — Guia Educativo Completo',
     'desc' => 'Aprende tudo sobre impressão 3D: manuais técnicos, fórum da comunidade maker e assistência via IA.'
 ];
+
+// Se for um capítulo específico, só mostramos esse capítulo para evitar "Doorway Pages" (Conteúdo Duplicado)
+$onlyShowId = $reqChapter && isset($chapterMap[$reqChapter]) ? $chapterMap[$reqChapter]['id'] : null;
+
+// Sequência dos capítulos para navegação Próximo/Anterior
+$chapterSequence = [
+    'inicio', 'o-que-e', 'como-funciona', 'tipos-impressoras', 'iniciantes-vs-pro',
+    'filamentos', 'comparador', 'qual-usar', 'processo', 'problemas', 'dicas',
+    'software', 'glossario', 'ferramentas'
+];
+
+function getChapterNav($currentId) {
+    global $chapterSequence, $chapterMap, $onlyShowId;
+    $idx = array_search($currentId, $chapterSequence);
+    if ($idx === false) return '';
+
+    $prev = $chapterSequence[$idx - 1] ?? null;
+    $next = $chapterSequence[$idx + 1] ?? null;
+
+    $html = '<div class="section-nav">';
+
+    // Anterior
+    if ($prev) {
+        $prevSlug = array_search($prev, array_column($chapterMap, 'id', 'slug'));
+        // Se estivermos em modo standalone, o link deve ser a URL limpa. Na homepage, mantemos a âncora.
+        $href = ($onlyShowId && $prevSlug) ? "/manual/$prevSlug" : ($prev === 'inicio' ? '#' : "#$prev");
+        $label = ($prev === 'inicio') ? 'Início' : ($chapterMap[$prevSlug]['title'] ?? 'Capítulo Anterior');
+        // Simplificar label para o botão
+        $cleanLabel = str_replace(' — Guia Completo', '', str_replace(' — Guia Educativo Completo', '', $label));
+        $html .= '<a href="'.$href.'" class="section-nav-btn"><div><span class="section-nav-label">← Anterior</span>'.$cleanLabel.'</div></a>';
+    } else {
+        $html .= '<span></span>';
+    }
+
+    // Próximo
+    if ($next) {
+        $nextSlug = array_search($next, array_column($chapterMap, 'id', 'slug'));
+        $href = ($onlyShowId && $nextSlug) ? "/manual/$nextSlug" : "#$next";
+        $label = $chapterMap[$nextSlug]['title'] ?? 'Próximo Capítulo';
+        $cleanLabel = str_replace(' — Guia Completo', '', str_replace(' — Guia Educativo Completo', '', $label));
+        $html .= '<a href="'.$href.'" class="section-nav-btn next"><div><span class="section-nav-label">Próximo →</span>'.$cleanLabel.'</div></a>';
+    }
+
+    $html .= '</div>';
+    return $html;
+}
+
+function shouldShow($id) {
+    global $onlyShowId;
+    return !$onlyShowId || $onlyShowId === $id;
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -2348,34 +2402,36 @@ if (document.getElementById('missionsWidget')) {
   </div>
 
   <div class="nav-section">Introdução</div>
-  <a href="#inicio" class="active"><span class="icon">🏠</span  > Início</a>
-  <a href="#o-que-e"><span class="icon">🔍</span> O que é Impressão 3D?</a>
-  <a href="#como-funciona"><span class="icon">⚙️</span> Como Funciona</a>
+  <?php $base = $onlyShowId ? '/' : ''; ?>
+  <a href="<?php echo $base; ?>#inicio" class="active"><span class="icon">🏠</span> Início</a>
+  <a href="<?php echo $base; ?>#o-que-e"><span class="icon">🔍</span> O que é Impressão 3D?</a>
+  <a href="<?php echo $base; ?>#como-funciona"><span class="icon">⚙️</span> Como Funciona</a>
 
   <div class="nav-section">Equipamentos</div>
-  <a href="#tipos-impressoras"><span class="icon">🖨️</span> Tipos de Impressoras</a>
-  <a href="#iniciantes-vs-pro"><span class="icon">📊</span> Iniciantes vs Profissional</a>
+  <a href="<?php echo $base; ?>#tipos-impressoras"><span class="icon">🖨️</span> Tipos de Impressoras</a>
+  <a href="<?php echo $base; ?>#iniciantes-vs-pro"><span class="icon">📊</span> Iniciantes vs Profissional</a>
 
   <div class="nav-section">Materiais</div>
-  <a href="#filamentos"><span class="icon">🧵</span> Tipos de Filamento</a>
-  <a href="#comparador"><span class="icon">⚖️</span> Comparador de Filamentos</a>
-  <a href="#qual-usar"><span class="icon">🎯</span> Qual Filamento Usar</a>
+  <a href="<?php echo $base; ?>#filamentos"><span class="icon">🧵</span> Tipos de Filamento</a>
+  <a href="<?php echo $base; ?>#comparador"><span class="icon">⚖️</span> Comparador de Filamentos</a>
+  <a href="<?php echo $base; ?>#qual-usar"><span class="icon">🎯</span> Qual Filamento Usar</a>
 
   <div class="nav-section">Prática</div>
-  <a href="#processo"><span class="icon">🔄</span> Processo de Impressão</a>
-  <a href="#problemas"><span class="icon">🛠️</span> Problemas Comuns</a>
-  <a href="#dicas"><span class="icon">💡</span> Dicas e Boas Práticas</a>
+  <a href="<?php echo $base; ?>#processo"><span class="icon">🔄</span> Processo de Impressão</a>
+  <a href="<?php echo $base; ?>#problemas"><span class="icon">🛠️</span> Problemas Comuns</a>
+  <a href="<?php echo $base; ?>#dicas"><span class="icon">💡</span> Dicas e Boas Práticas</a>
 
   <div class="nav-section">Referência</div>
-  <a href="#software"><span class="icon">💻</span> Software (Slicers)</a>
-  <a href="#glossario"><span class="icon">📖</span> Glossário</a>
+  <a href="<?php echo $base; ?>#software"><span class="icon">💻</span> Software (Slicers)</a>
+  <a href="<?php echo $base; ?>#glossario"><span class="icon">📖</span> Glossário</a>
   
   <div class="nav-section">Comunidade</div>
-  <a href="#comentarios"><span class="icon">💬</span> Dúvidas & Comentários</a>
+  <a href="<?php echo $base; ?>#comentarios"><span class="icon">💬</span> Dúvidas & Comentários</a>
   <a href="forum/" style="color:#a78bfa;border-left-color:rgba(124,58,237,0.5)"><span class="icon">🌐</span> Fórum Global</a>
   <a href="/ai" style="color:#00e5ff;border-left-color:rgba(0,229,255,0.4)"><span class="icon">🤖</span> Print AI <span class="nav-badge beg">IA</span></a>
 </nav>
 
+<?php if (!$onlyShowId): ?>
 <div class="floating-toc" id="floatingToc">
     <div class="toc-dot" data-target="inicio"     data-label="Início"></div>
     <div class="toc-dot" data-target="o-que-e"    data-label="O que é?"></div>
@@ -2392,11 +2448,13 @@ if (document.getElementById('missionsWidget')) {
     <div class="toc-dot" data-target="glossario"  data-label="Glossário"></div>
     <div class="toc-dot" data-target="comentarios" data-label="Comentários"></div>
 </div>
+<?php endif; ?>
 
 <!-- MAIN -->
 <main>
 
   <!-- HERO -->
+  <?php if (shouldShow('inicio')): ?>
   <div class="hero" id="inicio">
     <div class="hero-grid"></div>
     <div class="hero-glow"></div>
@@ -2417,21 +2475,36 @@ if (document.getElementById('missionsWidget')) {
       <a href="forum/" class="quick-link" style="border-color:rgba(124,58,237,0.35);background:rgba(124,58,237,0.05)">🌐 Fórum Global</a>
     </div>
   </div>
+  <?php endif; ?>
 
   <!-- LEVEL BAR -->
+  <?php if (!$onlyShowId): ?>
   <div class="level-bar beginner" id="level-bar">
     <div class="level-dot"></div>
     <div class="level-label" id="level-label">MODO INICIANTE</div>
     <div class="level-desc" id="level-desc">— Conteúdo simplificado para quem está a começar</div>
   </div>
+  <?php endif; ?>
+
+  <?php if ($onlyShowId): ?>
+    <div style="padding: 20px 60px; background: rgba(0,229,255,0.05); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 20px;">
+        <div style="flex: 1;">
+            <p style="margin: 0; color: var(--accent); font-family: 'Space Mono', monospace; font-size: 11px; text-transform: uppercase;">Modo de Leitura: Capítulo Individual</p>
+            <h3 style="margin: 5px 0 0; font-family: 'Syne';"><?php echo $chapterMap[$reqChapter]['title']; ?></h3>
+        </div>
+        <a href="/" class="btn-auth btn-profile" style="background: var(--surface2); color: var(--muted); border-color: var(--border);">📖 VER MANUAL COMPLETO</a>
+    </div>
+  <?php endif; ?>
 
   <!-- O QUE É -->
+  <?php if (shouldShow('o-que-e')): ?>
   <section class="section" id="o-que-e">
     <div class="section-header">
       <div class="section-number">01</div>
       <div class="section-title">
         <h2>O que é a Impressão 3D?</h2>
         <p>Conceitos fundamentais para começar</p>
+        <div class="read-time">⏱ 3 min de leitura</div>
       </div>
     </div>
 
@@ -2483,15 +2556,19 @@ if (document.getElementById('missionsWidget')) {
         </div>
       </div>
     </div>
+    <?php echo getChapterNav('o-que-e'); ?>
   </section>
+  <?php endif; ?>
 
   <!-- COMO FUNCIONA -->
+  <?php if (shouldShow('como-funciona')): ?>
   <section class="section" id="como-funciona">
     <div class="section-header">
       <div class="section-number">02</div>
       <div class="section-title">
         <h2>Como Funciona?</h2>
         <p>O processo passo a passo</p>
+        <div class="read-time">⏱ 4 min de leitura</div>
       </div>
     </div>
 
@@ -2574,15 +2651,19 @@ if (document.getElementById('missionsWidget')) {
         </div>
       </div>
     </div>
+    <?php echo getChapterNav('como-funciona'); ?>
   </section>
+  <?php endif; ?>
 
   <!-- TIPOS DE IMPRESSORAS -->
+  <?php if (shouldShow('tipos-impressoras')): ?>
   <section class="section" id="tipos-impressoras">
     <div class="section-header">
       <div class="section-number">03</div>
       <div class="section-title">
         <h2>Tipos de Impressoras</h2>
         <p>As principais tecnologias de impressão 3D</p>
+        <div class="read-time">⏱ 5 min de leitura</div>
       </div>
     </div>
 
@@ -2649,15 +2730,19 @@ if (document.getElementById('missionsWidget')) {
         </div>
       </div>
     </div>
+    <?php echo getChapterNav('tipos-impressoras'); ?>
   </section>
+  <?php endif; ?>
 
   <!-- INICIANTES VS PRO -->
+  <?php if (shouldShow('iniciantes-vs-pro')): ?>
   <section class="section" id="iniciantes-vs-pro">
     <div class="section-header">
       <div class="section-number">04</div>
       <div class="section-title">
         <h2>Iniciantes vs Profissional</h2>
         <p>Qual impressora escolher para cada nível?</p>
+        <div class="read-time">⏱ 4 min de leitura</div>
       </div>
     </div>
 
@@ -2780,15 +2865,19 @@ if (document.getElementById('missionsWidget')) {
         </tbody>
       </table>
     </div>
+    <?php echo getChapterNav('iniciantes-vs-pro'); ?>
   </section>
+  <?php endif; ?>
 
   <!-- FILAMENTOS -->
+  <?php if (shouldShow('filamentos')): ?>
   <section class="section" id="filamentos">
     <div class="section-header">
       <div class="section-number">05</div>
       <div class="section-title">
         <h2>Tipos de Filamento</h2>
         <p>Materiais para impressão FDM e as suas características</p>
+        <div class="read-time">⏱ 6 min de leitura</div>
       </div>
     </div>
 
@@ -2854,9 +2943,12 @@ if (document.getElementById('missionsWidget')) {
       <span>💬 Tens dúvidas sobre filamentos?</span>
       <a href="forum/comunidade.php?slug=materiais-filamentos">Discute no Fórum →</a>
     </div>
+    <?php echo getChapterNav('filamentos'); ?>
   </section>
+  <?php endif; ?>
 
   <!-- COMPARADOR DE MATERIAIS -->
+  <?php if (shouldShow('comparador')): ?>
   <section class="section" id="comparador">
     <div class="section-header">
       <div class="section-number">05B</div>
@@ -2894,15 +2986,19 @@ if (document.getElementById('missionsWidget')) {
             </tbody>
         </table>
     </div>
+    <?php echo getChapterNav('comparador'); ?>
   </section>
+  <?php endif; ?>
 
   <!-- QUAL FILAMENTO USAR -->
+  <?php if (shouldShow('qual-usar')): ?>
   <section class="section" id="qual-usar">
     <div class="section-header">
       <div class="section-number">06</div>
       <div class="section-title">
         <h2>Qual Filamento Usar?</h2>
         <p>Guia de seleção por aplicação</p>
+        <div class="read-time">⏱ 5 min de leitura</div>
       </div>
     </div>
 
@@ -2946,9 +3042,12 @@ if (document.getElementById('missionsWidget')) {
     </div>
   </section>
 
-  <div class="ad-slot" style="max-width: 900px; margin: 20px auto;"></div>
+    <?php echo getChapterNav('qual-usar'); ?>
+  </section>
+  <?php endif; ?>
 
   <!-- PROCESSO -->
+  <?php if (shouldShow('processo')): ?>
   <section class="section" id="processo">
     <div class="section-header">
       <div class="section-number">07</div>
@@ -3000,9 +3099,12 @@ if (document.getElementById('missionsWidget')) {
       <span>💬 Tens dúvidas sobre parâmetros de impressão?</span>
       <a href="forum/comunidade.php?slug=software-slicers">Discute no Fórum →</a>
     </div>
+    <?php echo getChapterNav('processo'); ?>
   </section>
+  <?php endif; ?>
 
   <!-- PROBLEMAS -->
+  <?php if (shouldShow('problemas')): ?>
   <section class="section" id="problemas">
     <div class="section-header">
       <div class="section-number">08</div>
@@ -3059,9 +3161,12 @@ if (document.getElementById('missionsWidget')) {
       <span>💬 Tens um problema por resolver?</span>
       <a href="forum/comunidade.php?slug=troubleshooting">Discute no Fórum →</a>
     </div>
+    <?php echo getChapterNav('problemas'); ?>
   </section>
+  <?php endif; ?>
 
   <!-- DICAS -->
+  <?php if (shouldShow('dicas')): ?>
   <section class="section" id="dicas">
     <div class="section-header">
       <div class="section-number">09</div>
@@ -3109,9 +3214,12 @@ if (document.getElementById('missionsWidget')) {
         <p class="for-advanced">Instala OrcaSlicer com monitorização, Obico (ex-The Spaghetti Detective) para AI failure detection, ou usa Bambu Handy/app. Integra com Home Assistant para alertas. Considera câmara de time-lapse para documentação e diagnóstico.</p>
       </div>
     </div>
+    <?php echo getChapterNav('dicas'); ?>
   </section>
+  <?php endif; ?>
 
   <!-- SOFTWARE -->
+  <?php if (shouldShow('software')): ?>
   <section class="section" id="software">
     <div class="section-header">
       <div class="section-number">10</div>
@@ -3189,9 +3297,12 @@ if (document.getElementById('missionsWidget')) {
         <p>Foco em modelos premium e comunidade de designers. Tem modelos gratuitos e pagos. Ótimo para miniaturas de jogos.</p>
       </div>
     </div>
+    <?php echo getChapterNav('software'); ?>
   </section>
+  <?php endif; ?>
 
   <!-- GLOSSÁRIO -->
+  <?php if (shouldShow('glossario')): ?>
   <section class="section" id="glossario">
     <div class="section-header">
       <div class="section-number">11</div>
@@ -3260,9 +3371,12 @@ if (document.getElementById('missionsWidget')) {
         <dd class="for-advanced">Algoritmo (Klipper) / Linear Advance (Marlin) que pré-carrega e alivia pressão no hot-end em antecipação às acelerações. Elimina oozing em cantos e blob no inicio de linhas. Calibrado com torre de pressure advance ou script.</dd>
       </div>
     </dl>
+    <?php echo getChapterNav('glossario'); ?>
   </section>
+  <?php endif; ?>
 
   <!-- CALCULADORAS -->
+  <?php if (shouldShow('ferramentas')): ?>
   <section class="section" id="ferramentas">
     <div class="card" style="background:linear-gradient(135deg, rgba(0,229,255,0.1), rgba(124,58,237,0.1)); border-color: var(--accent);">
         <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap">
@@ -3274,10 +3388,18 @@ if (document.getElementById('missionsWidget')) {
             <a href="/calculadora" class="btn-auth btn-profile" style="background:var(--accent); color:#000; border:none; padding:12px 24px">ABRIR CALCULADORA</a>
         </div>
     </div>
-</section>
+    <?php echo getChapterNav('ferramentas'); ?>
+  </section>
+  <?php endif; ?>
 
-
+  <?php if (!$onlyShowId): ?>
   <?php require_once 'comments_component.php'; ?>
+  <?php else: ?>
+    <div style="padding: 40px 60px; text-align: center; border-top: 1px solid var(--border); background: rgba(0,229,255,0.02);">
+        <p style="color: var(--muted); margin-bottom: 20px;">Este é apenas um capítulo do Manual de Impressão 3D.</p>
+        <a href="/" class="btn-auth btn-primary" style="text-decoration: none;">📖 LER MANUAL COMPLETO</a>
+    </div>
+  <?php endif; ?>
 
   <footer style="padding: 40px 60px 120px; border-top: 1px solid var(--border); margin-top: 50px;">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px;">
@@ -3511,77 +3633,9 @@ if (document.getElementById('missionsWidget')) {
       }
     });
   }
-// Tempo de leitura
-function calcReadTime(sectionEl) {
-    var text = sectionEl.innerText || sectionEl.textContent || '';
-    var words = text.trim().split(/\s+/).length;
-    var mins = Math.max(2, Math.round(words / 120));
-    return mins;
-}
- 
-document.querySelectorAll('.section').forEach(function(sec) {
-    var header = sec.querySelector('.section-title');
-    if (!header) return;
-    var mins = calcReadTime(sec);
-    var rt = document.createElement('div');
-    rt.className = 'read-time';
-    rt.innerHTML = '⏱ ' + mins + ' min de leitura';
-    header.appendChild(rt);
-});
+// Tempo de leitura - PHP agora injeta estaticamente.
+// Navegação entre capítulos - PHP agora injeta estaticamente.
 
-const sectionMap = [
-  { id: "o-que-e", next: "como-funciona" },
-  { id: "como-funciona", prev: "o-que-e", next: "tipos-impressoras" },
-  { id: "tipos-impressoras", prev: "como-funciona", next: "iniciantes-vs-pro" },
-  { id: "iniciantes-vs-pro", prev: "tipos-impressoras", next: "filamentos" },
-  { id: "filamentos", prev: "iniciantes-vs-pro", next: "comparador" },
-  { id: "comparador", prev: "filamentos", next: "qual-usar" },
-  { id: "qual-usar", prev: "comparador", next: "processo" },
-  { id: "processo", prev: "qual-usar", next: "problemas" },
-  { id: "problemas", prev: "processo", next: "dicas" },
-  { id: "dicas", prev: "problemas", next: "software" },
-  { id: "software", prev: "dicas", next: "glossario" },
-  { id: "glossario", prev: "software" }
-];
-
-sectionMap.forEach(sec => {
-  const section = document.getElementById(sec.id);
-  if (!section) return;
-
-  const nav = document.createElement("div");
-  nav.className = "section-nav";
-
-  let html = "";
-
-  if (sec.prev) {
-    const prevH2 = document.querySelector(`#${sec.prev} h2`);
-    html += `
-      <a href="#${sec.prev}" class="section-nav-btn">
-        <div>
-          <span class="section-nav-label">← Capítulo anterior</span>
-          ${prevH2 ? prevH2.innerText : sec.prev}
-        </div>
-      </a>
-    `;
-  } else {
-    html += `<span></span>`;
-  }
-
-  if (sec.next) {
-    const nextH2 = document.querySelector(`#${sec.next} h2`);
-    html += `
-      <a href="#${sec.next}" class="section-nav-btn next">
-        <div>
-          <span class="section-nav-label">Próximo capítulo</span>
-          ${nextH2 ? nextH2.innerText : sec.next} →
-        </div>
-      </a>
-    `;
-  }
-
-  nav.innerHTML = html;
-  section.appendChild(nav);
-});
 // Índice flutuante
 (function() {
     var toc = document.getElementById('floatingToc');
