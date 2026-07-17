@@ -258,10 +258,18 @@ function truncate(string $text, int $length = 100): string {
  */
 function avPath(?string $url): string {
     if (!$url) return '';
-    if (str_starts_with($url, 'http')) return $url;
-    // Se estivermos dentro de uma subpasta (como /forum/), precisamos subir um nível
-    $prefix = (str_contains($_SERVER['SCRIPT_NAME'], '/forum/')) ? '../' : '';
-    return $prefix . ltrim($url, '/');
+    if (strpos($url, 'http') === 0) return $url;
+    // Devolver caminho absoluto a partir da raiz do domínio para suportar Clean URLs em qualquer nível
+    return '/' . ltrim($url, '/');
+}
+
+/**
+ * Helper: Resolve o caminho de imagens de posts de forma universal
+ */
+function postImagePath(?string $url): string {
+    if (!$url) return '';
+    if (strpos($url, 'http') === 0) return $url;
+    return '/' . ltrim($url, '/');
 }
 
 function generateCSRFToken(): string {

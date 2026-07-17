@@ -471,7 +471,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
                 <?php $roleColors = array('owner'=>'#ff6b35','admin'=>'#00e5ff','moderator'=>'#7c3aed','member'=>'#888899'); $rc=$roleColors[$m['role']]??'#888899'; ?>
                 <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border2)">
                     <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent3),var(--accent));display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#000;flex-shrink:0;overflow:hidden">
-                        <?php if($m['avatar_url']): ?><img src="<?php echo sanitize('../'.$m['avatar_url']); ?>" style="width:100%;height:100%;object-fit:cover;border-radius:50%"><?php else: echo mb_substr($m['full_name'],0,2); endif; ?>
+                        <?php if($m['avatar_url']): ?><img src="<?php echo sanitize(avPath($m['avatar_url'])); ?>" style="width:100%;height:100%;object-fit:cover;border-radius:50%"><?php else: echo mb_substr($m['full_name'],0,2); endif; ?>
                     </div>
                     <div style="flex:1;min-width:0">
                         <div style="font-size:13px;font-weight:600;color:var(--text)"><?php echo sanitize($m['full_name']); ?></div>

@@ -68,6 +68,9 @@ if (!$user) {
         $user = $stmt->fetch();
 
         logActivity($userId, 'register_google', "Novo registo via Google: $username");
+
+        // Flag para redirecionar para finalização de perfil
+        $_SESSION['new_google_user'] = true;
     }
 }
 
@@ -78,5 +81,10 @@ $_SESSION['role'] = $user['role'];
 
 logActivity($user['id'], 'login_google', "Login via Google efetuado");
 
-header('Location: /');
+if (!empty($_SESSION['new_google_user'])) {
+    unset($_SESSION['new_google_user']);
+    header('Location: /finalizar-registo');
+} else {
+    header('Location: /');
+}
 exit;

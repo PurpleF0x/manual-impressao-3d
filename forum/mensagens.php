@@ -321,7 +321,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <form method="GET" action="" class="conv-search-wrap">
                 <span class="conv-search-icon">🔍</span>
                 <input type="text" name="search" class="conv-search"
-                    placeholder="Pesquisar utilizador…"
+                    placeholder="Procurar por nome ou @..."
                     value="<?php echo sanitize($searchQ); ?>"
                     id="searchInput"
                     autocomplete="off">
@@ -591,7 +591,8 @@ async function sendMessage() {
 function avPath(url) {
     if (!url) return '';
     if (url.indexOf('http') === 0) return url;
-    return '../' + url.replace(/^\/+/, '');
+    // Devolver sempre a partir da raiz do domínio
+    return '/' + url.replace(/^\/+/, '');
 }
 
 function appendMessage(msg) {
@@ -731,10 +732,10 @@ async function searchUsers(q) {
         var wrap = document.getElementById('searchResultsWrap');
         if (!wrap) return;
         if (!data.length) {
-            wrap.innerHTML = '<div style="padding:14px 18px;font-size:12px;color:var(--muted)">Nenhum utilizador encontrado.</div>';
+            wrap.innerHTML = '<div style="padding:14px 18px;font-size:12px;color:var(--muted)">Nenhum utilizador encontrado com esse nome.</div>';
             return;
         }
-        wrap.innerHTML = '';
+        wrap.innerHTML = '<div style="font-family:\'Space Mono\',monospace; font-size:9px; color:var(--accent); letter-spacing:2px; text-transform:uppercase; padding:10px 18px 4px;">Utilizadores Encontrados</div>';
         data.forEach(function(u) {
             var a = document.createElement('a');
             a.href = 'mensagens?user=' + parseInt(u.id);

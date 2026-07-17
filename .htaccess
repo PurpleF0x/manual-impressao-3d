@@ -18,6 +18,9 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME}\.php -f
 RewriteRule ^([^\.]+)$ $1.php [NC,L,QSA]
 
+# Redirecionamento amigável para finalizar registo
+RewriteRule ^finalizar-registo$ finalizar_registo.php [L,QSA]
+
 # 4. Página de Erro 404 Personalizada
 ErrorDocument 404 /404.php
 

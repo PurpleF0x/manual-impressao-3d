@@ -195,7 +195,7 @@ if (!empty($config['background_key'])) {
     } catch(Exception $e){}
 }
 $accentColor = !empty($config['accent_color']) ? $config['accent_color'] : '#00e5ff';
-$bannerUrl   = $config['banner_url'] ?? '';
+$bannerUrl   = !empty($config['banner_url']) ? avPath($config['banner_url']) : '';
 $initials    = mb_substr($currentUser['full_name'] ?? '??', 0, 2);
 
 $unreadMsgs = 0;

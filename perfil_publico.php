@@ -244,8 +244,8 @@ main{max-width:960px;margin:0 auto;padding:40px 32px}
     <div class="topbar-right">
         <div class="viewer-info">
             <div class="viewer-avatar">
-                <?php if (!empty($viewer['avatar_url']) && file_exists(__DIR__.'/'.$viewer['avatar_url'])): ?>
-                    <img src="<?php echo sanitize($viewer['avatar_url']); ?>" alt="">
+                <?php if (!empty($viewer['avatar_url'])): ?>
+                    <img src="<?php echo sanitize(avPath($viewer['avatar_url'])); ?>" alt="">
                 <?php else: ?>
                     <?php echo sanitize($viewer['avatar'] ?? '??'); ?>
                 <?php endif; ?>
@@ -274,8 +274,8 @@ main{max-width:960px;margin:0 auto;padding:40px 32px}
 
     <div class="hero-inner">
         <div class="hero-avatar">
-            <?php if (!empty($avUrl) && file_exists(__DIR__.'/'.$avUrl)): ?>
-                <img src="<?php echo sanitize($avUrl); ?>" alt="Foto de perfil">
+            <?php if (!empty($avUrl)): ?>
+                <img src="<?php echo sanitize(avPath($avUrl)); ?>" alt="Foto de perfil">
             <?php else: ?>
                 <?php echo sanitize(mb_substr($profile['full_name'], 0, 2)); ?>
             <?php endif; ?>

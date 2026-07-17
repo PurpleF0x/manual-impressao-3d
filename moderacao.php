@@ -468,7 +468,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
         <?php if(empty($reportedComments)): ?><div class="empty-state"><div class="icon">✅</div><p>Nenhum!</p></div><?php else: foreach($reportedComments as $rc): ?>
         <div class="comment-card" onclick="toggleCard('rc-<?php echo $rc['id']; ?>',event)">
             <div class="comment-card-header">
-                <div class="avatar"><?php if(!empty($rc['avatar_url'])): ?><img src="<?php echo sanitize($rc['avatar_url']); ?>" alt=""><?php else: echo sanitize(mb_substr($rc['full_name']??'??',0,2)); endif; ?></div>
+                <div class="avatar"><?php if(!empty($rc['avatar_url'])): ?><img src="<?php echo sanitize(avPath($rc['avatar_url'])); ?>" alt=""><?php else: echo sanitize(mb_substr($rc['full_name']??'??',0,2)); endif; ?></div>
                 <div class="card-info">
                     <div class="card-author"><?php echo sanitize($rc['full_name']); ?> <span style="color:var(--muted);font-weight:400;font-size:12px">@<?php echo sanitize($rc['username']); ?></span></div>
                     <div class="card-meta">Reportado por: <strong><?php echo sanitize($rc['reporter_name']); ?></strong></div>
@@ -498,7 +498,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
         <?php if(empty($reportedUsers)): ?><div class="empty-state"><div class="icon">✅</div><p>Nenhum!</p></div><?php else: foreach($reportedUsers as $ru): ?>
         <div class="comment-card" onclick="toggleCard('ru-<?php echo $ru['id']; ?>',event)">
             <div class="comment-card-header">
-                <div class="avatar"><?php if(!empty($ru['avatar_url'])): ?><img src="<?php echo sanitize($ru['avatar_url']); ?>" alt=""><?php else: echo sanitize(mb_substr($ru['full_name']??'??',0,2)); endif; ?></div>
+                <div class="avatar"><?php if(!empty($ru['avatar_url'])): ?><img src="<?php echo sanitize(avPath($ru['avatar_url'])); ?>" alt=""><?php else: echo sanitize(mb_substr($ru['full_name']??'??',0,2)); endif; ?></div>
                 <div class="card-info">
                     <div class="card-author">
                         <?php echo sanitize($ru['full_name']); ?>
@@ -570,7 +570,7 @@ function renderCard($c, $csrf, $actions) {
     ?>
     <div class="comment-card" id="<?php echo $cid; ?>" onclick="toggleCard('<?php echo $cid; ?>',event)">
         <div class="comment-card-header">
-            <div class="avatar"><?php if(!empty($c['avatar_url'])): ?><img src="<?php echo sanitize($c['avatar_url']); ?>" alt=""><?php else: echo sanitize($initials); endif; ?></div>
+            <div class="avatar"><?php if(!empty($c['avatar_url'])): ?><img src="<?php echo sanitize(avPath($c['avatar_url'])); ?>" alt=""><?php else: echo sanitize($initials); endif; ?></div>
             <div class="card-info">
                 <div class="card-author"><?php echo sanitize($c['full_name']); ?> <span style="color:var(--muted);font-weight:400;font-size:12px">@<?php echo sanitize($c['username']); ?></span></div>
                 <div class="card-meta"><?php echo date('d/m/Y H:i',strtotime($c['created_at'])); ?> · #<?php echo $c['id']; ?><?php echo !empty($c['parent_id']) ? ' · Resposta' : ''; ?></div>

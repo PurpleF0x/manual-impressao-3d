@@ -260,7 +260,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
         <?php if ($currentUser): ?>
         <a href="/forum/perfil?id=<?= (int)$currentUser['id'] ?>" class="rails-avatar">
             <?php if (!empty($currentUser['avatar_url'])): ?>
-                <img src="<?= sanitize($currentUser['avatar_url']) ?>" alt="">
+                <img src="<?= sanitize(avPath($currentUser['avatar_url'])) ?>" alt="">
             <?php else: ?>
                 <?= sanitize(generateAvatar($currentUser['full_name'])) ?>
             <?php endif; ?>

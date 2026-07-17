@@ -4,12 +4,6 @@
  */
 require_once __DIR__ . '/../includes/functions.php';
 
-function postImagePath($url) {
-    if (!$url) return '';
-    if (preg_match('#^https?://#i', $url) || str_starts_with($url, '../') || str_starts_with($url, '/')) return $url;
-    return '../' . ltrim($url, '/');
-}
-
 $currentUser = isLoggedIn() ? getCurrentUser() : null;
 $db  = getDB();
 

@@ -2297,7 +2297,13 @@ if (document.getElementById('missionsWidget')) {
     $user = getCurrentUser();
   ?>
     <div class="user-info">
-      <div class="user-avatar"><?php echo $user['avatar']; ?></div>
+      <div class="user-avatar">
+        <?php if (!empty($user['avatar_url'])): ?>
+          <img src="<?php echo sanitize(avPath($user['avatar_url'])); ?>" alt="" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+        <?php else: ?>
+          <?php echo $user['avatar']; ?>
+        <?php endif; ?>
+      </div>
       <span class="user-name"><?php echo sanitize($user['full_name']); ?></span>
       <span class="user-role <?php echo $user['role']; ?>"><?php echo $user['role']; ?></span>
     </div>

@@ -435,7 +435,8 @@ $isModUser     = $currentUser && canModerate($currentUser);
 
   function avatarHtml(c, size, fs) {
     var initials=((c.full_name||'??').split(' ').map(function(n){return n[0]||'';}).join('').toUpperCase()).slice(0,2);
-    var inner=c.avatar_url?'<img src="'+c.avatar_url+'" alt="">':initials;
+    var avUrl = c.avatar_url ? (c.avatar_url.indexOf('http') === 0 ? c.avatar_url : '/' + c.avatar_url.replace(/^\/+/, '')) : '';
+    var inner = avUrl ? '<img src="'+avUrl+'" alt="">' : initials;
     return '<a href="perfil_publico.php?id='+c.user_id+'" class="cmt-avatar'+(size<=34?' cmt-avatar-sm':'')+'" style="font-size:'+fs+'px">'+inner+'</a>';
   }
 

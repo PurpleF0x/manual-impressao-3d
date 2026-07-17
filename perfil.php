@@ -72,25 +72,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
         elseif ($action === 'update_profile') {
             $fn  = trim($_POST['full_name'] ?? '');
+            $user_name = trim($_POST['username'] ?? '');
             $bio = trim($_POST['bio'] ?? '');
             $loc = trim($_POST['location'] ?? '');
             $web = trim($_POST['website'] ?? '');
             $exp = $_POST['experience_level'] ?? 'iniciante';
             $birth = $_POST['birth_date'] ?? null;
 
-            if (strlen($fn)<2) $errors[] = "O nome deve ter pelo menos 2 caracteres.";
+            if (strlen($fn) < 2) $errors[] = "O nome deve ter pelo menos 2 caracteres.";
+
+            // Validar username
+            if (strlen($user_name) < 3) {
+                $errors[] = "O @username deve ter pelo menos 3 caracteres.";
+            } elseif (!preg_match('/^[a-zA-Z0-9._]+$/', $user_name)) {
+                $errors[] = "O username só pode conter letras, números, pontos e underscores.";
+            } else {
+                // Verificar se o username já existe (excluindo o próprio utilizador)
+                $check = $db->prepare("SELECT id FROM users WHERE username = ? AND id != ?");
+                $check->execute([$user_name, $user['id']]);
+                if ($check->fetch()) {
+                    $errors[] = "Este username já está a ser utilizado por outra pessoa.";
+                }
+            }
+
             if (!in_array($exp,['iniciante','intermedio','avancado','profissional'])) $exp='iniciante';
             if (empty($errors)) {
-                $filterResult = checkFields(['Nome' => $fn, 'Bio' => $bio, 'Localização' => $loc]);
+                $filterResult = checkFields(['Nome' => $fn, 'Username' => $user_name, 'Bio' => $bio, 'Localização' => $loc]);
                 if ($filterResult !== true) { $errors[] = $filterResult; }
                 else {
-                    $db->prepare("UPDATE users SET full_name=?,bio=?,location=?,website=?,experience_level=? WHERE id=?")->execute([$fn,$bio,$loc,$web,$exp,$user['id']]);
+                    $db->prepare("UPDATE users SET full_name=?, username=?, bio=?, location=?, website=?, experience_level=? WHERE id=?")->execute([$fn, $user_name, $bio, $loc, $web, $exp, $user['id']]);
 
                     if ($birth) {
                         $db->prepare("UPDATE user_profile_config SET birth_date=? WHERE user_id=?")->execute([$birth, $user['id']]);
                     }
 
                     $success[] = "Perfil atualizado com sucesso!";
+                    // Atualizar utilizador na sessão para refletir a mudança de username se necessário
+                    $_SESSION['username'] = $user_name;
                 }
             }
         }
@@ -584,8 +602,8 @@ if (!empty($_POST['action'])) {
   <a href="/index" class="btn-auth btn-profile" style="margin-right: auto; border-color: var(--muted); color: var(--muted);">← Manual</a>
   <div class="user-info">
     <div class="user-avatar">
-      <?php if (!empty($avUrl) && file_exists(__DIR__.'/'.$avUrl)): ?>
-        <img src="<?php echo sanitize($avUrl); ?>?v=<?php echo time(); ?>" alt="">
+      <?php if (!empty($avUrl)): ?>
+        <img src="<?php echo sanitize(avPath($avUrl)); ?>?v=<?php echo time(); ?>" alt="">
       <?php else: ?>
         <?php echo sanitize($user['avatar'] ?? '??'); ?>
       <?php endif; ?>
@@ -616,8 +634,8 @@ if (!empty($_POST['action'])) {
 
   <div class="hero-avatar-wrap">
     <div class="hero-avatar">
-      <?php if (!empty($avUrl) && file_exists(__DIR__.'/'.$avUrl)): ?>
-        <img src="<?php echo sanitize($avUrl); ?>?v=<?php echo time(); ?>" alt="Foto de perfil">
+      <?php if (!empty($avUrl)): ?>
+        <img src="<?php echo sanitize(avPath($avUrl)); ?>?v=<?php echo time(); ?>" alt="Foto de perfil">
       <?php else: ?>
         <?php echo sanitize($user['avatar'] ?? '??'); ?>
       <?php endif; ?>
@@ -742,6 +760,7 @@ if (!empty($_POST['action'])) {
         <input type="hidden" name="action" value="update_profile">
         <div class="form-grid" style="margin-bottom:16px;">
           <div class="form-group"><label>Nome Completo</label><input type="text" name="full_name" value="<?php echo sanitize($user['full_name']); ?>" required></div>
+          <div class="form-group"><label>@Username</label><input type="text" name="username" value="<?php echo sanitize($user['username']); ?>" required></div>
           <div class="form-group">
             <label>Nível de Experiência</label>
             <select name="experience_level">

@@ -71,7 +71,7 @@ if (!empty($customConfig['background_key'])) {
     } catch(Exception $e){}
 }
 $accentColor = !empty($customConfig['accent_color']) ? $customConfig['accent_color'] : '#00e5ff';
-$bannerUrl   = $customConfig['banner_url'] ?? '';
+$bannerUrl   = !empty($customConfig['banner_url']) ? avPath($customConfig['banner_url']) : '';
 
 // ── Estatísticas globais ──────────────────────────────────────
 $stats = array('posts'=>0,'replies'=>0,'post_karma'=>0,'reply_karma'=>0,'communities'=>0,'owned'=>0);
@@ -273,7 +273,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'
         $customConfig['banner_url']     = $newBanner;
         $customConfig['accent_color']   = $newAccent;
         $accentColor = $newAccent ?: '#00e5ff';
-        $bannerUrl   = $newBanner;
+        $bannerUrl   = $newBanner ? avPath($newBanner) : '';
         // Recarregar frame/bg CSS
         if ($newFrame) {
             $fq = $db->prepare("SELECT css_value FROM shop_items WHERE item_key=? LIMIT 1");
