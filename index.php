@@ -26,6 +26,13 @@ $chapterMap = [
 ];
 
 $reqChapter = $_GET['chapter'] ?? '';
+
+// Fallback explícito: se o slug for inválido, redirecionar para a homepage (evita Doorway Pages por erro)
+if ($reqChapter && !isset($chapterMap[$reqChapter])) {
+    header("Location: /", true, 301);
+    exit;
+}
+
 $seo = $chapterMap[$reqChapter] ?? [
     'id' => '',
     'title' => 'Manual de Impressão 3D — Guia Educativo Completo',
@@ -33,7 +40,7 @@ $seo = $chapterMap[$reqChapter] ?? [
 ];
 
 // Se for um capítulo específico, só mostramos esse capítulo para evitar "Doorway Pages" (Conteúdo Duplicado)
-$onlyShowId = $reqChapter && isset($chapterMap[$reqChapter]) ? $chapterMap[$reqChapter]['id'] : null;
+$onlyShowId = $reqChapter ? $chapterMap[$reqChapter]['id'] : null;
 
 // Sequência dos capítulos para navegação Próximo/Anterior
 $chapterSequence = [
