@@ -8,7 +8,7 @@ $currentUser = isLoggedIn() ? getCurrentUser() : null;
 $db  = getDB();
 
 $postId = (int)($_GET['id'] ?? 0);
-if ($postId < 1) { header('Location: index.php'); exit; }
+if ($postId < 1) { header('Location: /forum/'); exit; }
 
 /* Schema migrations moved to maintenance or handled conditionally */
 // try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS flair VARCHAR(20) DEFAULT NULL"); } catch(Exception $e){}
@@ -51,7 +51,7 @@ try {
             <div class="container">
                 <h1>404</h1>
                 <p>O post que procuras já não existe ou foi removido pela moderação.</p>
-                <a href="index.php" class="btn">Voltar ao Fórum</a>
+                <a href="/forum/" class="btn">Voltar ao Fórum</a>
             </div>
         </body>
         </html>
@@ -549,14 +549,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <a href="/forum/" class="topbar-logo">3D<span>/</span>FÓRUM</a>
     <div class="breadcrumb">
         <span class="breadcrumb-sep">/</span>
-        <a href="comunidade?slug=<?php echo urlencode($post['comm_slug']); ?>"><?php echo $post['comm_icon']; ?> <?php echo sanitize($post['comm_name']); ?></a>
+        <a href="/forum/comunidade?slug=<?php echo urlencode($post['comm_slug']); ?>"><?php echo $post['comm_icon']; ?> <?php echo sanitize($post['comm_name']); ?></a>
         <span class="breadcrumb-sep">/</span>
         <span class="breadcrumb-current"><?php echo sanitize($post['title']); ?></span>
     </div>
     <div class="topbar-right">
         <a href="/" class="topbar-btn">← Manual</a>
         
-        <?php if ($currentUser && in_array($currentUser['role']??'',['master','admin','moderator'])): ?><a href="admin" class="topbar-btn" style="color:#ff6b35;border-color:rgba(255,107,53,0.3)">⚔️ Admin</a><?php endif; ?>
+        <?php if ($currentUser && in_array($currentUser['role']??'',['master','admin','moderator'])): ?><a href="/forum/admin" class="topbar-btn" style="color:#ff6b35;border-color:rgba(255,107,53,0.3)">⚔️ Admin</a><?php endif; ?>
 
 <!-- Botão de preferências no topbar (inserir antes do último item do topbar-actions/topbar-right) -->
 <div style="position:relative" id="prefsWrap">
@@ -582,10 +582,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </div>
 
         <?php if ($currentUser): ?>
-            <a href="mensagens" class="topbar-btn">
+            <a href="/forum/mensagens" class="topbar-btn">
                 💬<?php if ($unreadMsgs > 0): ?> <span class="notif-badge"><?php echo $unreadMsgs; ?></span><?php endif; ?>
             </a>
-            <a href="perfil?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
+            <a href="/forum/perfil?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
                 <?php $av = $currentUser['avatar_url'] ?? ''; if ($av): ?><img src="<?php echo sanitize(avPath($av)); ?>" alt=""><?php else: echo mb_substr($currentUser['full_name'], 0, 2); endif; ?>
             </a>
         <?php else: ?>
@@ -619,7 +619,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <button class="vote-btn down <?php echo $postUserVote === -1 ? 'active' : ''; ?>" onclick="votePost(<?php echo $postId; ?>, -1, this)">▼</button>
         </div>
         <div class="post-content-col">
-            <a href="comunidade?slug=<?php echo urlencode($post['comm_slug']); ?>" class="post-community-tag">
+            <a href="/forum/comunidade?slug=<?php echo urlencode($post['comm_slug']); ?>" class="post-community-tag">
                 <?php echo $post['comm_icon']; ?> <?php echo sanitize($post['comm_name']); ?>
             </a>
             <?php if (!empty($post['flair'])): ?>
@@ -654,7 +654,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <?php endif; ?>
 
             <div class="post-footer">
-                <a href="perfil?id=<?php echo $post['author_id']; ?>" class="post-author-row">
+                <a href="/forum/perfil?id=<?php echo $post['author_id']; ?>" class="post-author-row">
                     <div class="author-av">
                         <?php if (!empty($post['avatar_url'])): ?><img src="<?php echo sanitize(avPath($post['avatar_url'])); ?>" alt="" onerror="this.style.display='none'; this.parentElement.textContent='<?php echo sanitize(mb_substr($post['full_name'] ?? '??', 0, 2)); ?>'"><?php else: echo mb_substr($post['full_name'] ?? '??', 0, 2); endif; ?>
                     </div>
@@ -664,7 +664,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                     </div>
                 </a>
                 <?php if ($currentUser && (int)$currentUser['id'] !== (int)$post['author_id']): ?>
-                <a href="mensagens?user=<?php echo $post['author_id']; ?>" class="post-action-btn" title="Enviar mensagem privada" style="color:var(--accent);border:1px solid rgba(0,229,255,0.2);border-radius:6px">💬 Msg</a>
+                <a href="/forum/mensagens?user=<?php echo $post['author_id']; ?>" class="post-action-btn" title="Enviar mensagem privada" style="color:var(--accent);border:1px solid rgba(0,229,255,0.2);border-radius:6px">💬 Msg</a>
                 <?php endif; ?>
                 <span class="post-time-tag"><?php echo fmtTime($post['created_at']); ?></span>
                 <span class="post-time-tag">💬 <?php echo (int)$post['reply_count']; ?> respostas</span>
@@ -722,7 +722,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     </div>
     <div class="reply-body">
         <div class="reply-author-row">
-            <a href="perfil?id=<?php echo $reply['user_id']; ?>" style="display:flex;align-items:center;gap:7px;text-decoration:none">
+            <a href="/forum/perfil?id=<?php echo $reply['user_id']; ?>" style="display:flex;align-items:center;gap:7px;text-decoration:none">
                 <div class="reply-av"><?php if (!empty($reply['avatar_url'])): ?><img src="<?php echo sanitize(avPath($reply['avatar_url'])); ?>" alt="" onerror="this.style.display='none'; this.parentElement.textContent='<?php echo sanitize($rInitials); ?>'"><?php else: echo sanitize($rInitials); endif; ?></div>
                 <span class="reply-author-name"><?php echo sanitize($reply['full_name']); ?></span>
                 <span class="reply-author-user">@<?php echo sanitize($reply['username']); ?></span>
@@ -763,7 +763,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                 </div>
                 <div class="reply-body">
                     <div class="reply-author-row">
-                        <a href="perfil?id=<?php echo $child['user_id']; ?>" style="display:flex;align-items:center;gap:7px;text-decoration:none">
+                        <a href="/forum/perfil?id=<?php echo $child['user_id']; ?>" style="display:flex;align-items:center;gap:7px;text-decoration:none">
                             <div class="reply-av"><?php if (!empty($child['avatar_url'])): ?><img src="<?php echo sanitize(avPath($child['avatar_url'])); ?>" alt="" onerror="this.style.display='none'; this.parentElement.textContent='<?php echo sanitize($cInitials); ?>'"><?php else: echo sanitize($cInitials); endif; ?></div>
                             <span class="reply-author-name"><?php echo sanitize($child['full_name']); ?></span>
                             <span class="reply-author-user">@<?php echo sanitize($child['username']); ?></span>
@@ -828,7 +828,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <?php echo $isMember ? '✓ Membro — Sair' : '+ Entrar na comunidade'; ?>
         </button>
         <?php endif; ?>
-        <a href="comunidade?slug=<?php echo urlencode($post['comm_slug']); ?>" class="comm-view-link">Ver comunidade →</a>
+        <a href="/forum/comunidade?slug=<?php echo urlencode($post['comm_slug']); ?>" class="comm-view-link">Ver comunidade →</a>
     </div>
 
     <?php if (!empty($recentComms) && count($recentComms) > 1): ?>
@@ -837,7 +837,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         <?php foreach ($recentComms as $rc):
             if ((int)$rc['id'] === $commId) continue;
         ?>
-        <a href="comunidade?slug=<?php echo urlencode($rc['slug']); ?>" class="sc-comm-row">
+        <a href="/forum/comunidade?slug=<?php echo urlencode($rc['slug']); ?>" class="sc-comm-row">
             <div class="sc-comm-icon" style="background:rgba(0,229,255,0.08)"><?php echo $rc['icon']; ?></div>
             <div class="sc-comm-info">
                 <div class="sc-comm-name"><?php echo sanitize($rc['name']); ?></div>
@@ -857,7 +857,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         <?php foreach ($myCommunities as $mc):
             $isActive = (int)$mc['id'] === $commId;
         ?>
-        <a href="comunidade?slug=<?php echo urlencode($mc['slug']); ?>" class="sc-comm-row" <?php echo $isActive ? 'style="background:rgba(0,229,255,0.05)"' : ''; ?>>
+        <a href="/forum/comunidade?slug=<?php echo urlencode($mc['slug']); ?>" class="sc-comm-row" <?php echo $isActive ? 'style="background:rgba(0,229,255,0.05)"' : ''; ?>>
             <div class="sc-comm-icon" style="background:linear-gradient(135deg,<?php echo htmlspecialchars($mc['banner_color']); ?>22,<?php echo htmlspecialchars($mc['banner_color']); ?>44)"><?php echo $mc['icon']; ?></div>
             <div class="sc-comm-info">
                 <div class="sc-comm-name"><?php echo sanitize($mc['name']); ?></div>
@@ -896,7 +896,7 @@ async function apiCall(body) {
 }
 
 async function votePost(postId, value, btn) {
-    if (!CUR_UID) { window.location.href = '../login.php?redirect=forum/index.php'; return; }
+    if (!CUR_UID) { window.location.href = '/login?redirect=forum/'; return; }
     var data = await apiCall({action:'vote_post', csrf_token:CSRF, post_id:postId, value:value});
     if (!data.success) { console.warn(data.error); return; }
     var sc = document.getElementById('post-score');
@@ -906,7 +906,7 @@ async function votePost(postId, value, btn) {
 }
 
 async function voteReply(replyId, value, btn) {
-    if (!CUR_UID) { window.location.href = '../login.php?redirect=forum/index.php'; return; }
+    if (!CUR_UID) { window.location.href = '/login?redirect=forum/'; return; }
     var data = await apiCall({action:'vote_reply', csrf_token:CSRF, reply_id:replyId, value:value});
     if (!data.success) { console.warn(data.error); return; }
     var sc = document.getElementById('rscore-'+replyId);
@@ -919,7 +919,7 @@ async function voteReply(replyId, value, btn) {
 }
 
 async function submitReply(parentId) {
-    if (!CUR_UID) { window.location.href = '../login.php?redirect=forum/index.php'; return; }
+    if (!CUR_UID) { window.location.href = '/login?redirect=forum/'; return; }
     var ta      = parentId ? document.getElementById('srtext-'+parentId) : document.getElementById('replyText');
     var status  = document.getElementById('replyStatus');
     var content = ta ? ta.value.trim() : '';
@@ -954,7 +954,7 @@ async function deleteReply(replyId) {
 async function deletePost(postId) {
     if (!confirm('Apagar este post permanentemente?')) return;
     var data = await apiCall({action:'delete_post', csrf_token:CSRF, post_id:postId});
-    if (data.success) window.location.href = 'index.php';
+    if (data.success) window.location.href = '/forum/';
     else alert('⚠️ ' + (data.error || 'Erro.'));
 }
 
@@ -973,7 +973,7 @@ async function toggleLock(postId, current) {
 }
 
 async function toggleJoin(commId, btn) {
-    if (!CUR_UID) { window.location.href = '../login.php?redirect=forum/index.php'; return; }
+    if (!CUR_UID) { window.location.href = '/login?redirect=forum/'; return; }
     var isJoined = btn.dataset.joined === '1';
     var data = await apiCall({action: isJoined ? 'leave_community' : 'join_community', csrf_token:CSRF, community_id:commId});
     if (!data.success) { console.warn(data.error); return; }

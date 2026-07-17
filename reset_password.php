@@ -4,7 +4,7 @@
  */
 require_once 'includes/functions.php';
 
-if (isLoggedIn()) redirect('index.php');
+if (isLoggedIn()) redirect('/');
 
 $db = getDB();
 $token = $_GET['token'] ?? $_POST['token'] ?? '';
@@ -12,7 +12,7 @@ $errors = [];
 $success = false;
 
 if (empty($token)) {
-    redirect('login.php');
+    redirect('/login');
 }
 
 // Verificar validade do token
@@ -137,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $reset) {
         <div class="alert alert-success">
             &#x2705; Palavra-passe alterada com sucesso! Já podes iniciar sessão.
         </div>
-        <a href="login.php" class="btn" style="text-align:center;text-decoration:none;display:block">IR PARA LOGIN</a>
+        <a href="/login" class="btn" style="text-align:center;text-decoration:none;display:block">IR PARA LOGIN</a>
     <?php elseif ($reset): ?>
         <form method="POST" action="">
             <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
@@ -157,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $reset) {
         </form>
     <?php else: ?>
         <div class="footer">
-            <a href="login.php">Voltar ao login</a>
+            <a href="/login">Voltar ao login</a>
         </div>
     <?php endif; ?>
 </div>

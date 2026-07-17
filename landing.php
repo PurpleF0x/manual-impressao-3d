@@ -117,14 +117,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <body>
 
 <nav class="topbar">
-    <a href="landing.php" class="logo">3D<span>/</span>MANUAL</a>
+    <a href="/" class="logo">3D<span>/</span>MANUAL</a>
     <div class="topbar-right">
         <?php if ($currentUser): ?>
             <span style="font-size:13px;color:var(--muted)"><?php echo sanitize($currentUser['full_name']); ?></span>
-            <a href="index.php" class="btn btn-primary">Ir ao Manual →</a>
+            <a href="/" class="btn btn-primary">Ir ao Manual →</a>
         <?php else: ?>
-            <a href="login.php" class="btn btn-ghost">Entrar</a>
-            <a href="register.php" class="btn btn-primary">Criar conta</a>
+            <a href="/login" class="btn btn-ghost">Entrar</a>
+            <a href="/register" class="btn btn-primary">Criar conta</a>
         <?php endif; ?>
     </div>
 </nav>
@@ -148,8 +148,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     </p>
 
     <div class="hero-cta">
-        <a href="index.php" class="cta-main">📖 Começar a ler o Manual</a>
-        <a href="forum/" class="cta-sec">🌐 Ir para o Fórum</a>
+        <a href="/" class="cta-main">📖 Começar a ler o Manual</a>
+        <a href="/forum/" class="cta-sec">🌐 Ir para o Fórum</a>
     </div>
 
     <div class="stats-row">
@@ -241,13 +241,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <!-- Footer -->
 <footer class="footer">
     <p style="margin-bottom:10px">
-        <a href="index.php">📖 Manual</a>
+        <a href="/">📖 Manual</a>
         <span style="margin:0 12px;opacity:0.3">·</span>
-        <a href="forum/">🌐 Fórum</a>
+        <a href="/forum/">🌐 Fórum</a>
         <span style="margin:0 12px;opacity:0.3">·</span>
-        <a href="login.php">Entrar</a>
+        <a href="/login">Entrar</a>
         <span style="margin:0 12px;opacity:0.3">·</span>
-        <a href="register.php">Criar conta</a>
+        <a href="/register">Criar conta</a>
     </p>
     <p>Manual de Impressão 3D — Recurso educativo <strong>gratuito</strong> para professores e alunos</p>
 </footer>

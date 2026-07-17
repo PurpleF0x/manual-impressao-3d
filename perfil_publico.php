@@ -7,13 +7,13 @@
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/comments.php';
 
-if (!isLoggedIn()) redirect('login.php');
+if (!isLoggedIn()) redirect('/login');
 
 $viewer   = getCurrentUser();
 $targetId = (int)($_GET['id'] ?? 0);
 
-if ($targetId < 1) redirect('perfil.php');
-if ($targetId === (int)$viewer['id']) redirect('perfil.php');
+if ($targetId < 1) redirect('/perfil');
+if ($targetId === (int)$viewer['id']) redirect('/perfil');
 
 $db = getDB();
 
@@ -30,7 +30,7 @@ if (!$profile || !$profile['is_active']) {
     die('<div style="font-family:Arial;text-align:center;padding:80px;color:#888">
         <p style="font-size:48px">👤</p>
         <h2 style="color:#fff">Utilizador não encontrado</h2>
-        <p><a href="index.php" style="color:#00e5ff">← Voltar ao início</a></p>
+        <p><a href="/" style="color:#00e5ff">← Voltar ao início</a></p>
     </div>');
 }
 
@@ -252,7 +252,7 @@ main{max-width:960px;margin:0 auto;padding:40px 32px}
             </div>
             <span><?php echo sanitize($viewer['full_name']); ?></span>
         </div>
-        <a href="perfil.php" style="color:var(--accent);font-family:'Space Mono',monospace;font-size:11px;text-decoration:none;padding:6px 12px;border:1px solid rgba(0,229,255,0.2);border-radius:8px">O meu perfil</a>
+        <a href="/perfil" style="color:var(--accent);font-family:'Space Mono',monospace;font-size:11px;text-decoration:none;padding:6px 12px;border:1px solid rgba(0,229,255,0.2);border-radius:8px">O meu perfil</a>
     </div>
 </div>
 
@@ -262,7 +262,7 @@ main{max-width:960px;margin:0 auto;padding:40px 32px}
 
     <!-- Botão mensagem — só para utilizadores logados que não são o próprio perfil -->
     <?php if ((int)($_SESSION['user_id'] ?? 0) !== (int)$profile['id']): ?>
-    <a href="forum/mensagens.php?user=<?php echo (int)$profile['id']; ?>" class="btn-message">
+    <a href="/forum/mensagens?user=<?php echo (int)$profile['id']; ?>" class="btn-message">
         💬 Enviar Mensagem
     </a>
     <?php endif; ?>
@@ -431,7 +431,7 @@ main{max-width:960px;margin:0 auto;padding:40px 32px}
         </div>
         <?php endforeach; ?>
         <?php if (count($myComments) > 10): ?>
-            <p style="text-align:center;margin-top:16px"><a href="index.php#comentarios" style="color:var(--accent);font-family:'Space Mono',monospace;font-size:12px">Ver mais na comunidade →</a></p>
+            <p style="text-align:center;margin-top:16px"><a href="/#comentarios" style="color:var(--accent);font-family:'Space Mono',monospace;font-size:12px">Ver mais na comunidade →</a></p>
         <?php endif; ?>
     </div>
     <?php endif; ?>

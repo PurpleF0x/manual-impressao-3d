@@ -66,6 +66,11 @@ function ensureUserProfileConfig(?int $userId = null): void {
             }
         }
 
+        // Garantir que a tabela users permite username NULL (para onboarding Google)
+        try {
+            $db->exec("ALTER TABLE users MODIFY username VARCHAR(50) NULL");
+        } catch (Exception $e) {}
+
         if ($userId !== null && $userId > 0) {
             $stmt = $db->prepare("INSERT IGNORE INTO user_profile_config (user_id) VALUES (?)");
             $stmt->execute([$userId]);

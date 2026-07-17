@@ -587,7 +587,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 <?php renderUserNotice(); ?>
 
 <nav class="topbar">
-    <a href="index.php" class="topbar-logo">3D<span>/</span>FÓRUM</a>
+    <a href="/forum/" class="topbar-logo">3D<span>/</span>FÓRUM</a>
     <div class="topbar-search">
         <span class="topbar-search-icon">🔍</span>
         <input type="text" placeholder="Pesquisar no fórum e manual…" oninput="handleGlobalSearch(this.value)" autocomplete="off" id="globalSearchInput">
@@ -595,13 +595,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     </div>
     <div class="topbar-actions">
         <a href="/" class="topbar-btn">← Manual</a>
-        <?php if ($currentUser && in_array($currentUser['role']??'',['master','admin','moderator'])): ?><a href="admin" class="topbar-btn" style="color:#ff6b35;border-color:rgba(255,107,53,0.3)">⚔️ Admin</a><?php endif; ?>
+        <?php if ($currentUser && in_array($currentUser['role']??'',['master','admin','moderator'])): ?><a href="/forum/admin" class="topbar-btn" style="color:#ff6b35;border-color:rgba(255,107,53,0.3)">⚔️ Admin</a><?php endif; ?>
         <?php if ($currentUser): ?>
-            <a href="mensagens" class="topbar-btn">
+            <a href="/forum/mensagens" class="topbar-btn">
                 💬 Mensagens
                 <?php if ($unreadMsgs > 0): ?><span class="notif-badge"><?php echo $unreadMsgs; ?></span><?php endif; ?>
             </a>
-            <a href="perfil?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-avatar">
+            <a href="/forum/perfil?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-avatar">
                 <?php $av=$currentUser['avatar_url']??''; if($av): ?><img src="<?php echo sanitize(avPath($av)); ?>" alt=""><?php else: echo mb_substr($currentUser['full_name'],0,2); endif; ?>
             </a>
         <?php else: ?>
@@ -629,7 +629,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                 <?php endif; ?>
             </div>
             <?php if ($currentUser): ?>
-            <a href="criar_post" class="create-post-btn">✏️ NOVO POST</a>
+            <a href="/forum/criar_post" class="create-post-btn">✏️ NOVO POST</a>
             <?php endif; ?>
         </div>
 
@@ -660,7 +660,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                 <div class="icon">🌱</div>
                 <p>O fórum está a começar.<br>Cria a primeira comunidade e publica o primeiro post!</p>
                 <?php if ($currentUser): ?>
-                <a href="criar_comunidade.php" style="display:inline-block;margin-top:16px;background:var(--accent);color:#000;padding:10px 22px;border-radius:8px;text-decoration:none;font-family:'Space Mono',monospace;font-size:11px;font-weight:700">+ CRIAR COMUNIDADE</a>
+                <a href="/forum/criar_comunidade" style="display:inline-block;margin-top:16px;background:var(--accent);color:#000;padding:10px 22px;border-radius:8px;text-decoration:none;font-family:'Space Mono',monospace;font-size:11px;font-weight:700">+ CRIAR COMUNIDADE</a>
                 <?php endif; ?>
             </div>
         <?php else: ?>
@@ -677,11 +677,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                     <button class="vote-btn down <?php echo $userVote===-1?'active':''; ?>" onclick="votePost(<?php echo $post['id']; ?>,-1,this)">▼</button>
                 </div>
                 <div class="post-body">
-                    <a href="comunidade?slug=<?php echo urlencode($post['community_slug']); ?>" class="post-community">
+                    <a href="/forum/comunidade?slug=<?php echo urlencode($post['community_slug']); ?>" class="post-community">
                         <?php echo $post['community_icon']; ?> <?php echo sanitize($post['community_name']); ?>
                     </a>
                     <?php if (!empty($post['flair'])): ?><?php echo renderFlairBadgeFeed($post['flair']); ?> <?php endif; ?>
-                    <a href="topico?id=<?php echo $post['id']; ?>" class="post-title"><?php echo sanitize($post['title']); ?></a>
+                    <a href="/forum/topico?id=<?php echo $post['id']; ?>" class="post-title"><?php echo sanitize($post['title']); ?></a>
                     <?php if (!empty($post['content'])): ?>
                     <div class="post-excerpt"><?php echo sanitize(mb_substr($post['content'],0,200)); ?></div>
                     <?php endif; ?>
@@ -692,7 +692,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                     </div>
                     <?php endif; ?>
                     <div class="post-meta">
-                        <a href="perfil?id=<?php echo $post['user_id']; ?>" class="post-author">
+                        <a href="/forum/perfil?id=<?php echo $post['user_id']; ?>" class="post-author">
                             <div class="post-author-av"><?php if(!empty($post['avatar_url'])): ?><img src="<?php echo sanitize(avPath($post['avatar_url'])); ?>" alt="" onerror="this.style.display='none'; this.parentElement.textContent='<?php echo sanitize($initials); ?>'"><?php else: echo sanitize($initials); endif; ?></div>
                             <?php echo sanitize($post['username']); ?>
                         </a>
@@ -717,7 +717,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <div class="create-comm-icon">🏗️</div>
             <div class="create-comm-title">Cria a tua comunidade</div>
             <div class="create-comm-sub">Reúne pessoas com os mesmos interesses em impressão 3D.</div>
-            <a href="criar_comunidade" class="create-comm-btn">+ CRIAR AGORA</a>
+            <a href="/forum/criar_comunidade" class="create-comm-btn">+ CRIAR AGORA</a>
         </div>
         <?php endif; ?>
 
@@ -729,7 +729,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <?php foreach (array_slice($communities,0,8) as $comm):
                 $isJoined = in_array((int)$comm['id'], $myCommIds);
             ?>
-            <a href="comunidade?slug=<?php echo urlencode($comm['slug']); ?>" class="comm-row">
+            <a href="/forum/comunidade?slug=<?php echo urlencode($comm['slug']); ?>" class="comm-row">
                 <div class="comm-icon-wrap" style="background:linear-gradient(135deg,<?php echo htmlspecialchars($comm['banner_color']); ?>22,<?php echo htmlspecialchars($comm['banner_color']); ?>44)">
                     <?php echo $comm['icon']; ?>
                 </div>
@@ -777,7 +777,7 @@ var CSRF = '<?php echo $csrf; ?>';
 var CUR_UID = <?php echo $currentUser ? (int)$currentUser['id'] : 'null'; ?>;
 
 async function votePost(postId, value, btn) {
-    if (!CUR_UID) { window.location.href='../login.php?redirect=forum/index.php'; return; }
+    if (!CUR_UID) { window.location.href='/login?redirect=forum/'; return; }
     try {
         var res=await fetch('api/forum.php',{method:'POST',headers:{'Content-Type':'application/json'},
             body:JSON.stringify({action:'vote_post',csrf_token:CSRF,post_id:postId,value:value})});
@@ -794,7 +794,7 @@ async function votePost(postId, value, btn) {
 }
 
 async function toggleJoin(commId, btn) {
-    if (!CUR_UID) { window.location.href='../login.php?redirect=forum/index.php'; return; }
+    if (!CUR_UID) { window.location.href='/login?redirect=forum/'; return; }
     var isJoined=btn.dataset.joined==='1';
     try {
         var res=await fetch('api/forum.php',{method:'POST',headers:{'Content-Type':'application/json'},
@@ -857,7 +857,7 @@ async function handleGlobalSearch(query) {
         html += '<div class="search-group-label">Posts no Feed</div>';
         localPosts.slice(0, 5).forEach(p => {
             html += `
-                <a href="topico.php?id=${p.id}" class="search-item">
+                <a href="/forum/topico?id=${p.id}" class="search-item">
                     <div class="search-item-icon">📝</div>
                     <div class="search-item-info">
                         <span class="search-item-title">${p.title}</span>
@@ -899,7 +899,7 @@ async function handleGlobalSearch(query) {
             html += '<div class="search-group-label">Comunidades</div>';
             data.communities.forEach(c => {
                 html += `
-                    <a href="comunidade.php?slug=${c.slug}" class="search-item">
+                    <a href="/forum/comunidade?slug=${c.slug}" class="search-item">
                         <div class="search-item-icon">${c.icon}</div>
                         <div class="search-item-info">
                             <span class="search-item-title">${c.name}</span>

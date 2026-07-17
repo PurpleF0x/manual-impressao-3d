@@ -7,7 +7,7 @@ require_once __DIR__ . '/../includes/functions.php';
 $db = getDB();
 
 $targetId = (int)($_GET['id'] ?? 0);
-if ($targetId < 1) { header('Location: index.php'); exit; }
+if ($targetId < 1) { header('Location: /forum/'); exit; }
 
 $currentUser = isLoggedIn() ? getCurrentUser() : null;
 
@@ -30,7 +30,7 @@ try {
 
 if (!$user || !$user['is_active']) {
     http_response_code(404);
-    die('<div style="font-family:monospace;text-align:center;padding:80px;color:#888;background:#0a0a0f;min-height:100vh"><p style="font-size:48px">👤</p><h2 style="color:#fff;margin:16px 0">Utilizador não encontrado</h2><a href="index.php" style="color:#00e5ff">← Voltar ao fórum</a></div>');
+    die('<div style="font-family:monospace;text-align:center;padding:80px;color:#888;background:#0a0a0f;min-height:100vh"><p style="font-size:48px">👤</p><h2 style="color:#fff;margin:16px 0">Utilizador não encontrado</h2><a href="/forum/" style="color:#00e5ff">← Voltar ao fórum</a></div>');
 }
 
 // ── Personalização do perfil ─────────────────────────────────
@@ -499,29 +499,29 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 <?php endif; ?>
 
 <nav class="topbar">
-    <a href="index.php" class="topbar-logo">3D<span>/</span>FÓRUM</a>
+    <a href="/forum/" class="topbar-logo">3D<span>/</span>FÓRUM</a>
     <div style="font-size:12px;color:var(--muted)">/ <span style="color:var(--text)"><?php echo sanitize($user['full_name']); ?></span></div>
     <div class="topbar-right">
-        <a href="../index.php" class="topbar-btn">← Manual</a>
+        <a href="/" class="topbar-btn">← Manual</a>
         
         <?php if ($currentUser): ?>
-            <a href="mensagens.php" class="topbar-btn">
+            <a href="/forum/mensagens" class="topbar-btn">
                 💬<?php if ($unreadMsgs > 0): ?> <span class="notif-badge"><?php echo $unreadMsgs; ?></span><?php endif; ?>
             </a>
-            <a href="perfil.php?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
+            <a href="/forum/perfil?id=<?php echo (int)($_SESSION['user_id'] ?? 0); ?>" class="topbar-av">
                 <?php $av=$currentUser['avatar_url']??''; if($av): ?><img src="<?php echo sanitize(avPath($av)); ?>" alt=""><?php else: echo mb_substr($currentUser['full_name'],0,2); endif; ?>
             </a>
         <?php else: ?>
-            <a href="../login.php?redirect=forum/index.php" class="topbar-btn primary">Entrar</a>
+            <a href="/login?redirect=forum/" class="topbar-btn primary">Entrar</a>
         <?php endif; ?>
     </div>
 </nav>
 <!-- Breadcrumb -->
 <div class="bc-bar">
     <div class="bc-inner">
-        <a href="../index.php" class="bc-link">📖 Manual</a>
+        <a href="/" class="bc-link">📖 Manual</a>
         <span class="bc-sep">›</span>
-        <a href="index.php" class="bc-link">🌐 Fórum</a>
+        <a href="/forum/" class="bc-link">🌐 Fórum</a>
         <span class="bc-sep">›</span><span class="bc-current">👤 Perfil: <?php echo sanitize($user['username']); ?></span>
     </div>
 </div>
@@ -546,10 +546,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         </div>
         <div class="hero-actions" style="margin-bottom:8px">
             <?php if ($currentUser && (int)$currentUser['id'] !== $targetId): ?>
-            <a href="mensagens.php?user=<?php echo $targetId; ?>" class="btn-msg">💬 Enviar Mensagem</a>
+            <a href="/forum/mensagens?user=<?php echo $targetId; ?>" class="btn-msg">💬 Enviar Mensagem</a>
             <?php endif; ?>
             <?php if ($currentUser && (int)$currentUser['id'] === $targetId): ?>
-            <a href="personalizacao.php" class="btn-msg" style="background:rgba(255,204,0,0.1);border:1px solid rgba(255,204,0,0.3);color:#ffcc00">🎨 Personalizar</a>
+            <a href="/forum/personalizacao" class="btn-msg" style="background:rgba(255,204,0,0.1);border:1px solid rgba(255,204,0,0.3);color:#ffcc00">🎨 Personalizar</a>
             <?php endif; ?>
             <button class="btn-report" onclick="document.getElementById('reportModal').classList.add('open')">🚨 Reportar</button>
         </div>
@@ -646,9 +646,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                 <div class="post-content">
                     <div class="post-comm">
                         <span><?php echo $p['comm_icon']; ?></span>
-                        <a href="comunidade.php?slug=<?php echo urlencode($p['comm_slug']); ?>" style="color:var(--muted);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'"><?php echo sanitize($p['comm_name']); ?></a>
+                        <a href="/forum/comunidade?slug=<?php echo urlencode($p['comm_slug']); ?>" style="color:var(--muted);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'"><?php echo sanitize($p['comm_name']); ?></a>
                     </div>
-                    <a href="topico.php?id=<?php echo $p['id']; ?>" class="post-title-link"><?php echo sanitize($p['title']); ?></a>
+                    <a href="/forum/topico?id=<?php echo $p['id']; ?>" class="post-title-link"><?php echo sanitize($p['title']); ?></a>
                     <div class="post-footer-row">
                         <?php if (!empty($p['flair'])): ?>
                         <span class="flair-mini flair-<?php echo $p['flair']; ?>"><?php
@@ -681,7 +681,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
                 $vCls = $vs>0?'karma-pos':($vs<0?'karma-neg':'');
             ?>
             <div class="reply-card">
-                <a href="topico.php?id=<?php echo $r['post_id']; ?>" class="reply-post-link">
+                <a href="/forum/topico?id=<?php echo $r['post_id']; ?>" class="reply-post-link">
                     ↩ Em: <strong style="color:var(--text)"><?php echo sanitize(mb_substr($r['post_title'],0,60)).(mb_strlen($r['post_title'])>60?'…':''); ?></strong>
                     <span style="color:var(--border2)">·</span> <?php echo sanitize($r['comm_name']); ?>
                 </a>
@@ -773,7 +773,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             foreach ($tiers as $i => $t) { if ($xp < $t) { $prevTier = $prev[$i]; break; } }
             $pct = $next ? min(100, round(($xp - $prevTier) / ($next - $prevTier) * 100)) : 100;
         ?>
-        <a href="comunidade.php?slug=<?php echo urlencode($comm['slug']); ?>" class="comm-xp-card">
+        <a href="/forum/comunidade?slug=<?php echo urlencode($comm['slug']); ?>" class="comm-xp-card">
             <div class="comm-xp-top">
                 <div class="comm-xp-icon" style="background:linear-gradient(135deg,<?php echo htmlspecialchars($comm['banner_color']); ?>33,<?php echo htmlspecialchars($comm['banner_color']); ?>11)"><?php echo $comm['icon']; ?></div>
                 <div style="flex:1;min-width:0">

@@ -57,17 +57,16 @@ if (!$user) {
         // Vincula a conta existente ao Google ID
         $db->prepare("UPDATE users SET google_id = ? WHERE id = ?")->execute([$googleId, $user['id']]);
     } else {
-        // 3. Criar nova conta
-        $username = explode('@', $email)[0] . rand(10, 99);
-        $stmt = $db->prepare("INSERT INTO users (username, email, full_name, avatar_url, google_id, password_hash) VALUES (?, ?, ?, ?, ?, 'GOOGLE_AUTH')");
-        $stmt->execute([$username, $email, $name, $picture, $googleId]);
+        // 3. Criar nova conta - Deixamos o username NULL para forçar a finalização do registo
+        $stmt = $db->prepare("INSERT INTO users (username, email, full_name, avatar_url, google_id, password_hash) VALUES (NULL, ?, ?, ?, ?, 'GOOGLE_AUTH')");
+        $stmt->execute([$email, $name, $picture, $googleId]);
         $userId = $db->lastInsertId();
 
         $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch();
 
-        logActivity($userId, 'register_google', "Novo registo via Google: $username");
+        logActivity($userId, 'register_google', "Novo registo via Google pendente de username");
 
         // Flag para redirecionar para finalização de perfil
         $_SESSION['new_google_user'] = true;

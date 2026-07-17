@@ -7,7 +7,7 @@ require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/comments.php';
 require_once __DIR__ . '/includes/mail_config.php';
 
-if (!isLoggedIn()) redirect('login.php');
+if (!isLoggedIn()) redirect('/login');
 $user = getCurrentUser();
 if (!canModerate($user) && ($user['role']??'') !== 'master') { http_response_code(403); die('<p style="color:red;padding:40px">Acesso negado.</p>'); }
 
@@ -356,7 +356,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
     <button class="nav-btn" id="nav-aprovado" onclick="switchTab('aprovado',this)"><span><span class="icon">✅</span>Aprovados</span><span class="nav-count aprovado"><?php echo count($approved); ?></span></button>
     <button class="nav-btn" id="nav-rejeitado" onclick="switchTab('rejeitado',this)"><span><span class="icon">✕</span>Rejeitados</span><span class="nav-count rejeitado"><?php echo count($rejected); ?></span></button>
     <div class="sidebar-sep"></div>
-    <a href="index.php" class="back-link">← Voltar ao site</a>
+    <a href="/" class="back-link">← Voltar ao site</a>
 </aside>
 
 <main class="main">
@@ -434,9 +434,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
                 <div class="card" style="padding:20px; margin-bottom:20px; background:linear-gradient(135deg, rgba(0,229,255,0.05), transparent)">
                     <h3 style="font-family:'Syne'; font-size:13px; margin-bottom:12px">🚀 Ações Rápidas</h3>
                     <div style="display:grid; gap:8px">
-                        <a href="forum/admin.php" class="btn btn-none" style="text-decoration:none; font-size:10px; padding:12px">🛡️ ADMINISTRAÇÃO</a>
-                        <a href="debug_email.php" class="btn btn-none" style="text-decoration:none; font-size:10px; padding:12px">📧 TESTAR EMAILS</a>
-                        <a href="calculadora.php" class="btn btn-none" style="text-decoration:none; font-size:10px; padding:12px">🧮 CALCULADORA</a>
+                        <a href="/forum/admin" class="btn btn-none" style="text-decoration:none; font-size:10px; padding:12px">🛡️ ADMINISTRAÇÃO</a>
+                        <a href="/debug_email" class="btn btn-none" style="text-decoration:none; font-size:10px; padding:12px">📧 TESTAR EMAILS</a>
+                        <a href="/calculadora" class="btn btn-none" style="text-decoration:none; font-size:10px; padding:12px">🧮 CALCULADORA</a>
                     </div>
                 </div>
 

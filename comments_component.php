@@ -150,7 +150,7 @@ $isModUser     = $currentUser && canModerate($currentUser);
     <div class="comments-header">
       <h3>💬 Comunidade de Apoio
         <?php if ($isModUser): ?>
-          <a href="moderacao.php" style="font-size:12px;background:rgba(255,107,53,0.15);color:var(--accent2);border:1px solid rgba(255,107,53,0.3);border-radius:6px;padding:4px 10px;text-decoration:none;margin-left:10px;font-family:'Space Mono',monospace">🛡️ Moderação</a>
+          <a href="/moderacao" style="font-size:12px;background:rgba(255,107,53,0.15);color:var(--accent2);border:1px solid rgba(255,107,53,0.3);border-radius:6px;padding:4px 10px;text-decoration:none;margin-left:10px;font-family:'Space Mono',monospace">🛡️ Moderação</a>
         <?php endif; ?>
       </h3>
       <div class="comments-filter">
@@ -208,7 +208,7 @@ $isModUser     = $currentUser && canModerate($currentUser);
     <?php else: ?>
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:22px;text-align:center;margin-bottom:20px">
       <p style="color:var(--muted);margin-bottom:12px">Para comentar precisas de ter sessão iniciada.</p>
-      <a href="login.php" style="background:var(--accent);color:#000;padding:10px 22px;border-radius:8px;text-decoration:none;font-family:'Space Mono',monospace;font-size:11px;font-weight:700">🔑 ENTRAR</a>
+      <a href="/login" style="background:var(--accent);color:#000;padding:10px 22px;border-radius:8px;text-decoration:none;font-family:'Space Mono',monospace;font-size:11px;font-weight:700">🔑 ENTRAR</a>
     </div>
     <?php endif; ?>
 

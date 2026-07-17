@@ -3595,7 +3595,7 @@ if (document.getElementById('missionsWidget')) {
 
     // Adicionar link para pesquisa no fórum se não houver muitos resultados aqui
     resultsHtml += `
-      <a href="forum/index.php" class="search-result-item">
+      <a href="/forum/" class="search-result-item">
         <span class="search-result-category">Fórum</span>
         <span class="search-result-title">Procurar "${query}" no fórum global →</span>
       </a>
@@ -3606,7 +3606,7 @@ if (document.getElementById('missionsWidget')) {
         <div class="search-no-results">
           Sem resultados no manual para "${query}"
         </div>
-        <a href="forum/index.php" class="search-result-item">
+        <a href="/forum/" class="search-result-item">
           <span class="search-result-category">Fórum</span>
           <span class="search-result-title">Tentar no fórum global →</span>
         </a>

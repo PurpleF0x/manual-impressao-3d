@@ -22,7 +22,7 @@ function checkAndHandleUserStatus() {
 
     if (!$row || !$row['is_active']) {
         session_destroy();
-        header('Location: login.php?banned=1');
+        header('Location: /login?banned=1');
         exit;
     }
 
@@ -57,7 +57,7 @@ function renderUserNotice() {
                 <h2 style="color:#fff;margin-bottom:16px">Conta Suspensa</h2>
                 <div style="background:rgba(124,58,237,0.08);padding:18px;border-radius:12px;margin-bottom:20px;color:#e8e8f0;text-align:left">'.$message.'</div>
                 <p style="color:#888;margin-bottom:24px">Até: <strong>'.$until.'</strong></p>
-                <a href="logout.php" style="background:#7c3aed;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;">SAIR DA CONTA</a>
+                <a href="/logout" style="background:#7c3aed;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;">SAIR DA CONTA</a>
             </div>
         </div>';
     } elseif ($notice['type'] === 'warning') {

@@ -6,7 +6,7 @@ require_once 'includes/missions.php';
 require_once 'includes/user_notices.php';
 
 if (!isLoggedIn()) {
-    redirect('login.php');
+    redirect('/login');
 }
 
 $user = getCurrentUser();
@@ -601,7 +601,7 @@ if (!empty($_POST['action'])) {
 
 <!-- USER BAR -->
 <div class="user-bar">
-  <a href="/index" class="btn-auth btn-profile" style="margin-right: auto; border-color: var(--muted); color: var(--muted);">← Manual</a>
+  <a href="/" class="btn-auth btn-profile" style="margin-right: auto; border-color: var(--muted); color: var(--muted);">← Manual</a>
   <div class="user-info">
     <div class="user-avatar">
       <?php if (!empty($avUrl)): ?>

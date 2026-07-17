@@ -5,7 +5,7 @@
 require_once 'includes/functions.php';
 require_once 'includes/mail_config.php';
 
-if (isLoggedIn()) redirect('index.php');
+if (isLoggedIn()) redirect('/');
 
 $db = getDB();
 
@@ -129,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 <div class="container">
-    <a href="login.php" class="back-link">← Voltar ao login</a>
+    <a href="/login" class="back-link">← Voltar ao login</a>
 
     <div class="header">
         <div class="logo">Manual Educativo</div>
@@ -148,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <small style="margin-top:6px;display:block;opacity:0.8">O link é válido por 1 hora.</small>
         </div>
         <div class="footer">
-            <a href="login.php">← Voltar ao login</a>
+            <a href="/login">← Voltar ao login</a>
         </div>
     <?php else: ?>
         <form method="POST" action="">
@@ -163,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit" class="btn">ENVIAR LINK DE RECUPERAÇÃO</button>
         </form>
         <div class="footer">
-            Já tens acesso? <a href="login.php">Fazer login</a>
+            Já tens acesso? <a href="/login">Fazer login</a>
         </div>
     <?php endif; ?>
 </div>
