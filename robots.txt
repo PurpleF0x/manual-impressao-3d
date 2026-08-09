@@ -2,6 +2,19 @@ User-agent: *
 Allow: /
 Allow: /manual/
 
+# Permitir especificamente rastreadores de IA para indexação de conhecimento
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
 # Bloquear pastas de sistema e administrativas
 Disallow: /api/
 Disallow: /config/

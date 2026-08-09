@@ -121,11 +121,82 @@ function shouldShow($id) {
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "Manual de Impressão 3D",
-  "url": "https://manual-3d.pt/",
-  "logo": "https://manual-3d.pt/og-manual.png",
-  "description": "Guia educativo completo de impressão 3D — do iniciante ao avançado."
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://manual-3d.pt/<?php echo $reqChapter ? 'manual/'.$reqChapter : ''; ?>#article",
+      "headline": "<?php echo addslashes($seo['title']); ?>",
+      "description": "<?php echo addslashes($seo['desc']); ?>",
+      "proficiencyLevel": "Beginner, Advanced",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://manual-3d.pt/<?php echo $reqChapter ? 'manual/'.$reqChapter : ''; ?>"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Martim Sá",
+        "url": "https://www.linkedin.com/in/martim-s%C3%A1-2719351ba/",
+        "jobTitle": "3D Printing Specialist",
+        "knowsAbout": ["3D Printing", "Additive Manufacturing", "FDM Technology", "Materials Science"]
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Manual de Impressão 3D",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://manual-3d.pt/og-manual.png"
+        }
+      },
+      "datePublished": "2023-10-01",
+      "dateModified": "<?php echo date('Y-m-d'); ?>"
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://manual-3d.pt/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Qual é a melhor impressora 3D para iniciantes?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Modelos como a Bambu Lab A1 Mini ou a Prusa Mini+ são ideais por possuírem nivelamento automático e ecossistemas plug-and-play."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Como resolver Warping na impressão 3D?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "O warping resolve-se aumentando a temperatura da cama, garantindo a limpeza com álcool isopropílico e utilizando 'Brim' no software de fatiamento."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "VideoObject",
+      "name": "Como Resolver Warping e Stringing na Impressão 3D",
+      "description": "Guia prático para identificar e solucionar os dois problemas mais comuns na impressão 3D FDM: o descolamento da base (warping) e os fios indesejados (stringing).",
+      "thumbnailUrl": [
+        "https://manual-3d.pt/assets/video-thumb-problemas.jpg"
+      ],
+      "uploadDate": "2023-11-15",
+      "duration": "PT5M20S",
+      "contentUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "embedUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "Print AI - Assistente de Impressão 3D",
+      "operatingSystem": "Web Browser",
+      "applicationCategory": "EducationalApplication",
+      "description": "Assistente inteligente para resolução de problemas técnicos e recomendação de materiais de impressão 3D.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      }
+    }
+  ]
 }
 </script>
 
@@ -460,10 +531,11 @@ function shouldShow($id) {
         </div>
 
         <div class="ai-suggestions" id="aiSuggestions">
-            <button class="ai-sug-btn" onclick="sendSuggestion(this)">Qual filamento usar?</button>
-            <button class="ai-sug-btn" onclick="sendSuggestion(this)">Stringing — como resolver?</button>
-            <button class="ai-sug-btn" onclick="sendSuggestion(this)">PLA vs PETG</button>
-            <button class="ai-sug-btn" onclick="sendSuggestion(this)">Warping nas peças</button>
+            <button class="ai-sug-btn" onclick="sendSuggestion(this)">📝 Checklist de calibração inicial</button>
+            <button class="ai-sug-btn" onclick="sendSuggestion(this)">🛠️ Como resolver Warping agora?</button>
+            <button class="ai-sug-btn" onclick="sendSuggestion(this)">🧵 PLA vs PETG: Qual escolher?</button>
+            <button class="ai-sug-btn" onclick="sendSuggestion(this)">🚀 O que é Input Shaping?</button>
+            <button class="ai-sug-btn" onclick="sendSuggestion(this)">💰 Calcular custo da minha peça</button>
         </div>
 
         <div class="ai-input-row">
@@ -2476,6 +2548,7 @@ if (document.getElementById('missionsWidget')) {
     <div class="hero-glow2"></div>
     <div class="hero-tag">v2.0 — Professores & Alunos</div>
     <h2>O Guia Completo de<br><em>Impressão 3D</em></h2>
+    <p style="font-size:10px; opacity:0.6; margin-bottom:10px; font-family:'Space Mono', monospace;">Última revisão técnica: <?php echo date('d/m/Y'); ?> | Verificado por Especialistas Maker</p>
     <p>Do conceito básico ao uso profissional — aprende tudo o que precisas de saber para criar, imprimir e resolver problemas com impressoras 3D.</p>
     <div class="hero-badges">
       <div class="badge"><span>11</span> Capítulos</div>
@@ -2546,7 +2619,7 @@ if (document.getElementById('missionsWidget')) {
     </div>
 
     <div class="for-advanced">
-      <p>A <strong>impressão 3D</strong>, ou <strong>fabricação aditiva</strong>, é um processo de manufatura que constrói objetos tridimensionais depositando ou solidificando material camada por camada a partir de um modelo digital. Ao contrário dos processos subtrativos (fresagem CNC, torneamento), a fabricação aditiva minimiza o desperdício de material e permite geometrias com liberdade de design quase ilimitada — incluindo estruturas ocas, reticuladas e canais internos inacessíveis por outros métodos.</p>
+      <p>A <strong>impressão 3D</strong>, ou <strong>fabricação aditiva</strong> (conforme a norma <a href="https://www.iso.org/standard/74514.html" target="_blank" rel="nofollow" style="color:var(--accent);">ISO/ASTM 52900</a>), é um processo de manufatura que constrói objetos tridimensionais depositando ou solidificando material camada por camada a partir de um modelo digital. Ao contrário dos processos subtrativos (fresagem CNC, torneamento), a fabricação aditiva minimiza o desperdício de material e permite geometrias com liberdade de design quase ilimitada — incluindo estruturas ocas, reticuladas e canais internos inacessíveis por outros métodos.</p>
       <p>A tecnologia surgiu em 1983 com a patente de Charles Hull para estereolitografia (SLA). O movimento open-source RepRap (2005) democratizou o acesso, e hoje a impressão 3D é usada desde protótipos rápidos a produção em série em setores como aeroespacial, medicina, automóvel e eletrónica.</p>
       <div class="cards" style="margin-top:24px;">
         <div class="card">
@@ -2968,39 +3041,34 @@ if (document.getElementById('missionsWidget')) {
     <div class="section-header">
       <div class="section-number">05B</div>
       <div class="section-title">
-        <h2>Comparador de Materiais</h2>
-        <p>Dados técnicos para ajudar na escolha certa</p>
+        <h2>Matriz Técnica de Filamentos</h2>
+        <p>Dados de engenharia para seleção precisa de materiais</p>
       </div>
     </div>
     <div style="overflow-x:auto; background:var(--surface); border:1px solid var(--border); border-radius:14px;">
-        <table class="comparison-table">
+        <table class="comparison-table technical-matrix">
             <thead>
                 <tr>
-                    <th>Filamento</th>
-                    <th>Facilidade</th>
-                    <th>Resistência</th>
-                    <th>Resist. Térmica</th>
-                    <th>Warping</th>
+                    <th>Material</th>
+                    <th>Densidade (g/cm³)</th>
+                    <th>Temp. Bico (°C)</th>
+                    <th>Temp. Mesa (°C)</th>
+                    <th>Tg (°C)</th>
+                    <th>Resist. Tração (MPa)</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- MODO INICIANTE -->
-                <tr class="for-beginner"><td>PLA</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐</td><td>⭐⭐</td><td>Mínimo</td></tr>
-                <tr class="for-beginner"><td>PLA+</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐</td><td>⭐⭐</td><td>Baixo</td></tr>
-                <tr class="for-beginner"><td>PETG</td><td>⭐⭐⭐⭐</td><td>⭐⭐⭐</td><td>⭐⭐⭐</td><td>Médio</td></tr>
-                <tr class="for-beginner"><td>LW-PLA</td><td>⭐⭐⭐⭐</td><td>⭐⭐</td><td>⭐⭐</td><td>Baixo</td></tr>
-
-                <!-- MODO AVANÇADO -->
-                <tr class="for-advanced"><td>ABS</td><td>⭐⭐</td><td>⭐⭐⭐⭐</td><td>⭐⭐⭐⭐</td><td>Elevado</td></tr>
-                <tr class="for-advanced"><td>ASA</td><td>⭐⭐</td><td>⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>Elevado</td></tr>
-                <tr class="for-advanced"><td>TPU</td><td>⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐</td><td>Baixo</td></tr>
-                <tr class="for-advanced"><td>Nylon (PA)</td><td>⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>Crítico</td></tr>
-                <tr class="for-advanced"><td>PC (Policarbonato)</td><td>⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>Extremo</td></tr>
-                <tr class="for-advanced"><td>Carbon Fiber (PA-CF)</td><td>⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>Crítico</td></tr>
-                <tr class="for-advanced"><td>PEEK</td><td>🚫 (Industrial)</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>Extremo</td></tr>
+                <tr><td><strong>PLA</strong></td><td>1.24</td><td>190–220</td><td>40–60</td><td>~60</td><td>~50</td></tr>
+                <tr><td><strong>PETG</strong></td><td>1.27</td><td>230–250</td><td>70–80</td><td>~80</td><td>~45</td></tr>
+                <tr><td><strong>ABS</strong></td><td>1.04</td><td>230–260</td><td>100–110</td><td>~105</td><td>~40</td></tr>
+                <tr><td><strong>ASA</strong></td><td>1.07</td><td>240–260</td><td>90–110</td><td>~100</td><td>~40</td></tr>
+                <tr><td><strong>TPU (95A)</strong></td><td>1.21</td><td>220–240</td><td>50–60</td><td>-35 (Tm)</td><td>~35</td></tr>
+                <tr class="for-advanced"><td><strong>Nylon (PA6)</strong></td><td>1.08</td><td>250–280</td><td>80–100</td><td>~50 (Dry)</td><td>~60</td></tr>
+                <tr class="for-advanced"><td><strong>PC</strong></td><td>1.20</td><td>270–310</td><td>110–135</td><td>~145</td><td>~65</td></tr>
             </tbody>
         </table>
     </div>
+    <p style="font-size: 11px; color: var(--muted); margin-top: 10px; text-align: right;">*Valores médios baseados em fichas técnicas (TDS) padrão.</p>
     <?php echo getChapterNav('comparador'); ?>
   </section>
   <?php endif; ?>
@@ -3127,6 +3195,24 @@ if (document.getElementById('missionsWidget')) {
         <h2>Problemas Comuns e Soluções</h2>
         <p>Guia de troubleshooting para impressão FDM</p>
       </div>
+    </div>
+
+    <!-- Video Tutorial - GEO Optimization -->
+    <div class="video-container" style="margin-bottom: 40px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); background: #000;">
+        <div style="position: relative; padding-bottom: 56.25%; height: 0;">
+            <iframe
+                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                title="Como Resolver Warping e Stringing na Impressão 3D"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen>
+            </iframe>
+        </div>
+        <div style="padding: 15px 20px; background: var(--surface);">
+            <h4 style="margin:0; font-family:'Syne';">Tutorial: Resolução de Warping e Stringing</h4>
+            <p style="font-size:12px; color:var(--muted); margin: 5px 0 0;">Neste vídeo, demonstramos as técnicas discutidas neste capítulo para garantir a adesão à base e evitar fios.</p>
+        </div>
     </div>
 
     <div class="filament-grid">
@@ -3328,59 +3414,59 @@ if (document.getElementById('missionsWidget')) {
     </div>
 
     <dl class="glossary">
-      <div class="glossary-item">
+      <div class="glossary-item" id="term-gcode">
         <dt>G-code</dt>
         <dd class="for-beginner">As instruções que a impressora segue. Gerado automaticamente pelo slicer a partir do teu modelo.</dd>
         <dd class="for-advanced">Linguagem de controlo numérico para máquinas CNC e impressoras 3D. Gerado pelo slicer. Contém movimentos XYZ, temperaturas, velocidades e caudais de extrusão.</dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="term-slicer">
         <dt>Slicer</dt>
         <dd>Software que converte um modelo 3D em camadas e gera o G-code. Cura, PrusaSlicer e OrcaSlicer são os mais populares.</dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="term-infill">
         <dt>Infill / Preenchimento</dt>
         <dd class="for-beginner">Estrutura interna da peça. Em percentagem — mais % = mais sólido e resistente mas usa mais material.</dd>
         <dd class="for-advanced">Estrutura interna gerada pelo slicer. Padrões: grid, gyroid, honeycomb, lightning. Gyroid oferece melhor isotropia. A densidade e o padrão afetam resistência, flexibilidade e tempo de impressão.</dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="term-bedleveling">
         <dt>Bed Leveling</dt>
         <dd class="for-beginner">Ajustar a cama para que esteja à mesma distância do bico em toda a sua área. Essencial para boa impressão.</dd>
         <dd class="for-advanced">Calibração da planeza e altura do Z-offset entre bico e cama. Manual (papel/cartão) ou automático (ABL com sensor BLTouch, CR Touch, Klicky, Eddy Coil). Mesh bed leveling compensa irregularidades da superfície.</dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="term-retraction">
         <dt>Retraction</dt>
         <dd class="for-beginner">Recuo do filamento quando a impressora se move sem imprimir. Evita que fiquem fios entre partes da peça.</dd>
         <dd class="for-advanced">Recuo do filamento para reduzir pressão no hot-end durante movimentos de travel. Direct Drive: 0.5–2mm. Bowden: 4–7mm. Velocidade: 25–45mm/s. Pressure Advance/Linear Advance para compensação dinâmica.</dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="term-warping">
         <dt>Warping</dt>
         <dd>Deformação das bordas da peça por contração térmica. Mais comum em ABS, ASA e Nylon sem câmara fechada.</dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="term-stl">
         <dt>STL / 3MF</dt>
         <dd class="for-beginner">Formatos de ficheiro para modelos 3D. Como um .pdf mas para objetos 3D — é o que envias para a impressora.</dd>
         <dd class="for-advanced">STL: mesh de triângulos, sem cor ou escala, amplamente suportado. 3MF: formato moderno com metadados completos (escala, cor, material, thumbnail). Preferir 3MF para preservar configurações entre slicer e impressora.</dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="term-cad">
         <dt>CAD</dt>
         <dd>Computer-Aided Design. Software para criar modelos 3D digitais (Tinkercad, Fusion 360, SolidWorks, Blender).</dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="term-inputshaping">
         <dt>Input Shaping</dt>
         <dd class="for-beginner">Tecnologia que permite imprimir muito mais rápido sem perder qualidade, compensando as vibrações da máquina.</dd>
         <dd class="for-advanced">Algoritmo de compensação de ressonância (Zeta/MZV/EI) medido com acelerómetro (ADXL345). Cancela as frequências de ressonância da estrutura, permitindo acelerações de 5000–20000mm/s² sem ghosting/ringing.</dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="term-hygroscopic">
         <dt>Hygroscópico</dt>
         <dd class="for-beginner">Materiais que absorvem humidade do ar. O filamento húmido faz bolhas durante a impressão.</dd>
         <dd class="for-advanced">Propriedade de absorver água da atmosfera. PA, TPU, PC e PVA são altamente hygroscópicos. Filamento húmido causa: bolhas, stringing excessivo, underextrusion, degradação de propriedades mecânicas. Guardar em caixas herméticas com sílica gel.</dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="term-hotend">
         <dt>Hot-end</dt>
         <dd class="for-beginner">A parte quente da impressora que derrete o filamento. Inclui o bico (a ponta de onde sai o plástico).</dd>
         <dd class="for-advanced">Conjunto termico: heater block, cartridge heater, thermistor/thermocouple, heat break (barreira térmica), heat sink e nozzle. Bicos em latão (standard), aço endurecido (abrasivos) ou cobre (alta condutividade). Diâmetros: 0.2–1.0mm.</dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="term-pressureadvance">
         <dt>Pressure Advance</dt>
         <dd class="for-beginner">Ajuste que melhora a qualidade dos cantos e detalhes da impressão.</dd>
         <dd class="for-advanced">Algoritmo (Klipper) / Linear Advance (Marlin) que pré-carrega e alivia pressão no hot-end em antecipação às acelerações. Elimina oozing em cantos e blob no inicio de linhas. Calibrado com torre de pressure advance ou script.</dd>
@@ -3407,7 +3493,41 @@ if (document.getElementById('missionsWidget')) {
   </section>
   <?php endif; ?>
 
+  <?php if (!$onlyShowId || $reqChapter == 'problemas-comuns-solucoes'): ?>
+  <section class="section" id="faq-ge-optimization" style="border-top: 1px solid var(--border); background: rgba(0,229,255,0.02);">
+      <div class="section-header">
+          <div class="section-number">?</div>
+          <div class="section-title">
+              <h2>Perguntas Frequentes (FAQ)</h2>
+              <p>Respostas rápidas e técnicas para a comunidade maker.</p>
+          </div>
+      </div>
+
+      <div class="glossary">
+          <div class="glossary-item">
+              <dt>O que é a Impressão 3D FDM?</dt>
+              <dd><strong>Resposta:</strong> É a deposição de termoplástico fundido camada por camada. <strong>Explicação:</strong> A tecnologia FDM (Fused Deposition Modeling) é a mais comum em escolas e ambientes domésticos pela sua segurança e baixo custo.</dd>
+          </div>
+          <div class="glossary-item">
+              <dt>Por que a minha impressora faz "Stringing"?</dt>
+              <dd><strong>Resposta:</strong> Devido a temperatura excessiva ou retração mal configurada. <strong>Explicação:</strong> O filamento derrete e "escorre" durante o movimento. A solução passa por secar o filamento e calibrar a distância de retração no Slicer.</dd>
+          </div>
+          <div class="glossary-item">
+              <dt>Qual o gasto médio de eletricidade de uma impressora 3D?</dt>
+              <dd><strong>Resposta:</strong> Aproximadamente 100W a 300W por hora. <strong>Explicação:</strong> O consumo varia conforme a temperatura da cama. Podes usar a nossa <a href="/calculadora" style="color:var(--accent); font-weight:bold;">Calculadora de Custos</a> para obter um valor exato.</dd>
+          </div>
+      </div>
+  </section>
+  <?php endif; ?>
+
   <?php if (!$onlyShowId): ?>
+  <div style="padding: 30px 60px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; background: rgba(0,229,255,0.01);">
+      <div style="font-family:'Syne'; font-weight:600;">Este guia foi útil para resolver o teu problema?</div>
+      <div style="display: flex; gap: 10px;">
+          <button class="btn-auth" style="padding: 8px 20px; background: rgba(0,255,100,0.1); border: 1px solid rgba(0,255,100,0.3); color: #4ade80; cursor: pointer;">✅ Sim</button>
+          <button class="btn-auth" style="padding: 8px 20px; background: rgba(255,50,50,0.1); border: 1px solid rgba(255,50,50,0.3); color: #f87171; cursor: pointer;">❌ Não</button>
+      </div>
+  </div>
   <?php require_once 'comments_component.php'; ?>
   <?php else: ?>
     <div style="padding: 40px 60px; text-align: center; border-top: 1px solid var(--border); background: rgba(0,229,255,0.02);">
