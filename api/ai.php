@@ -1,6 +1,6 @@
 <?php
 /**
- * api/ai.php — Endpoint da IA (Grok xAI)
+ * api/ai.php — Endpoint da IA (Qwen 2.5)
  * Modos: 'manual' (bot flutuante), 'forum' (bot fórum), 'assistant' (página completa c/ histórico)
  */
 require_once __DIR__ . '/../includes/functions.php';
@@ -183,27 +183,27 @@ if ($mode === 'assistant') {
     $messages[] = ['role' => 'user', 'content' => $message];
 }
 
-// ── CHAMADA À API GROQ ────────────────────────────────────────
-if (empty(GROQ_API_KEY)) {
-    echo json_encode(['success' => false, 'error' => 'Chave da API Groq não configurada no servidor.']);
+// ── CHAMADA À API ─────────────────────────────────────────────
+if (empty(AI_API_KEY)) {
+    echo json_encode(['success' => false, 'error' => 'Chave da API não configurada no servidor.']);
     exit;
 }
 
 $payload = json_encode([
-    'model'    => GROQ_MODEL,
+    'model'    => AI_MODEL,
     'messages' => $messages,
     'temperature' => 0.7,
     'stream' => false
 ]);
 
-$ch = curl_init(GROQ_API_URL);
+$ch = curl_init(AI_API_URL);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST           => true,
     CURLOPT_POSTFIELDS     => $payload,
     CURLOPT_HTTPHEADER     => [
         'Content-Type: application/json',
-        'Authorization: Bearer ' . GROQ_API_KEY
+        'Authorization: Bearer ' . AI_API_KEY
     ],
     CURLOPT_TIMEOUT => 30,
 ]);
@@ -224,13 +224,13 @@ if ($httpCode !== 200 || !isset($data['choices'][0]['message']['content'])) {
         }
     }
 
-    // Adicionar log do payload para debug (CUIDADO: remove isto depois)
-    error_log("Groq API Error ($httpCode). Payload enviado: " . $payload);
+    // Adicionar log do payload para debug
+    error_log("AI API Error ($httpCode). Payload enviado: " . $payload);
     error_log("Resposta da API: " . $response);
 
     echo json_encode([
         'success' => false,
-        'error' => "Erro ($httpCode): $err"
+        'error' => "Erro na API ($httpCode): $err"
     ]);
     exit;
 }
