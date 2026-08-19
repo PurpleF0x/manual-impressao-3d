@@ -237,6 +237,10 @@ if ($httpCode !== 200 || !isset($data['choices'][0]['message']['content'])) {
 
 $reply = trim($data['choices'][0]['message']['content']);
 
+// Limpar tags <think> do modelo Qwen 3.6 para não aparecerem no chat
+$reply = preg_replace('/<think>[\s\S]*?<\/think>/i', '', $reply);
+$reply = trim($reply);
+
 // Guardar se for assistant
 if ($mode === 'assistant' && isset($currentUser) && $currentUser && $convId) {
     $db->prepare("INSERT INTO ai_messages (conversation_id, role, content) VALUES (?,?,?)")->execute([$convId, 'user', $message]);
