@@ -9,8 +9,8 @@ $envKey = $envKey ?: ($_ENV['AI_API_KEY'] ?? ($_SERVER['AI_API_KEY'] ?? ''));
 
 define('AI_API_KEY', $envKey);
 
-// Modelo Qwen 2.5 32b - Excelente equilíbrio entre velocidade e precisão técnica
-define('AI_MODEL', 'qwen-2.5-32b');
+// Modelo Qwen 3.6 27b - Versão mais recente e eficiente (Agosto 2026)
+define('AI_MODEL', 'qwen/qwen3.6-27b');
 
 // URL da API (Pode ser Groq, OpenRouter, ou outros provedores compatíveis com OpenAI)
 define('AI_API_URL', 'https://api.groq.com/openai/v1/chat/completions');
