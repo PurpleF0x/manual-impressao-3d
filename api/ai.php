@@ -1,6 +1,6 @@
 <?php
 /**
- * api/ai.php — Endpoint da IA (Qwen 2.5)
+ * api/ai.php — Endpoint da IA (Gemini API com Fallback OpenRouter)
  * Modos: 'manual' (bot flutuante), 'forum' (bot fórum), 'assistant' (página completa c/ histórico)
  */
 require_once __DIR__ . '/../includes/functions.php';
@@ -138,8 +138,54 @@ if ($mode === 'assistant') {
     }
     $messages[] = ['role' => 'user', 'content' => $message];
 
+} elseif ($mode === 'forum') {
+    // ── MODO FÓRUM (IA do Fórum) ──────────────────────────────
+    if (!isset($_SESSION['ai_count'])) $_SESSION['ai_count'] = 0;
+    $_SESSION['ai_count']++;
+    if ($_SESSION['ai_count'] > 20) {
+        echo json_encode(['success' => false, 'error' => 'Limite atingido.']); exit;
+    }
+
+    $history = $input['history'] ?? [];
+    $aiMode  = in_array($input['ai_mode'] ?? '', ['beginner','advanced']) ? $input['ai_mode'] : 'beginner';
+
+    $manualKnowledge = "
+    BASE DE CONHECIMENTO DO MANUAL 3D (PRIORIDADE MÁXIMA):
+    - PLA: 190-220°C. PETG: 230-250°C. ABS/ASA: 240-260°C.
+    - TROUBLESHOOTING: STRINGING (Reduzir 5°C; Aumentar retração), WARPING (Mesa quente; Brim; Enclosure).
+    ";
+
+    if ($aiMode === 'beginner') {
+        $personality = "Tu és o Print AI no MODO INICIANTE. Explica tudo de forma muito simples, como se falasses com alguém que nunca viu uma impressora. Usa analogias amigáveis.";
+    } else {
+        $personality = "Tu és o Print AI no MODO TÉCNICO AVANÇADO. Fala como um engenheiro sénior, sê direto e rigoroso. Usa jargão técnico (viscosidade, polímeros, e-steps).";
+    }
+
+    $systemPrompt = "Atua como o 'Print AI', o especialista oficial do 'Manual de Impressão 3D' (manual-3d.pt).
+
+    OBJETIVO:
+    Fornecer suporte técnico preciso, seguro e baseado no conteúdo do manual.
+
+    INSTRUÇÕES DE RESPOSTA:
+    0. IMPORTANTE: NÃO te apresentes. Responde diretamente à dúvida do utilizador de forma prática.
+    1. PRIORIDADE: Consulta a 'BASE DE CONHECIMENTO DO MANUAL 3D' abaixo antes de qualquer outra fonte.
+    2. SEMÂNTICA: Usa termos técnicos avançados (Tg, Higroscopia, Refrigeração Ativa) mas explica-os se o utilizador estiver no modo iniciante ({$aiMode}).
+    3. REFERÊNCIA INTERNA: Sempre que falares de problemas técnicos, refere o 'Capítulo 08: Problemas Comuns'. Se a dúvida for sobre custos, direciona para a 'Calculadora de Custos'.
+    4. SEGURANÇA: Sempre que o utilizador perguntar sobre ABS, ASA ou resinas, avisa obrigatoriamente sobre a necessidade de ventilação e filtragem de VOCs.
+    5. ESTILO: Fala sempre em PT-PT. {$personality}
+
+    {$manualKnowledge}";
+
+    $messages = [['role' => 'system', 'content' => $systemPrompt]];
+    foreach (array_slice($history, -6) as $h) {
+        if (isset($h['role'], $h['content'])) {
+            $messages[] = ['role' => $h['role'], 'content' => $h['content']];
+        }
+    }
+    $messages[] = ['role' => 'user', 'content' => $message];
+
 } else {
-    // MODO MANUAL / FORUM
+    // ── MODO MANUAL (IA do Manual) ─────────────────────────────
     if (!isset($_SESSION['ai_count'])) $_SESSION['ai_count'] = 0;
     $_SESSION['ai_count']++;
     if ($_SESSION['ai_count'] > 20) {
@@ -186,60 +232,19 @@ if ($mode === 'assistant') {
 }
 
 // ── CHAMADA À API ─────────────────────────────────────────────
-if (empty(AI_API_KEY)) {
-    echo json_encode(['success' => false, 'error' => 'Chave da API não configurada no servidor.']);
-    exit;
-}
+$aiResult = generateAIResponse($messages, 0.7);
 
-$payload = json_encode([
-    'model'    => AI_MODEL,
-    'messages' => $messages,
-    'temperature' => 0.7,
-    'stream' => false
-]);
-
-$ch = curl_init(AI_API_URL);
-curl_setopt_array($ch, [
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_POST           => true,
-    CURLOPT_POSTFIELDS     => $payload,
-    CURLOPT_HTTPHEADER     => [
-        'Content-Type: application/json',
-        'Authorization: Bearer ' . AI_API_KEY
-    ],
-    CURLOPT_TIMEOUT => 30,
-]);
-
-$response = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-$curlError = curl_error($ch);
-curl_close($ch);
-
-$data = json_decode($response, true);
-if ($httpCode !== 200 || !isset($data['choices'][0]['message']['content'])) {
-    $err = 'Erro desconhecido';
-    if (isset($data['error'])) {
-        if (is_array($data['error'])) {
-            $err = $data['error']['message'] ?? $data['error']['error'] ?? json_encode($data['error']);
-        } else {
-            $err = $data['error'];
-        }
-    }
-
-    // Adicionar log do payload para debug
-    error_log("AI API Error ($httpCode). Payload enviado: " . $payload);
-    error_log("Resposta da API: " . $response);
-
+if (!$aiResult['success']) {
     echo json_encode([
         'success' => false,
-        'error' => "Erro na API ($httpCode): $err"
+        'error'   => $aiResult['error']
     ]);
     exit;
 }
 
-$reply = trim($data['choices'][0]['message']['content']);
+$reply = $aiResult['reply'];
 
-// Limpar tags <think> do modelo Qwen 3.6 para não aparecerem no chat
+// Limpar tags <think> caso o modelo de IA as devolva (ex: modelos de raciocínio/DeepSeek no OpenRouter)
 $reply = preg_replace('/<think>[\s\S]*?<\/think>/i', '', $reply);
 $reply = trim($reply);
 
