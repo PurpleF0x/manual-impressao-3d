@@ -15,21 +15,21 @@ $currentUser = isLoggedIn() ? getCurrentUser() : null;
  * Manual; mantemos assim a pesquisa da homepage ligada apenas a destinos reais.
  */
 $manualSearchIndex = [
-    ['title' => 'O que é a Impressão 3D?', 'url' => '/manual/o-que-e-impressao-3d', 'type' => 'Manual técnico', 'description' => 'Conceitos fundamentais e fabricação aditiva.', 'terms' => 'impressao 3d impressão 3d conceito conceitos basico básico fabricacao fabricação aditiva camada camada a camada aprender alunos professores escola'],
-    ['title' => 'Como Funciona?', 'url' => '/manual/como-funciona', 'type' => 'Manual técnico', 'description' => 'Do modelo digital à peça final.', 'terms' => 'como funciona processo primeira impressao impressão modelo ficheiro arquivo stl 3mf slicer preparar impressora imprimir calibrar calibracao calibração'],
-    ['title' => 'Tipos de Impressoras', 'url' => '/manual/tipos-de-impressoras-3d', 'type' => 'Manual técnico', 'description' => 'Tecnologias FDM, SLA e SLS.', 'terms' => 'impressora impressoras fdm sla resina sls tecnologia tipos escolher maquina máquina'],
-    ['title' => 'Iniciantes vs Profissional', 'url' => '/manual/iniciantes-vs-pro', 'type' => 'Manual técnico', 'description' => 'Diferenças entre impressoras de entrada e profissionais.', 'terms' => 'iniciante iniciantes profissional pro impressora entrada comprar escolher comparação comparacao'],
-    ['title' => 'Tipos de Filamento', 'url' => '/manual/materiais-e-filamentos', 'type' => 'Manual técnico', 'description' => 'Materiais FDM e as suas características.', 'terms' => 'filamento filamentos material materiais pla petg abs asa tpu nylon pa cf peek temperatura bico cama'],
-    ['title' => 'Matriz Técnica de Filamentos', 'url' => '/manual/comparador-de-materiais', 'type' => 'Manual técnico', 'description' => 'Comparação técnica de materiais.', 'terms' => 'comparador comparar filamento materiais densidade resistencia resistência temperatura mesa bico tg tracao tração pla petg abs asa tpu nylon'],
-    ['title' => 'Qual Filamento Usar?', 'url' => '/manual/qual-filamento-usar', 'type' => 'Manual técnico', 'description' => 'Seleção de material por aplicação.', 'terms' => 'qual filamento escolher decorativo funcional exterior flexivel flexível escola sala aula performance pla petg asa tpu'],
-    ['title' => 'Parâmetros de Impressão', 'url' => '/manual/parametros-de-impressao', 'type' => 'Manual técnico', 'description' => 'Altura de camada, preenchimento, velocidade e temperatura.', 'terms' => 'parametros parâmetros configurar configurar calibrar calibracao calibração slicer altura camada infill preenchimento velocidade temperatura suporte suportes paredes'],
-    ['title' => 'Problemas Comuns e Soluções', 'url' => '/manual/problemas-comuns-solucoes#problemas', 'type' => 'Resolver problemas', 'description' => 'Troubleshooting para impressões FDM.', 'terms' => 'problema problemas solucao solução troubleshooting warping stringing layer splitting camadas under extrusion under-extrusion ghosting adesao adesão descola fios buracos ondulacoes ondulações'],
-    ['title' => 'Dicas e Boas Práticas', 'url' => '/manual/dicas-e-boas-praticas', 'type' => 'Manual técnico', 'description' => 'Primeira camada, testes, orientação e manutenção.', 'terms' => 'dicas boas praticas práticas primeira camada calibrar calibração teste orientacao orientação manutencao manutenção cama perfis'],
-    ['title' => 'Software Essencial', 'url' => '/manual/software-essencial-3d', 'type' => 'Manual técnico', 'description' => 'Slicers, CAD e repositórios de modelos.', 'terms' => 'software slicer prusaslicer orcaslicer cura tinkercad fusion 360 blender cad modelo modelos design'],
+    ['title' => 'O que é a Impressão 3D?', 'url' => '/manual/o-que-e-impressao-3d', 'type' => 'Manual', 'description' => 'Conceitos fundamentais e fabricação aditiva.', 'terms' => 'impressao 3d impressão 3d conceito conceitos basico básico fabricacao fabricação aditiva camada camada a camada aprender alunos professores escola'],
+    ['title' => 'Como Funciona?', 'url' => '/manual/como-funciona', 'type' => 'Manual', 'description' => 'Do modelo digital à peça final.', 'terms' => 'como funciona processo primeira impressao impressão modelo ficheiro arquivo stl 3mf slicer preparar impressora imprimir calibrar calibracao calibração'],
+    ['title' => 'Tipos de Impressoras', 'url' => '/manual/tipos-de-impressoras-3d', 'type' => 'Manual', 'description' => 'Tecnologias FDM, SLA e SLS.', 'terms' => 'impressora impressoras fdm sla resina sls tecnologia tipos escolher maquina máquina'],
+    ['title' => 'Iniciantes vs Profissional', 'url' => '/manual/iniciantes-vs-pro', 'type' => 'Manual', 'description' => 'Diferenças entre impressoras de entrada e profissionais.', 'terms' => 'iniciante iniciantes profissional pro impressora entrada comprar escolher comparação comparacao'],
+    ['title' => 'Tipos de Filamento', 'url' => '/manual/materiais-e-filamentos', 'type' => 'Manual', 'description' => 'Materiais FDM e as suas características.', 'terms' => 'filamento filamentos material materiais pla petg abs asa tpu nylon pa cf peek temperatura bico cama'],
+    ['title' => 'Matriz Técnica de Filamentos', 'url' => '/manual/comparador-de-materiais', 'type' => 'Manual', 'description' => 'Comparação técnica de materiais.', 'terms' => 'comparador comparar filamento materiais densidade resistencia resistência temperatura mesa bico tg tracao tração pla petg abs asa tpu nylon'],
+    ['title' => 'Qual Filamento Usar?', 'url' => '/manual/qual-filamento-usar', 'type' => 'Manual', 'description' => 'Seleção de material por aplicação.', 'terms' => 'qual filamento escolher decorativo funcional exterior flexivel flexível escola sala aula performance pla petg asa tpu'],
+    ['title' => 'Parâmetros de Impressão', 'url' => '/manual/parametros-de-impressao', 'type' => 'Manual', 'description' => 'Altura de camada, preenchimento, velocidade e temperatura.', 'terms' => 'parametros parâmetros configurar configurar calibrar calibracao calibração slicer altura camada infill preenchimento velocidade temperatura suporte suportes paredes'],
+    ['title' => 'Problemas Comuns e Soluções', 'url' => '/manual/problemas-comuns-solucoes#problemas', 'type' => 'Problema', 'description' => 'Guia de diagnóstico para impressões FDM.', 'terms' => 'problema problemas solucao solução troubleshooting warping stringing layer splitting camadas under extrusion under-extrusion ghosting adesao adesão descola fios buracos ondulacoes ondulações'],
+    ['title' => 'Dicas e Boas Práticas', 'url' => '/manual/dicas-e-boas-praticas', 'type' => 'Manual', 'description' => 'Primeira camada, testes, orientação e manutenção.', 'terms' => 'dicas boas praticas práticas primeira camada calibrar calibração teste orientacao orientação manutencao manutenção cama perfis'],
+    ['title' => 'Software Essencial', 'url' => '/manual/software-essencial-3d', 'type' => 'Manual', 'description' => 'Slicers, CAD e repositórios de modelos.', 'terms' => 'software slicer prusaslicer orcaslicer cura tinkercad fusion 360 blender cad modelo modelos design'],
     ['title' => 'Glossário', 'url' => '/manual/glossario-termos-tecnicos', 'type' => 'Referência técnica', 'description' => 'Termos essenciais da impressão 3D.', 'terms' => 'glossario glossário termo termos gcode g-code slicer infill bed leveling retraction warping stl 3mf cad hotend hot-end pressure advance'],
     ['title' => 'Calculadora de Custos', 'url' => '/calculadora', 'type' => 'Ferramenta', 'description' => 'Estima filamento e eletricidade por impressão.', 'terms' => 'calculadora custo custos filamento eletricidade energia preco preço orçamento'],
-    ['title' => 'Fórum Manual 3D', 'url' => '/forum/', 'type' => 'Comunidade', 'description' => 'Perguntas, discussões e comunidades.', 'terms' => 'forum fórum comunidade pergunta perguntas discutir discussão topico tópico ajuda maker'],
-    ['title' => 'IA do Manual', 'url' => '/ai', 'type' => 'Assistência', 'description' => 'Assistente para aprendizagem e orientação.', 'terms' => 'ia ai inteligencia inteligência assistente ajuda perguntar orientação orientacao manual'],
+    ['title' => 'Fórum Manual 3D', 'url' => '/forum/', 'type' => 'Fórum', 'description' => 'Perguntas, discussões e comunidades.', 'terms' => 'forum fórum comunidade pergunta perguntas discutir discussão topico tópico ajuda maker'],
+    ['title' => 'IA do Manual', 'url' => '/ai', 'type' => 'IA do Manual', 'description' => 'Assistente para aprendizagem e orientação.', 'terms' => 'ia ai inteligencia inteligência assistente ajuda perguntar orientação orientacao manual'],
 ];
 ?>
 <!doctype html>
@@ -105,7 +105,7 @@ $manualSearchIndex = [
         .brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 9px; background: var(--ink); color: #fff; font-family: "DM Mono", monospace; font-size: .72rem; letter-spacing: -.1em; }
         .primary-nav { display: flex; align-items: center; gap: 3px; }
         .primary-nav a { padding: 8px 11px; border-radius: 8px; color: #435057; font-size: .84rem; font-weight: 700; text-decoration: none; }
-        .primary-nav a:hover { background: #e9eeeb; color: var(--ink); }
+        .primary-nav a:hover, .primary-nav a[aria-current="true"] { background: #e9eeeb; color: var(--teal-deep); }
         .header-actions { display: flex; align-items: center; gap: 9px; }
         .header-actions a { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; padding: 8px 13px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); font-size: .8rem; font-weight: 800; text-decoration: none; white-space: nowrap; }
         .header-actions .account-link { border-color: var(--ink); background: var(--ink); color: #fff; }
@@ -132,13 +132,14 @@ $manualSearchIndex = [
         .button.primary { background: #b7eee4; color: #0c3733; }
         .button.secondary { border-color: rgba(255,255,255,.28); color: #fff; }
         .button.secondary:hover { border-color: #fff; background: rgba(255,255,255,.08); }
-        .quick-search { display: flex; align-items: center; width: min(100%, 555px); min-height: 58px; margin-top: 42px; border: 1px solid rgba(255,255,255,.2); border-radius: 13px; background: rgba(255,255,255,.08); transition: background .18s ease, border-color .18s ease; }
+        .hero-search-wrap { position: relative; width: min(100%, 555px); margin-top: 42px; }
+        .quick-search { display: flex; align-items: center; width: 100%; min-height: 58px; border: 1px solid rgba(255,255,255,.2); border-radius: 13px; background: rgba(255,255,255,.08); transition: background .18s ease, border-color .18s ease; }
         .quick-search:focus-within { border-color: #a6e8dc; background: rgba(255,255,255,.13); }
         .quick-search svg { width: 21px; height: 21px; flex: 0 0 auto; margin: 0 12px 0 17px; color: #a6e8dc; }
         .quick-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: #fff; font-size: .9rem; }
         .quick-search input::placeholder { color: #c2ceca; }
         .search-key { margin-right: 12px; padding: 3px 7px; border: 1px solid rgba(255,255,255,.2); border-radius: 5px; color: #b8c7c2; font-family: "DM Mono", monospace; font-size: .64rem; white-space: nowrap; }
-        .hero-search-results { position: absolute; z-index: 5; width: min(555px, calc(100% - 48px)); margin-top: 6px; overflow: hidden; border: 1px solid #cdd8d3; border-radius: 13px; background: #fff; box-shadow: var(--shadow); }
+        .hero-search-results { position: absolute; z-index: 5; top: calc(100% + 6px); left: 0; width: 100%; max-height: min(58vh, 460px); overflow: auto; border: 1px solid #cdd8d3; border-radius: 13px; background: #fff; box-shadow: var(--shadow); }
         .hero-search-results:empty { display: none; }
         .search-result { display: block; padding: 11px 16px; border-bottom: 1px solid #edf0ee; color: var(--ink); text-decoration: none; }
         .search-result:last-child { border-bottom: 0; }
@@ -219,7 +220,7 @@ $manualSearchIndex = [
         .problem .problem-mark { color: var(--orange); font-family: "DM Mono", monospace; font-size: .68rem; letter-spacing: .07em; text-transform: uppercase; }
         .problem h3 { margin: 18px 0 5px; font-size: 1.02rem; letter-spacing: -.03em; }
         .problem p { margin: 0; color: var(--ink-soft); font-size: .75rem; }
-        .problem span:last-child { margin-top: 16px; color: var(--teal-deep); font-size: .9rem; font-weight: 800; }
+        .problem-action { display: block; margin-top: 16px; color: var(--teal-deep); font-size: .82rem; font-weight: 800; }
         .trouble-footer { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 24px; padding: 22px 0 0; }
         .trouble-footer p { margin: 0; color: var(--ink-soft); font-size: .86rem; }
 
@@ -306,9 +307,9 @@ $manualSearchIndex = [
             .hero-intro { margin-top: 19px; font-size: .96rem; }
             .hero-actions { margin-top: 25px; }
             .button { width: 100%; min-height: 47px; }
-            .quick-search { margin-top: 29px; }
+            .hero-search-wrap { margin-top: 29px; }
             .search-key { display: none; }
-            .hero-search-results { width: calc(100% - 32px); }
+            .hero-search-results { width: 100%; }
             .printer-visual { margin-left: -4px; width: calc(100% + 8px); }
             .printer-caption { font-size: .58rem; }
             .path-section, .knowledge-section, .tools-section, .troubleshooting-section { padding: 64px 0; }
@@ -387,13 +388,15 @@ $manualSearchIndex = [
                         <a class="button primary" href="#começar">Começar pelo essencial <span aria-hidden="true">→</span></a>
                         <a class="button secondary" href="#resolver">Tenho um problema</a>
                     </div>
-                    <div class="quick-search" role="search">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
-                        <label class="sr-only" for="manual-search">Pesquisar no Manual e no Fórum</label>
-                        <input id="manual-search" type="search" autocomplete="off" placeholder="Procura um tema, material ou problema…" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
-                        <span class="search-key" aria-hidden="true">Ctrl K</span>
+                    <div class="hero-search-wrap">
+                        <div class="quick-search" role="search">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                            <label class="sr-only" for="manual-search">Pesquisar no Manual e no Fórum</label>
+                            <input id="manual-search" type="search" role="combobox" autocomplete="off" placeholder="Procura um tema, material ou problema…" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list" aria-haspopup="listbox">
+                            <span class="search-key" aria-hidden="true">Ctrl K</span>
+                        </div>
+                        <div class="hero-search-results" id="search-results" role="listbox" aria-label="Resultados da pesquisa" aria-live="polite"></div>
                     </div>
-                    <div class="hero-search-results" id="search-results" role="listbox" aria-label="Resultados da pesquisa" aria-live="polite"></div>
                     <div class="hero-footnote"><span aria-hidden="true"></span> Guias técnicos, ferramentas e comunidade no mesmo lugar.</div>
                 </div>
                 <div class="printer-visual" aria-hidden="true">
@@ -476,15 +479,15 @@ $manualSearchIndex = [
 
         <section class="troubleshooting-section" id="resolver" aria-labelledby="troubleshoot-title">
             <div class="shell">
-                <div class="section-head"><div><p class="eyebrow">Diagnóstico</p><h2 id="troubleshoot-title">Alguma coisa não está a correr bem?</h2></div><p>Parte do sintoma que estás a ver e abre o guia de problemas comuns do Manual.</p></div>
+                <div class="section-head"><div><p class="eyebrow">Diagnóstico</p><h2 id="troubleshoot-title">Alguma coisa não está a correr bem?</h2></div><p>Reconhece o sintoma e abre o guia real de problemas comuns do Manual.</p></div>
                 <div class="problem-grid">
-                    <a class="problem" href="/manual/problemas-comuns-solucoes#problemas"><span class="problem-mark">Peça descola</span><span><h3>Warping</h3><p>As bordas levantam da cama durante a impressão.</p></span><span>Ver solução →</span></a>
-                    <a class="problem" href="/manual/problemas-comuns-solucoes#problemas"><span class="problem-mark">Fios entre peças</span><span><h3>Stringing</h3><p>Fios finos ligam partes que deviam ficar separadas.</p></span><span>Ver solução →</span></a>
-                    <a class="problem" href="/manual/problemas-comuns-solucoes#problemas"><span class="problem-mark">Camadas separam</span><span><h3>Layer Splitting</h3><p>As camadas não estão a aderir umas às outras.</p></span><span>Ver solução →</span></a>
-                    <a class="problem" href="/manual/problemas-comuns-solucoes#problemas"><span class="problem-mark">Falta material</span><span><h3>Under-extrusion</h3><p>Há buracos ou paredes fracas na peça.</p></span><span>Ver solução →</span></a>
-                    <a class="problem" href="/manual/problemas-comuns-solucoes#problemas"><span class="problem-mark">Ondulações</span><span><h3>Ghosting</h3><p>Ondas ou ecos aparecem nas paredes da impressão.</p></span><span>Ver solução →</span></a>
+                    <a class="problem" href="/manual/problemas-comuns-solucoes#problemas"><span class="problem-mark">Peça descola</span><span><h3>Warping</h3><p>As bordas levantam da cama durante a impressão.</p></span><span class="problem-action">Abrir guia de problemas →</span></a>
+                    <a class="problem" href="/manual/problemas-comuns-solucoes#problemas"><span class="problem-mark">Fios entre peças</span><span><h3>Stringing</h3><p>Fios finos ligam partes que deviam ficar separadas.</p></span><span class="problem-action">Abrir guia de problemas →</span></a>
+                    <a class="problem" href="/manual/problemas-comuns-solucoes#problemas"><span class="problem-mark">Camadas separam</span><span><h3>Layer Splitting</h3><p>As camadas não estão a aderir umas às outras.</p></span><span class="problem-action">Abrir guia de problemas →</span></a>
+                    <a class="problem" href="/manual/problemas-comuns-solucoes#problemas"><span class="problem-mark">Falta material</span><span><h3>Under-extrusion</h3><p>Há buracos ou paredes fracas na peça.</p></span><span class="problem-action">Abrir guia de problemas →</span></a>
+                    <a class="problem" href="/manual/problemas-comuns-solucoes#problemas"><span class="problem-mark">Ondulações</span><span><h3>Ghosting</h3><p>Ondas ou ecos aparecem nas paredes da impressão.</p></span><span class="problem-action">Abrir guia de problemas →</span></a>
                 </div>
-                <div class="trouble-footer"><p>O capítulo inclui ainda indicações de segurança para trabalhar com impressoras 3D.</p><a class="text-link" href="/forum/comunidade?slug=troubleshooting">Discutir um problema no Fórum</a></div>
+                <div class="trouble-footer"><p>O Manual reúne estes sintomas num único guia; não existem artigos individuais para cada um. O capítulo inclui ainda indicações de segurança.</p><a class="text-link" href="/forum/comunidade?slug=troubleshooting">Discutir um problema no Fórum</a></div>
             </div>
         </section>
 
@@ -498,8 +501,8 @@ $manualSearchIndex = [
             <div class="shell">
                 <div class="section-head"><div><p class="eyebrow">Comunidade e assistência</p><h2 id="community-title">Aprende também com outros makers.</h2></div><p>O Fórum e a IA do Manual são espaços diferentes, com funções complementares.</p></div>
                 <div class="community-grid">
-                    <article class="community-card"><h3>Leva a questão para a comunidade.</h3><p>No Fórum podes iniciar uma discussão, responder a outros utilizadores, partilhar experiências e acompanhar conversas sobre impressão 3D.</p><ul class="community-points"><li>Fazer uma pergunta</li><li>Responder a uma discussão</li><li>Partilhar uma experiência</li><li>Explorar comunidades</li></ul><a class="button" href="/forum/">Abrir o Fórum <span aria-hidden="true">→</span></a><p class="forum-ai-note">O assistente IA do Fórum mantém-se no próprio Fórum e é independente da IA do Manual.</p></article>
-                    <article class="community-card manual-ai-card"><div class="manual-ai-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="6" width="14" height="12" rx="3"/><path d="M12 3v3M9 11h.01M15 11h.01M9 15h6" stroke-linecap="round"/><path d="M3 10v4M21 10v4"/></svg></div><h3>Precisas de ajuda?</h3><p>A IA do Manual pode ajudar-te a encontrar informação e orientar-te na resolução de problemas de impressão 3D.</p><a class="button" href="/ai">Abrir a IA do Manual <span aria-hidden="true">→</span></a></article>
+                    <article class="community-card"><h3>Leva a questão para a comunidade.</h3><p>No Fórum podes iniciar uma discussão, responder a outros utilizadores, partilhar experiências e acompanhar conversas sobre impressão 3D.</p><ul class="community-points"><li>Fazer uma pergunta</li><li>Responder a uma discussão</li><li>Partilhar uma experiência</li><li>Explorar comunidades</li></ul><a class="button" href="/forum/">Abrir o Fórum <span aria-hidden="true">→</span></a><p class="forum-ai-note"><strong>IA do Fórum:</strong> o assistente disponível no próprio Fórum. É uma experiência independente da IA do Manual.</p></article>
+                    <article class="community-card manual-ai-card"><div class="manual-ai-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="6" width="14" height="12" rx="3"/><path d="M12 3v3M9 11h.01M15 11h.01M9 15h6" stroke-linecap="round"/><path d="M3 10v4M21 10v4"/></svg></div><h3>A IA complementa o Manual.</h3><p>O Manual contém o conhecimento. A IA do Manual ajuda a encontrar informação e a orientar o diagnóstico, sem substituir os guias técnicos.</p><a class="button" href="/ai">Abrir a IA do Manual <span aria-hidden="true">→</span></a></article>
                 </div>
             </div>
         </section>
