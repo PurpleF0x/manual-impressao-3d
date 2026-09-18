@@ -7,6 +7,30 @@ require_once 'includes/functions.php';
 require_once 'includes/user_notices.php';
 
 $currentUser = isLoggedIn() ? getCurrentUser() : null;
+
+/*
+ * Índice de descoberta da V2. As rotas, títulos e temas abaixo correspondem
+ * aos capítulos públicos presentes em index.php e sitemap.xml. Não é usado
+ * api/search.php porque, atualmente, essa API devolve URLs simulados para o
+ * Manual; mantemos assim a pesquisa da homepage ligada apenas a destinos reais.
+ */
+$manualSearchIndex = [
+    ['title' => 'O que é a Impressão 3D?', 'url' => '/manual/o-que-e-impressao-3d', 'type' => 'Manual técnico', 'description' => 'Conceitos fundamentais e fabricação aditiva.', 'terms' => 'impressao 3d impressão 3d conceito conceitos basico básico fabricacao fabricação aditiva camada camada a camada aprender alunos professores escola'],
+    ['title' => 'Como Funciona?', 'url' => '/manual/como-funciona', 'type' => 'Manual técnico', 'description' => 'Do modelo digital à peça final.', 'terms' => 'como funciona processo primeira impressao impressão modelo ficheiro arquivo stl 3mf slicer preparar impressora imprimir calibrar calibracao calibração'],
+    ['title' => 'Tipos de Impressoras', 'url' => '/manual/tipos-de-impressoras-3d', 'type' => 'Manual técnico', 'description' => 'Tecnologias FDM, SLA e SLS.', 'terms' => 'impressora impressoras fdm sla resina sls tecnologia tipos escolher maquina máquina'],
+    ['title' => 'Iniciantes vs Profissional', 'url' => '/manual/iniciantes-vs-pro', 'type' => 'Manual técnico', 'description' => 'Diferenças entre impressoras de entrada e profissionais.', 'terms' => 'iniciante iniciantes profissional pro impressora entrada comprar escolher comparação comparacao'],
+    ['title' => 'Tipos de Filamento', 'url' => '/manual/materiais-e-filamentos', 'type' => 'Manual técnico', 'description' => 'Materiais FDM e as suas características.', 'terms' => 'filamento filamentos material materiais pla petg abs asa tpu nylon pa cf peek temperatura bico cama'],
+    ['title' => 'Matriz Técnica de Filamentos', 'url' => '/manual/comparador-de-materiais', 'type' => 'Manual técnico', 'description' => 'Comparação técnica de materiais.', 'terms' => 'comparador comparar filamento materiais densidade resistencia resistência temperatura mesa bico tg tracao tração pla petg abs asa tpu nylon'],
+    ['title' => 'Qual Filamento Usar?', 'url' => '/manual/qual-filamento-usar', 'type' => 'Manual técnico', 'description' => 'Seleção de material por aplicação.', 'terms' => 'qual filamento escolher decorativo funcional exterior flexivel flexível escola sala aula performance pla petg asa tpu'],
+    ['title' => 'Parâmetros de Impressão', 'url' => '/manual/parametros-de-impressao', 'type' => 'Manual técnico', 'description' => 'Altura de camada, preenchimento, velocidade e temperatura.', 'terms' => 'parametros parâmetros configurar configurar calibrar calibracao calibração slicer altura camada infill preenchimento velocidade temperatura suporte suportes paredes'],
+    ['title' => 'Problemas Comuns e Soluções', 'url' => '/manual/problemas-comuns-solucoes#problemas', 'type' => 'Resolver problemas', 'description' => 'Troubleshooting para impressões FDM.', 'terms' => 'problema problemas solucao solução troubleshooting warping stringing layer splitting camadas under extrusion under-extrusion ghosting adesao adesão descola fios buracos ondulacoes ondulações'],
+    ['title' => 'Dicas e Boas Práticas', 'url' => '/manual/dicas-e-boas-praticas', 'type' => 'Manual técnico', 'description' => 'Primeira camada, testes, orientação e manutenção.', 'terms' => 'dicas boas praticas práticas primeira camada calibrar calibração teste orientacao orientação manutencao manutenção cama perfis'],
+    ['title' => 'Software Essencial', 'url' => '/manual/software-essencial-3d', 'type' => 'Manual técnico', 'description' => 'Slicers, CAD e repositórios de modelos.', 'terms' => 'software slicer prusaslicer orcaslicer cura tinkercad fusion 360 blender cad modelo modelos design'],
+    ['title' => 'Glossário', 'url' => '/manual/glossario-termos-tecnicos', 'type' => 'Referência técnica', 'description' => 'Termos essenciais da impressão 3D.', 'terms' => 'glossario glossário termo termos gcode g-code slicer infill bed leveling retraction warping stl 3mf cad hotend hot-end pressure advance'],
+    ['title' => 'Calculadora de Custos', 'url' => '/calculadora', 'type' => 'Ferramenta', 'description' => 'Estima filamento e eletricidade por impressão.', 'terms' => 'calculadora custo custos filamento eletricidade energia preco preço orçamento'],
+    ['title' => 'Fórum Manual 3D', 'url' => '/forum/', 'type' => 'Comunidade', 'description' => 'Perguntas, discussões e comunidades.', 'terms' => 'forum fórum comunidade pergunta perguntas discutir discussão topico tópico ajuda maker'],
+    ['title' => 'IA do Manual', 'url' => '/ai', 'type' => 'Assistência', 'description' => 'Assistente para aprendizagem e orientação.', 'terms' => 'ia ai inteligencia inteligência assistente ajuda perguntar orientação orientacao manual'],
+];
 ?>
 <!doctype html>
 <html lang="pt-PT">
@@ -14,11 +38,28 @@ $currentUser = isLoggedIn() ? getCurrentUser() : null;
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf" content="<?php echo generateCSRFToken(); ?>">
-    <meta name="description" content="Manual 3D: guias de impressão 3D, resolução de problemas, calculadora de custos, comunidade e assistência Print AI.">
-    <meta name="robots" content="noindex, nofollow">
-    <title>Manual 3D — Aprende, resolve e cria</title>
+    <meta name="description" content="Aprende impressão 3D com guias técnicos, resolução de problemas, calculadora de custos, Fórum e IA do Manual.">
+    <link rel="canonical" href="https://manual-3d.pt/v2">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manual-3d.pt/v2">
+    <meta property="og:title" content="Manual 3D — Guias, problemas e ferramentas de impressão 3D">
+    <meta property="og:description" content="Guias técnicos, diagnóstico de problemas, calculadora de custos, Fórum e IA do Manual.">
+    <meta property="og:image" content="https://manual-3d.pt/og-manual.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>Manual 3D | Guias, problemas e ferramentas de impressão 3D</title>
     <link rel="icon" type="image/svg+xml" href="favicons/favicon-manual.svg">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Manual 3D — Guias, problemas e ferramentas de impressão 3D",
+        "description": "Portal educativo com guias técnicos, resolução de problemas, ferramentas e comunidade sobre impressão 3D.",
+        "url": "https://manual-3d.pt/v2",
+        "inLanguage": "pt-PT",
+        "isPartOf": { "@type": "WebSite", "name": "Manual de Impressão 3D", "url": "https://manual-3d.pt/" }
+    }
+    </script>
     <style>
         :root {
             --ink: #142128;
@@ -104,7 +145,12 @@ $currentUser = isLoggedIn() ? getCurrentUser() : null;
         .search-result:hover { background: var(--teal-pale); }
         .search-result small { display: block; margin-bottom: 2px; color: var(--teal-deep); font-family: "DM Mono", monospace; font-size: .62rem; letter-spacing: .07em; text-transform: uppercase; }
         .search-result strong { font-size: .82rem; }
-        .search-empty { padding: 14px 16px; color: var(--ink-soft); font-size: .84rem; }
+        .search-result-description { display: block; margin-top: 2px; color: var(--ink-soft); font-size: .72rem; }
+        .search-empty { padding: 14px 16px 8px; color: var(--ink-soft); font-size: .84rem; }
+        .search-next-step { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 8px; padding: 10px 12px; border-radius: 8px; background: #f1f6f3; color: #365d57; font-size: .72rem; }
+        .search-next-step-links { display: flex; flex: 0 0 auto; gap: 8px; }
+        .search-next-step a { color: var(--teal-deep); font-size: .72rem; font-weight: 800; text-decoration: none; }
+        .search-next-step a:hover { text-decoration: underline; }
         .printer-visual { position: relative; align-self: end; width: min(100%, 460px); justify-self: end; padding-bottom: 42px; }
         .printer-caption { position: absolute; z-index: 2; left: -26px; top: 75px; padding: 9px 11px; border: 1px solid rgba(255,255,255,.18); border-radius: 8px; background: rgba(16,33,40,.8); color: #d8e5e2; font-family: "DM Mono", monospace; font-size: .65rem; backdrop-filter: blur(8px); }
         .printer-visual svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(18px 18px 0 rgba(0,0,0,.15)); }
@@ -138,6 +184,8 @@ $currentUser = isLoggedIn() ? getCurrentUser() : null;
         .journey-intro { position: sticky; top: 98px; }
         .journey-intro h2 { margin: 0; font-size: clamp(1.9rem, 3.4vw, 3rem); line-height: 1.1; letter-spacing: -.05em; }
         .journey-intro p { color: var(--ink-soft); }
+        .learning-note { display: flex; align-items: flex-start; gap: 10px; margin: 25px 0 0; padding: 14px; border-left: 3px solid var(--teal); background: #eff6f2; color: #365d57; font-size: .78rem; }
+        .learning-note svg { width: 18px; height: 18px; flex: 0 0 auto; margin-top: 2px; color: var(--teal-deep); }
         .journey-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
         .journey-list li { display: grid; grid-template-columns: 46px 1fr auto; align-items: center; gap: 16px; min-height: 86px; border-bottom: 1px solid var(--line); }
         .journey-number { color: #91a19b; font-family: "DM Mono", monospace; font-size: .74rem; }
@@ -306,7 +354,7 @@ $currentUser = isLoggedIn() ? getCurrentUser() : null;
                 <a href="#resolver">Resolver problemas</a>
                 <a href="#ferramentas">Ferramentas</a>
                 <a href="#comunidade">Comunidade</a>
-                <a href="/ai">Print AI</a>
+                <a href="/ai">IA do Manual</a>
             </nav>
             <div class="header-actions">
                 <a class="forum-link" href="/forum/">Fórum</a>
@@ -342,10 +390,10 @@ $currentUser = isLoggedIn() ? getCurrentUser() : null;
                     <div class="quick-search" role="search">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
                         <label class="sr-only" for="manual-search">Pesquisar no Manual e no Fórum</label>
-                        <input id="manual-search" type="search" autocomplete="off" placeholder="Procura um tema, material ou problema…">
+                        <input id="manual-search" type="search" autocomplete="off" placeholder="Procura um tema, material ou problema…" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
                         <span class="search-key" aria-hidden="true">Ctrl K</span>
                     </div>
-                    <div class="hero-search-results" id="search-results" aria-live="polite"></div>
+                    <div class="hero-search-results" id="search-results" role="listbox" aria-label="Resultados da pesquisa" aria-live="polite"></div>
                     <div class="hero-footnote"><span aria-hidden="true"></span> Guias técnicos, ferramentas e comunidade no mesmo lugar.</div>
                 </div>
                 <div class="printer-visual" aria-hidden="true">
@@ -395,7 +443,7 @@ $currentUser = isLoggedIn() ? getCurrentUser() : null;
 
         <section class="start-section" id="começar" aria-labelledby="start-title">
             <div class="shell journey">
-                <div class="journey-intro"><p class="eyebrow">Estou a começar</p><h2 id="start-title">Um percurso simples para a primeira impressão.</h2><p>Os capítulos existentes do Manual, dispostos numa sequência prática para começares com contexto.</p><a class="text-link" href="/manual/o-que-e-impressao-3d">Abrir o primeiro capítulo</a></div>
+                <div class="journey-intro"><p class="eyebrow">Estou a começar</p><h2 id="start-title">Um percurso simples para a primeira impressão.</h2><p>Os capítulos existentes do Manual, dispostos numa sequência prática para começares com contexto.</p><a class="text-link" href="/manual/o-que-e-impressao-3d">Abrir o primeiro capítulo</a><div class="learning-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"/><path d="M4 19h16"/></svg><span><strong>Para aprender passo a passo.</strong><br>Útil para estudo individual, trabalhos e preparação de aulas: segue os capítulos pela ordem apresentada.</span></div></div>
                 <ol class="journey-list">
                     <li><span class="journey-number">01</span><a href="/manual/o-que-e-impressao-3d">O que é a Impressão 3D?<small>Conceitos fundamentais para começar</small></a><span class="journey-arrow">→</span></li>
                     <li><span class="journey-number">02</span><a href="/manual/tipos-de-impressoras-3d">Tipos de Impressoras<small>Conhece FDM, SLA e SLS</small></a><span class="journey-arrow">→</span></li>
@@ -448,10 +496,10 @@ $currentUser = isLoggedIn() ? getCurrentUser() : null;
 
         <section class="community-section" id="comunidade" aria-labelledby="community-title">
             <div class="shell">
-                <div class="section-head"><div><p class="eyebrow">Comunidade e assistência</p><h2 id="community-title">Aprende também com outros makers.</h2></div><p>O Fórum e o Print AI são espaços diferentes, com funções complementares.</p></div>
+                <div class="section-head"><div><p class="eyebrow">Comunidade e assistência</p><h2 id="community-title">Aprende também com outros makers.</h2></div><p>O Fórum e a IA do Manual são espaços diferentes, com funções complementares.</p></div>
                 <div class="community-grid">
                     <article class="community-card"><h3>Leva a questão para a comunidade.</h3><p>No Fórum podes iniciar uma discussão, responder a outros utilizadores, partilhar experiências e acompanhar conversas sobre impressão 3D.</p><ul class="community-points"><li>Fazer uma pergunta</li><li>Responder a uma discussão</li><li>Partilhar uma experiência</li><li>Explorar comunidades</li></ul><a class="button" href="/forum/">Abrir o Fórum <span aria-hidden="true">→</span></a><p class="forum-ai-note">O assistente IA do Fórum mantém-se no próprio Fórum e é independente da IA do Manual.</p></article>
-                    <article class="community-card manual-ai-card"><div class="manual-ai-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="6" width="14" height="12" rx="3"/><path d="M12 3v3M9 11h.01M15 11h.01M9 15h6" stroke-linecap="round"/><path d="M3 10v4M21 10v4"/></svg></div><h3>Precisas de ajuda?</h3><p>A IA do Manual pode ajudar-te a encontrar informação e orientar-te na resolução de problemas de impressão 3D.</p><a class="button" href="/ai">Abrir Print AI <span aria-hidden="true">→</span></a></article>
+                    <article class="community-card manual-ai-card"><div class="manual-ai-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="6" width="14" height="12" rx="3"/><path d="M12 3v3M9 11h.01M15 11h.01M9 15h6" stroke-linecap="round"/><path d="M3 10v4M21 10v4"/></svg></div><h3>Precisas de ajuda?</h3><p>A IA do Manual pode ajudar-te a encontrar informação e orientar-te na resolução de problemas de impressão 3D.</p><a class="button" href="/ai">Abrir a IA do Manual <span aria-hidden="true">→</span></a></article>
                 </div>
             </div>
         </section>
@@ -462,7 +510,7 @@ $currentUser = isLoggedIn() ? getCurrentUser() : null;
             <div class="footer-grid">
                 <div class="footer-brand"><a class="brand" href="/v2"><span class="brand-mark" aria-hidden="true">3D</span><span>Manual 3D</span></a><p>Um centro para aprender impressão 3D, resolver problemas, utilizar ferramentas e partilhar conhecimento.</p></div>
                 <div class="footer-col"><h2>Manual</h2><a href="/manual/o-que-e-impressao-3d">Começar a aprender</a><a href="/manual/problemas-comuns-solucoes">Resolver problemas</a><a href="/manual/glossario-termos-tecnicos">Glossário</a></div>
-                <div class="footer-col"><h2>Explorar</h2><a href="/calculadora">Calculadora</a><a href="/forum/">Fórum</a><a href="/ai">Print AI</a></div>
+                <div class="footer-col"><h2>Explorar</h2><a href="/calculadora">Calculadora</a><a href="/forum/">Fórum</a><a href="/ai">IA do Manual</a></div>
                 <div class="footer-col"><h2>Informação</h2><a href="/sobre">Sobre</a><a href="/contacto">Contacto</a><a href="/suporte">Suporte</a><a href="/terms">Termos</a><a href="/privacy">Privacidade</a></div>
             </div>
             <div class="footer-bottom"><span>© <?php echo date('Y'); ?> Manual de Impressão 3D</span><span class="footer-social"><a href="https://github.com/PurpleF0x" target="_blank" rel="noopener">GitHub</a><a href="https://www.linkedin.com/in/martim-s%C3%A1-2719351ba/" target="_blank" rel="noopener">LinkedIn</a></span></div>
@@ -485,32 +533,45 @@ $currentUser = isLoggedIn() ? getCurrentUser() : null;
 
             const searchInput = document.getElementById('manual-search');
             const results = document.getElementById('search-results');
-            const manualEntries = [
-                { title: 'O que é a Impressão 3D?', url: '/manual/o-que-e-impressao-3d', terms: 'impressao impressão 3d começar conceito basico básico' },
-                { title: 'Como Funciona?', url: '/manual/como-funciona', terms: 'funciona processo modelo slicer primeira impressão' },
-                { title: 'Tipos de Impressoras', url: '/manual/tipos-de-impressoras-3d', terms: 'impressora fdm sla sls tipos tecnologia' },
-                { title: 'Tipos de Filamento', url: '/manual/materiais-e-filamentos', terms: 'filamento pla petg abs asa tpu nylon material' },
-                { title: 'Qual Filamento Usar?', url: '/manual/qual-filamento-usar', terms: 'qual escolher filamento decorativo funcional exterior flexivel flexível' },
-                { title: 'Parâmetros de Impressão', url: '/manual/parametros-de-impressao', terms: 'parametros parâmetros camada infill preenchimento velocidade temperatura slicer' },
-                { title: 'Problemas Comuns e Soluções', url: '/manual/problemas-comuns-solucoes', terms: 'problema warping stringing extrusão extrusao ghosting camada adesão aderencia' },
-                { title: 'Software Essencial', url: '/manual/software-essencial-3d', terms: 'software slicer prusaslicer orcaslicer cura tinkercad fusion blender' },
-                { title: 'Glossário', url: '/manual/glossario-termos-tecnicos', terms: 'glossario glossário gcode g-code hotend retraction bed leveling' },
-                { title: 'Calculadora de Custos', url: '/calculadora', terms: 'calculadora custo custos filamento eletricidade energia' },
-                { title: 'Fórum Manual 3D', url: '/forum/', terms: 'forum fórum comunidade pergunta discussão post' },
-                { title: 'Print AI', url: '/ai', terms: 'ia ai inteligência inteligencia assistente ajuda' }
-            ];
+            const manualEntries = <?php echo json_encode($manualSearchIndex, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+            const stopWords = new Set(['a', 'ao', 'as', 'como', 'da', 'de', 'do', 'e', 'em', 'na', 'no', 'o', 'os', 'para', 'por', 'que', 'um', 'uma']);
+            const normalise = value => value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('pt-PT');
             const escapeHtml = value => value.replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' })[character]);
-            const renderResults = entries => { results.innerHTML = entries.length ? entries.map(entry => `<a class="search-result" href="${entry.url}"><small>${entry.url === '/forum/' ? 'Comunidade' : entry.url === '/ai' ? 'Assistência' : entry.url === '/calculadora' ? 'Ferramenta' : 'Manual técnico'}</small><strong>${escapeHtml(entry.title)}</strong></a>`).join('') : '<div class="search-empty">Não encontrámos um tema correspondente. Experimenta termos como “filamento”, “stringing” ou “slicer”.</div>'; };
+            const closeSearch = () => { results.innerHTML = ''; searchInput.setAttribute('aria-expanded', 'false'); };
+            const nextStepLinks = '<div class="search-next-step"><span>Não encontraste a resposta?</span><span class="search-next-step-links"><a href="/forum/">Fórum</a><a href="/ai">IA do Manual</a></span></div>';
+            const renderResults = entries => {
+                const directResults = entries.map(entry => `<a class="search-result" role="option" href="${escapeHtml(entry.url)}"><small>${escapeHtml(entry.type)}</small><strong>${escapeHtml(entry.title)}</strong><span class="search-result-description">${escapeHtml(entry.description)}</span></a>`).join('');
+                results.innerHTML = directResults || '<div class="search-empty">Não encontrámos um resultado direto no Manual.</div>';
+                results.insertAdjacentHTML('beforeend', nextStepLinks);
+                searchInput.setAttribute('aria-expanded', 'true');
+            };
+            const scoreEntry = (entry, query, words) => {
+                const title = normalise(entry.title);
+                const terms = normalise(entry.terms);
+                const description = normalise(entry.description);
+                let score = title.includes(query) || terms.includes(query) ? 10 : 0;
+                words.forEach(word => {
+                    if (title.includes(word)) score += 7;
+                    if (terms.includes(word)) score += 4;
+                    if (description.includes(word)) score += 2;
+                });
+                return score;
+            };
             const performSearch = () => {
-                const query = searchInput.value.trim().toLocaleLowerCase('pt-PT');
-                if (query.length < 2) { results.innerHTML = ''; return; }
-                const entries = manualEntries.filter(entry => `${entry.title} ${entry.terms}`.toLocaleLowerCase('pt-PT').includes(query)).slice(0, 6);
+                const query = normalise(searchInput.value.trim());
+                if (query.length < 2) { closeSearch(); return; }
+                const words = query.split(/\s+/).filter(word => word.length > 1 && !stopWords.has(word));
+                const entries = manualEntries.map(entry => ({ entry, score: scoreEntry(entry, query, words) }))
+                    .filter(result => result.score > 0)
+                    .sort((left, right) => right.score - left.score)
+                    .slice(0, 6)
+                    .map(result => result.entry);
                 renderResults(entries);
             };
             searchInput.addEventListener('input', performSearch);
-            searchInput.addEventListener('keydown', event => { if (event.key === 'Escape') { results.innerHTML = ''; searchInput.blur(); } });
+            searchInput.addEventListener('keydown', event => { if (event.key === 'Escape') { closeSearch(); searchInput.blur(); } });
             document.addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); searchInput.focus(); } });
-            document.addEventListener('click', event => { if (!event.target.closest('.quick-search') && !event.target.closest('.hero-search-results')) results.innerHTML = ''; });
+            document.addEventListener('click', event => { if (!event.target.closest('.quick-search') && !event.target.closest('.hero-search-results')) closeSearch(); });
         })();
     </script>
 </body>
