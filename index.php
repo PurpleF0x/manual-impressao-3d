@@ -609,6 +609,8 @@ async function sendAIMessage() {
     var msg = input.value.trim();
     if (!msg) return;
 
+    document.getElementById('aiSuggestions').style.display = 'none';
+
     appendMsg('user', msg);
     input.value = '';
     input.style.height = 'auto';
