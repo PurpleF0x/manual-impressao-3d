@@ -15,21 +15,21 @@ $currentUser = isLoggedIn() ? getCurrentUser() : null;
  * Manual; mantemos assim a pesquisa da homepage ligada apenas a destinos reais.
  */
 $manualSearchIndex = [
-    ['title' => 'O que é a Impressão 3D?', 'url' => '/manual/o-que-e-impressao-3d', 'type' => 'Manual', 'description' => 'Conceitos fundamentais e fabricação aditiva.', 'terms' => 'impressao 3d impressão 3d conceito conceitos basico básico fabricacao fabricação aditiva camada camada a camada aprender alunos professores escola'],
-    ['title' => 'Como Funciona?', 'url' => '/manual/como-funciona', 'type' => 'Manual', 'description' => 'Do modelo digital à peça final.', 'terms' => 'como funciona processo primeira impressao impressão modelo ficheiro arquivo stl 3mf slicer preparar impressora imprimir calibrar calibracao calibração'],
-    ['title' => 'Tipos de Impressoras', 'url' => '/manual/tipos-de-impressoras-3d', 'type' => 'Manual', 'description' => 'Tecnologias FDM, SLA e SLS.', 'terms' => 'impressora impressoras fdm sla resina sls tecnologia tipos escolher maquina máquina'],
+    ['title' => 'O que é a Impressão 3D?', 'url' => '/manual/o-que-e-impressao-3d', 'type' => 'Manual', 'description' => 'Conceitos fundamentais e fabricação aditiva.', 'terms' => 'impressao 3d impressão 3d conceito conceitos basico básico fabricacao fabricação aditiva camada camada a camada aprender alunos professores escola fdm sla sls pla filamentos materiais'],
+    ['title' => 'Como Funciona?', 'url' => '/manual/como-funciona', 'type' => 'Manual', 'description' => 'Do modelo digital à peça final.', 'terms' => 'como funciona processo primeira impressao impressão modelo ficheiro arquivo stl 3mf slicer preparar impressora imprimir calibrar calibracao calibração g-code gcode cad'],
+    ['title' => 'Tipos de Impressoras', 'url' => '/manual/tipos-de-impressoras-3d', 'type' => 'Manual', 'description' => 'Tecnologias FDM, SLA e SLS.', 'terms' => 'impressora impressoras fdm sla resina sls tecnologia tipos escolher maquina máquina filamentos laser fusao'],
     ['title' => 'Iniciantes vs Profissional', 'url' => '/manual/iniciantes-vs-pro', 'type' => 'Manual', 'description' => 'Diferenças entre impressoras de entrada e profissionais.', 'terms' => 'iniciante iniciantes profissional pro impressora entrada comprar escolher comparação comparacao'],
     ['title' => 'Tipos de Filamento', 'url' => '/manual/materiais-e-filamentos', 'type' => 'Manual', 'description' => 'Materiais FDM e as suas características.', 'terms' => 'filamento filamentos material materiais pla petg abs asa tpu nylon pa cf peek temperatura bico cama'],
     ['title' => 'Matriz Técnica de Filamentos', 'url' => '/manual/comparador-de-materiais', 'type' => 'Manual', 'description' => 'Comparação técnica de materiais.', 'terms' => 'comparador comparar filamento materiais densidade resistencia resistência temperatura mesa bico tg tracao tração pla petg abs asa tpu nylon'],
     ['title' => 'Qual Filamento Usar?', 'url' => '/manual/qual-filamento-usar', 'type' => 'Manual', 'description' => 'Seleção de material por aplicação.', 'terms' => 'qual filamento escolher decorativo funcional exterior flexivel flexível escola sala aula performance pla petg asa tpu'],
-    ['title' => 'Parâmetros de Impressão', 'url' => '/manual/parametros-de-impressao', 'type' => 'Manual', 'description' => 'Altura de camada, preenchimento, velocidade e temperatura.', 'terms' => 'parametros parâmetros configurar configurar calibrar calibracao calibração slicer altura camada infill preenchimento velocidade temperatura suporte suportes paredes'],
-    ['title' => 'Problemas Comuns e Soluções', 'url' => '/manual/problemas-comuns-solucoes#problemas', 'type' => 'Problema', 'description' => 'Guia de diagnóstico para impressões FDM.', 'terms' => 'problema problemas solucao solução troubleshooting warping stringing layer splitting camadas under extrusion under-extrusion ghosting adesao adesão descola fios buracos ondulacoes ondulações'],
-    ['title' => 'Dicas e Boas Práticas', 'url' => '/manual/dicas-e-boas-praticas', 'type' => 'Manual', 'description' => 'Primeira camada, testes, orientação e manutenção.', 'terms' => 'dicas boas praticas práticas primeira camada calibrar calibração teste orientacao orientação manutencao manutenção cama perfis'],
-    ['title' => 'Software Essencial', 'url' => '/manual/software-essencial-3d', 'type' => 'Manual', 'description' => 'Slicers, CAD e repositórios de modelos.', 'terms' => 'software slicer prusaslicer orcaslicer cura tinkercad fusion 360 blender cad modelo modelos design'],
-    ['title' => 'Glossário', 'url' => '/manual/glossario-termos-tecnicos', 'type' => 'Referência técnica', 'description' => 'Termos essenciais da impressão 3D.', 'terms' => 'glossario glossário termo termos gcode g-code slicer infill bed leveling retraction warping stl 3mf cad hotend hot-end pressure advance'],
-    ['title' => 'Calculadora de Custos', 'url' => '/calculadora', 'type' => 'Ferramenta', 'description' => 'Estima filamento e eletricidade por impressão.', 'terms' => 'calculadora custo custos filamento eletricidade energia preco preço orçamento'],
-    ['title' => 'Fórum Manual 3D', 'url' => '/forum/', 'type' => 'Fórum', 'description' => 'Perguntas, discussões e comunidades.', 'terms' => 'forum fórum comunidade pergunta perguntas discutir discussão topico tópico ajuda maker'],
-    ['title' => 'IA do Manual', 'url' => '/ai', 'type' => 'IA do Manual', 'description' => 'Assistente para aprendizagem e orientação.', 'terms' => 'ia ai inteligencia inteligência assistente ajuda perguntar orientação orientacao manual'],
+    ['title' => 'Parâmetros de Impressão', 'url' => '/manual/parametros-de-impressao', 'type' => 'Manual', 'description' => 'Altura de camada, preenchimento, velocidade e temperatura.', 'terms' => 'parametros parâmetros configurar configurar calibrar calibracao calibração slicer altura camada infill preenchimento velocidade temperatura suporte suportes paredes fatiamento gcode g-code'],
+    ['title' => 'Problemas Comuns e Soluções', 'url' => '/manual/problemas-comuns-solucoes#problemas', 'type' => 'Problema', 'description' => 'Guia de diagnóstico para impressões FDM.', 'terms' => 'problema problemas solucao solução troubleshooting warping stringing layer splitting camadas under extrusion under-extrusion ghosting adesao adesão descola fios buracos ondulacoes ondulações primeira camada falhas defeitos caminhos'],
+    ['title' => 'Dicas e Boas Práticas', 'url' => '/manual/dicas-e-boas-praticas', 'type' => 'Manual', 'description' => 'Primeira camada, testes, orientação e manutenção.', 'terms' => 'dicas boas praticas práticas primeira camada calibrar calibração teste orientacao orientação manutencao manutenção cama perfis adesao nivelamento'],
+    ['title' => 'Software Essencial', 'url' => '/manual/software-essencial-3d', 'type' => 'Manual', 'description' => 'Slicers, CAD e repositórios de modelos.', 'terms' => 'software slicer prusaslicer orcaslicer cura fatiador fatiamento tinkercad fusion 360 blender cad modelo modelos design repositorio stl 3mf'],
+    ['title' => 'Glossário', 'url' => '/manual/glossario-termos-tecnicos', 'type' => 'Manual', 'description' => 'Termos essenciais da impressão 3D.', 'terms' => 'glossario glossário termo termos gcode g-code slicer infill bed leveling retraction warping stl 3mf cad hotend hot-end pressure advance dicionario vocabulario'],
+    ['title' => 'Calculadora de Custos', 'url' => '/calculadora', 'type' => 'Ferramenta', 'description' => 'Estima filamento e eletricidade por impressão.', 'terms' => 'calculadora custo custos filamento eletricidade energia preco preço orçamento ferramenta gastor'],
+    ['title' => 'Fórum Manual 3D', 'url' => '/forum/', 'type' => 'Fórum', 'description' => 'Perguntas, discussões e comunidades.', 'terms' => 'forum fórum comunidade pergunta perguntas discutir discussão topico tópico ajuda maker participar posts tópicos'],
+    ['title' => 'IA do Manual', 'url' => '/ai', 'type' => 'IA do Manual', 'description' => 'Assistente para aprendizagem e orientação.', 'terms' => 'ia ai inteligencia inteligência assistente ajuda perguntar orientação orientacao manual chatbot'],
 ];
 ?>
 <!doctype html>
@@ -107,9 +107,122 @@ $manualSearchIndex = [
         .primary-nav a { padding: 8px 11px; border-radius: 8px; color: #435057; font-size: .84rem; font-weight: 700; text-decoration: none; }
         .primary-nav a:hover, .primary-nav a[aria-current="true"] { background: #e9eeeb; color: var(--teal-deep); }
         .header-actions { display: flex; align-items: center; gap: 9px; }
-        .header-actions a { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; padding: 8px 13px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); font-size: .8rem; font-weight: 800; text-decoration: none; white-space: nowrap; }
-        .header-actions .account-link { border-color: var(--ink); background: var(--ink); color: #fff; }
-        .header-actions .account-link:hover { background: #27383e; }
+        .header-actions a { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 8px 15px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); font-size: .82rem; font-weight: 800; text-decoration: none; white-space: nowrap; transition: background 0.18s ease, border-color 0.18s ease; }
+        .header-actions .login-link { border-color: transparent; background: transparent; color: var(--ink-soft); }
+        .header-actions .login-link:hover { background: rgba(0,0,0,0.04); color: var(--ink); }
+        .header-actions .account-link { border-color: var(--teal-deep); background: var(--teal-deep); color: #fff; box-shadow: 0 2px 4px rgba(14,136,122,0.15); }
+        .header-actions .account-link:hover { background: #0b695e; border-color: #0b695e; }
+
+        /* Search Type Badges */
+        .search-result small {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+            font-family: "DM Mono", monospace;
+        }
+        .search-result[data-type="Manual"] small { background: #e1f1ed; color: var(--teal-deep); }
+        .search-result[data-type="Problema"] small { background: #fff0e7; color: #b34b1e; }
+        .search-result[data-type="Ferramenta"] small { background: #eeebfb; color: var(--violet); }
+        .search-result[data-type="Fórum"] small { background: #e3f2fd; color: #0d47a1; }
+        .search-result[data-type="IA do Manual"] small { background: #b7eee4; color: #0c3733; }
+
+        /* Mobile Menu Drawer */
+        .mobile-drawer {
+            position: fixed;
+            top: 73px;
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 73px);
+            background: #f7f7f4;
+            z-index: 1500;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            border-top: 1px solid var(--line);
+        }
+        .mobile-drawer.open {
+            transform: translateX(0);
+        }
+        .drawer-inner {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+        .drawer-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .drawer-heading {
+            font-family: "DM Mono", monospace;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--ink-soft);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 6px;
+            margin-bottom: 4px;
+        }
+        .drawer-group a {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--ink);
+            text-decoration: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            transition: background 0.15s ease, color 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .drawer-group a:hover {
+            background: #e9eeeb;
+            color: var(--teal-deep);
+        }
+        .drawer-group .drawer-register-link {
+            background: var(--teal-deep);
+            color: #fff !important;
+            justify-content: center;
+            text-align: center;
+            margin-top: 6px;
+            box-shadow: 0 2px 4px rgba(14,136,122,0.2);
+        }
+        .drawer-group .drawer-register-link:hover {
+            background: #0b695e;
+        }
+        .drawer-group .drawer-login-link {
+            border: 1px solid var(--line);
+            justify-content: center;
+            background: #white;
+            background: #fff;
+        }
+        .drawer-group .drawer-login-link:hover {
+            background: #edf1ef;
+        }
+        .drawer-user-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .drawer-logout-link {
+            color: #c93b3b !important;
+            font-size: 0.95rem !important;
+            border: 1px solid rgba(201, 59, 59, 0.2);
+            justify-content: center;
+            background: rgba(201, 59, 59, 0.03);
+            margin-top: 4px;
+        }
+        .drawer-logout-link:hover {
+            background: rgba(201, 59, 59, 0.08) !important;
+            color: #a82e2e !important;
+        }
         .user-chip { display: inline-flex; align-items: center; gap: 7px; max-width: 170px; overflow: hidden; }
         .user-avatar { display: grid; width: 22px; height: 22px; flex: 0 0 22px; place-items: center; overflow: hidden; border-radius: 50%; background: var(--teal-pale); color: var(--teal-deep); font-size: .66rem; font-weight: 800; }
         .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -273,9 +386,6 @@ $manualSearchIndex = [
         @media (max-width: 920px) {
             .primary-nav { display: none; }
             .menu-button { display: grid; place-items: center; }
-            .primary-nav.open { position: fixed; z-index: 99; inset: 73px 0 auto; display: flex; flex-direction: column; align-items: stretch; gap: 2px; padding: 18px max(24px, calc((100vw - 1180px)/2)); border-bottom: 1px solid var(--line); background: #f7f7f4; box-shadow: 0 16px 30px rgba(16,32,37,.09); }
-            .primary-nav.open a { padding: 11px 0; border-radius: 0; font-size: .93rem; }
-            .header-actions .forum-link { display: none; }
             .hero-inner { grid-template-columns: 1fr; min-height: auto; }
             .hero-copy { padding: 77px 0 16px; }
             .printer-visual { width: min(100%, 470px); margin: 0 auto; justify-self: center; padding-bottom: 20px; }
@@ -295,11 +405,9 @@ $manualSearchIndex = [
             .header-inner { min-height: 64px; gap: 10px; }
             .brand { font-size: .92rem; }
             .brand-mark { width: 31px; height: 31px; }
-            .header-actions .login-link { display: none; }
             .header-actions a { min-height: 36px; padding: 7px 10px; font-size: .74rem; }
             .header-actions .user-chip { max-width: 110px; }
             .menu-button { width: 38px; height: 38px; }
-            .primary-nav.open { top: 65px; }
             .section-head { display: block; margin-bottom: 25px; }
             .section-head > p { margin-top: 12px; }
             .hero-copy { padding: 58px 0 11px; }
@@ -337,7 +445,11 @@ $manualSearchIndex = [
             .footer-brand { grid-column: 1 / -1; }
             .footer-bottom { flex-direction: column; margin-top: 35px; }
         }
-        @media (max-width: 390px) { .header-actions .account-link { display: none; } .paths { grid-template-columns: 1fr; } .path, .path.learn, .path.solve, .path.tools, .path.community, .path.ai { grid-column: 1; } }
+        @media (max-width: 500px) {
+            .header-actions .login-link, .header-actions .account-link { display: none; }
+            .mobile-drawer { top: 65px; height: calc(100vh - 65px); }
+        }
+        @media (max-width: 390px) { .paths { grid-template-columns: 1fr; } .path, .path.learn, .path.solve, .path.tools, .path.community, .path.ai { grid-column: 1; } }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
     </style>
 </head>
@@ -354,11 +466,10 @@ $manualSearchIndex = [
                 <a href="#aprender">Aprender</a>
                 <a href="#resolver">Resolver problemas</a>
                 <a href="#ferramentas">Ferramentas</a>
-                <a href="#comunidade">Comunidade</a>
                 <a href="/ai">IA do Manual</a>
+                <a href="/forum/">Fórum</a>
             </nav>
             <div class="header-actions">
-                <a class="forum-link" href="/forum/">Fórum</a>
                 <?php if ($currentUser): ?>
                     <a class="account-link user-chip" href="/perfil" title="Abrir perfil">
                         <span class="user-avatar">
@@ -370,12 +481,43 @@ $manualSearchIndex = [
                     <a class="login-link" href="/login">Entrar</a>
                     <a class="account-link" href="/register">Criar conta</a>
                 <?php endif; ?>
-                <button class="menu-button" type="button" id="menu-button" aria-label="Abrir menu" aria-controls="main-nav" aria-expanded="false">
+                <button class="menu-button" type="button" id="menu-button" aria-label="Abrir menu" aria-controls="mobile-drawer" aria-expanded="false">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
                 </button>
             </div>
         </div>
     </header>
+
+    <div class="mobile-drawer" id="mobile-drawer" aria-hidden="true">
+        <div class="drawer-inner">
+            <div class="drawer-group">
+                <div class="drawer-heading">Navegação</div>
+                <a href="#aprender">Aprender</a>
+                <a href="#resolver">Resolver problemas</a>
+                <a href="#ferramentas">Ferramentas</a>
+                <a href="/ai">IA do Manual</a>
+            </div>
+            <div class="drawer-group">
+                <div class="drawer-heading">Comunidade</div>
+                <a href="/forum/">Fórum</a>
+            </div>
+            <div class="drawer-group">
+                <div class="drawer-heading">Conta</div>
+                <?php if ($currentUser): ?>
+                    <a class="drawer-user-link" href="/perfil">
+                        <span class="user-avatar">
+                            <?php if (!empty($currentUser['avatar_url'])): ?><img src="<?php echo sanitize(avPath($currentUser['avatar_url'])); ?>" alt=""><?php else: ?><?php echo sanitize($currentUser['avatar'] ?? generateAvatar($currentUser['full_name'] ?? '')); ?><?php endif; ?>
+                        </span>
+                        <span><?php echo sanitize($currentUser['full_name'] ?? 'Perfil'); ?></span>
+                    </a>
+                    <a class="drawer-logout-link" href="/logout">Sair da conta</a>
+                <?php else: ?>
+                    <a class="drawer-login-link" href="/login">Entrar</a>
+                    <a class="drawer-register-link" href="/register">Criar conta</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
 
     <main id="conteudo">
         <section class="hero" aria-labelledby="hero-title">
@@ -499,10 +641,26 @@ $manualSearchIndex = [
 
         <section class="community-section" id="comunidade" aria-labelledby="community-title">
             <div class="shell">
-                <div class="section-head"><div><p class="eyebrow">Comunidade e assistência</p><h2 id="community-title">Aprende também com outros makers.</h2></div><p>O Fórum e a IA do Manual são espaços diferentes, com funções complementares.</p></div>
+                <div class="section-head"><div><p class="eyebrow">Comunidade e assistência</p><h2 id="community-title">Aprende também com outros makers.</h2></div><p>O Fórum e as ferramentas de IA têm funções diferentes e complementares.</p></div>
                 <div class="community-grid">
-                    <article class="community-card"><h3>Leva a questão para a comunidade.</h3><p>No Fórum podes iniciar uma discussão, responder a outros utilizadores, partilhar experiências e acompanhar conversas sobre impressão 3D.</p><ul class="community-points"><li>Fazer uma pergunta</li><li>Responder a uma discussão</li><li>Partilhar uma experiência</li><li>Explorar comunidades</li></ul><a class="button" href="/forum/">Abrir o Fórum <span aria-hidden="true">→</span></a><p class="forum-ai-note"><strong>IA do Fórum:</strong> o assistente disponível no próprio Fórum. É uma experiência independente da IA do Manual.</p></article>
-                    <article class="community-card manual-ai-card"><div class="manual-ai-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="6" width="14" height="12" rx="3"/><path d="M12 3v3M9 11h.01M15 11h.01M9 15h6" stroke-linecap="round"/><path d="M3 10v4M21 10v4"/></svg></div><h3>A IA complementa o Manual.</h3><p>O Manual contém o conhecimento. A IA do Manual ajuda a encontrar informação e a orientar o diagnóstico, sem substituir os guias técnicos.</p><a class="button" href="/ai">Abrir a IA do Manual <span aria-hidden="true">→</span></a></article>
+                    <article class="community-card">
+                        <h3>Leva a questão para a comunidade.</h3>
+                        <p>No Fórum podes iniciar uma discussão, responder a outros utilizadores, partilhar experiências e acompanhar conversas sobre impressão 3D.</p>
+                        <ul class="community-points">
+                            <li>Fazer uma pergunta</li>
+                            <li>Responder a uma discussão</li>
+                            <li>Partilhar uma experiência</li>
+                            <li>Explorar comunidades</li>
+                        </ul>
+                        <a class="button" href="/forum/">Abrir o Fórum <span aria-hidden="true">→</span></a>
+                        <p class="forum-ai-note"><strong>IA do Fórum:</strong> O assistente inteligente integrado nas discussões do próprio Fórum para interações rápidas na comunidade.</p>
+                    </article>
+                    <article class="community-card manual-ai-card">
+                        <div class="manual-ai-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="6" width="14" height="12" rx="3"/><path d="M12 3v3M9 11h.01M15 11h.01M9 15h6" stroke-linecap="round"/><path d="M3 10v4M21 10v4"/></svg></div>
+                        <h3>A IA complementa o Manual.</h3>
+                        <p>O Manual contém o conhecimento oficial. A IA do Manual ajuda a encontrar informação técnica e a orientar o diagnóstico de problemas.</p>
+                        <a class="button" href="/ai">Abrir a IA do Manual <span aria-hidden="true">→</span></a>
+                    </article>
                 </div>
             </div>
         </section>
@@ -524,14 +682,14 @@ $manualSearchIndex = [
     <script>
         (() => {
             const menuButton = document.getElementById('menu-button');
-            const nav = document.getElementById('main-nav');
-            const closeMenu = () => { nav.classList.remove('open'); document.body.classList.remove('menu-open'); menuButton.setAttribute('aria-expanded', 'false'); menuButton.setAttribute('aria-label', 'Abrir menu'); };
+            const drawer = document.getElementById('mobile-drawer');
+            const closeMenu = () => { drawer.classList.remove('open'); document.body.classList.remove('menu-open'); menuButton.setAttribute('aria-expanded', 'false'); menuButton.setAttribute('aria-label', 'Abrir menu'); };
             menuButton.addEventListener('click', () => {
-                const opening = !nav.classList.contains('open');
-                nav.classList.toggle('open', opening); document.body.classList.toggle('menu-open', opening);
+                const opening = !drawer.classList.contains('open');
+                drawer.classList.toggle('open', opening); document.body.classList.toggle('menu-open', opening);
                 menuButton.setAttribute('aria-expanded', String(opening)); menuButton.setAttribute('aria-label', opening ? 'Fechar menu' : 'Abrir menu');
             });
-            nav.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
+            drawer.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
             window.addEventListener('resize', () => { if (window.innerWidth > 920) closeMenu(); });
 
             const searchInput = document.getElementById('manual-search');
@@ -543,7 +701,7 @@ $manualSearchIndex = [
             const closeSearch = () => { results.innerHTML = ''; searchInput.setAttribute('aria-expanded', 'false'); };
             const nextStepLinks = '<div class="search-next-step"><span>Não encontraste a resposta?</span><span class="search-next-step-links"><a href="/forum/">Fórum</a><a href="/ai">IA do Manual</a></span></div>';
             const renderResults = entries => {
-                const directResults = entries.map(entry => `<a class="search-result" role="option" href="${escapeHtml(entry.url)}"><small>${escapeHtml(entry.type)}</small><strong>${escapeHtml(entry.title)}</strong><span class="search-result-description">${escapeHtml(entry.description)}</span></a>`).join('');
+                const directResults = entries.map(entry => `<a class="search-result" role="option" data-type="${escapeHtml(entry.type)}" href="${escapeHtml(entry.url)}"><small>${escapeHtml(entry.type)}</small><strong>${escapeHtml(entry.title)}</strong><span class="search-result-description">${escapeHtml(entry.description)}</span></a>`).join('');
                 results.innerHTML = directResults || '<div class="search-empty">Não encontrámos um resultado direto no Manual.</div>';
                 results.insertAdjacentHTML('beforeend', nextStepLinks);
                 searchInput.setAttribute('aria-expanded', 'true');
