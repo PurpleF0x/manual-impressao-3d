@@ -27,7 +27,7 @@ $manualSearchIndex = [
     ['title' => 'Dicas e Boas Práticas', 'url' => '/manual/dicas-e-boas-praticas', 'type' => 'Manual', 'description' => 'Primeira camada, testes, orientação e manutenção.', 'terms' => 'dicas boas praticas práticas primeira camada calibrar calibração teste orientacao orientação manutencao manutenção cama perfis adesao nivelamento'],
     ['title' => 'Software Essencial', 'url' => '/manual/software-essencial-3d', 'type' => 'Manual', 'description' => 'Slicers, CAD e repositórios de modelos.', 'terms' => 'software slicer prusaslicer orcaslicer cura fatiador fatiamento tinkercad fusion 360 blender cad modelo modelos design repositorio stl 3mf'],
     ['title' => 'Glossário', 'url' => '/manual/glossario-termos-tecnicos', 'type' => 'Manual', 'description' => 'Termos essenciais da impressão 3D.', 'terms' => 'glossario glossário termo termos gcode g-code slicer infill bed leveling retraction warping stl 3mf cad hotend hot-end pressure advance dicionario vocabulario'],
-    ['title' => 'Calculadora de Custos', 'url' => '/calculadora', 'type' => 'Ferramenta', 'description' => 'Estima filamento e eletricidade por impressão.', 'terms' => 'calculadora custo custos filamento eletricidade energia preco preço orçamento ferramenta gastor'],
+    ['title' => 'Calculadora de Custos', 'url' => '/manual/ferramentas-de-calculo', 'type' => 'Ferramenta', 'description' => 'Estima filamento e eletricidade por impressão.', 'terms' => 'calculadora custo custos filamento eletricidade energia preco preço orçamento ferramenta gastor ferramentas de calculo'],
     ['title' => 'Fórum Manual 3D', 'url' => '/forum/', 'type' => 'Fórum', 'description' => 'Perguntas, discussões e comunidades.', 'terms' => 'forum fórum comunidade pergunta perguntas discutir discussão topico tópico ajuda maker participar posts tópicos'],
     ['title' => 'IA do Manual', 'url' => '/ai', 'type' => 'IA do Manual', 'description' => 'Assistente para aprendizagem e orientação.', 'terms' => 'ia ai inteligencia inteligência assistente ajuda perguntar orientação orientacao manual chatbot'],
 ];
@@ -52,12 +52,42 @@ $manualSearchIndex = [
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
-        "@type": "WebPage",
-        "name": "Manual 3D — Guias, problemas e ferramentas de impressão 3D",
-        "description": "Portal educativo com guias técnicos, resolução de problemas, ferramentas e comunidade sobre impressão 3D.",
-        "url": "https://manual-3d.pt/v2",
-        "inLanguage": "pt-PT",
-        "isPartOf": { "@type": "WebSite", "name": "Manual de Impressão 3D", "url": "https://manual-3d.pt/" }
+        "@graph": [
+            {
+                "@type": "WebPage",
+                "@id": "https://manual-3d.pt/v2#webpage",
+                "url": "https://manual-3d.pt/v2",
+                "name": "Manual 3D — Guias, problemas e ferramentas de impressão 3D",
+                "description": "Portal educativo com guias técnicos, resolução de problemas, ferramentas e comunidade sobre impressão 3D.",
+                "inLanguage": "pt-PT",
+                "isPartOf": {
+                    "@type": "WebSite",
+                    "@id": "https://manual-3d.pt/#website",
+                    "name": "Manual de Impressão 3D",
+                    "url": "https://manual-3d.pt/"
+                },
+                "about": [
+                    {"@type": "Thing", "name": "Impressão 3D"},
+                    {"@type": "Thing", "name": "FDM"},
+                    {"@type": "Thing", "name": "SLA"},
+                    {"@type": "Thing", "name": "SLS"},
+                    {"@type": "Thing", "name": "Filamentos"},
+                    {"@type": "Thing", "name": "PLA"},
+                    {"@type": "Thing", "name": "PETG"},
+                    {"@type": "Thing", "name": "ABS"},
+                    {"@type": "Thing", "name": "TPU"},
+                    {"@type": "Thing", "name": "Slicers"},
+                    {"@type": "Thing", "name": "G-code"},
+                    {"@type": "Thing", "name": "Parâmetros de Impressão"},
+                    {"@type": "Thing", "name": "Calibração"},
+                    {"@type": "Thing", "name": "Problemas de Impressão"},
+                    {"@type": "Thing", "name": "Warping"},
+                    {"@type": "Thing", "name": "Stringing"},
+                    {"@type": "Thing", "name": "Primeira Camada"},
+                    {"@type": "Thing", "name": "Glossário"}
+                ]
+            }
+        ]
     }
     </script>
     <style>
@@ -200,7 +230,6 @@ $manualSearchIndex = [
         .drawer-group .drawer-login-link {
             border: 1px solid var(--line);
             justify-content: center;
-            background: #white;
             background: #fff;
         }
         .drawer-group .drawer-login-link:hover {
@@ -486,7 +515,7 @@ $manualSearchIndex = [
         </div>
     </header>
 
-    <div class="mobile-drawer" id="mobile-drawer" aria-hidden="true">
+    <div class="mobile-drawer" id="mobile-drawer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Menu de navegação">
         <div class="drawer-inner">
             <div class="drawer-group">
                 <div class="drawer-heading">Navegação</div>
@@ -627,13 +656,13 @@ $manualSearchIndex = [
                     <a class="problem" href="/manual/problemas-comuns-solucoes#problemas"><span class="problem-mark">Falta material</span><span><h3>Under-extrusion</h3><p>Há buracos ou paredes fracas na peça.</p></span><span class="problem-action">Abrir guia de problemas →</span></a>
                     <a class="problem" href="/manual/problemas-comuns-solucoes#problemas"><span class="problem-mark">Ondulações</span><span><h3>Ghosting</h3><p>Ondas ou ecos aparecem nas paredes da impressão.</p></span><span class="problem-action">Abrir guia de problemas →</span></a>
                 </div>
-                <div class="trouble-footer"><p>O Manual reúne estes sintomas num único guia; não existem artigos individuais para cada um. O capítulo inclui ainda indicações de segurança.</p><a class="text-link" href="/forum/comunidade?slug=troubleshooting">Discutir um problema no Fórum</a></div>
+                <div class="trouble-footer"><p>O Manual reúne estes sintomas num único guia; não existem artigos individuais para cada um. O capítulo inclui ainda indicações de segurança.</p></div>
             </div>
         </section>
 
         <section class="tools-section" id="ferramentas" aria-labelledby="tools-title">
             <div class="shell"><div class="section-head"><div><p class="eyebrow">Ferramentas práticas</p><h2 id="tools-title">O Manual também ajuda a fazer contas.</h2></div><p>Usa a ferramenta já disponível para estimar custos antes de iniciares uma impressão.</p></div>
-                <article class="tool-callout"><div class="tool-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2m4 0h2M8 15h2m4 0h2M8 18h8"/></svg></div><div><h3>Calculadora de custos de impressão</h3><p>Estima o gasto de filamento e eletricidade de cada peça com a calculadora do Manual 3D.</p></div><a class="button" href="/calculadora">Abrir calculadora <span aria-hidden="true">→</span></a></article>
+                <article class="tool-callout"><div class="tool-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2m4 0h2M8 15h2m4 0h2M8 18h8"/></svg></div><div><h3>Calculadora de custos de impressão</h3><p>Estima o gasto de filamento e eletricidade de cada peça com a calculadora do Manual 3D.</p></div><a class="button" href="/manual/ferramentas-de-calculo">Abrir calculadora <span aria-hidden="true">→</span></a></article>
             </div>
         </section>
 
@@ -668,8 +697,8 @@ $manualSearchIndex = [
         <div class="shell">
             <div class="footer-grid">
                 <div class="footer-brand"><a class="brand" href="/v2"><span class="brand-mark" aria-hidden="true">3D</span><span>Manual 3D</span></a><p>Um centro para aprender impressão 3D, resolver problemas, utilizar ferramentas e partilhar conhecimento.</p></div>
-                <div class="footer-col"><h2>Manual</h2><a href="/manual/o-que-e-impressao-3d">Começar a aprender</a><a href="/manual/problemas-comuns-solucoes">Resolver problemas</a><a href="/manual/glossario-termos-tecnicos">Glossário</a></div>
-                <div class="footer-col"><h2>Explorar</h2><a href="/calculadora">Calculadora</a><a href="/forum/">Fórum</a><a href="/ai">IA do Manual</a></div>
+                <div class="footer-col"><h2>Manual</h2><a href="/manual/o-que-e-impressao-3d">Começar a aprender</a><a href="/manual/problemas-comuns-solucoes#problemas">Resolver problemas</a><a href="/manual/glossario-termos-tecnicos">Glossário</a></div>
+                <div class="footer-col"><h2>Explorar</h2><a href="/manual/ferramentas-de-calculo">Calculadora</a><a href="/forum/">Fórum</a><a href="/ai">IA do Manual</a></div>
                 <div class="footer-col"><h2>Informação</h2><a href="/sobre">Sobre</a><a href="/contacto">Contacto</a><a href="/suporte">Suporte</a><a href="/terms">Termos</a><a href="/privacy">Privacidade</a></div>
             </div>
             <div class="footer-bottom"><span>© <?php echo date('Y'); ?> Manual de Impressão 3D</span><span class="footer-social"><a href="https://github.com/PurpleF0x" target="_blank" rel="noopener">GitHub</a><a href="https://www.linkedin.com/in/martim-s%C3%A1-2719351ba/" target="_blank" rel="noopener">LinkedIn</a></span></div>
@@ -681,11 +710,23 @@ $manualSearchIndex = [
         (() => {
             const menuButton = document.getElementById('menu-button');
             const drawer = document.getElementById('mobile-drawer');
-            const closeMenu = () => { drawer.classList.remove('open'); document.body.classList.remove('menu-open'); menuButton.setAttribute('aria-expanded', 'false'); menuButton.setAttribute('aria-label', 'Abrir menu'); };
+            // Inicializar acessibilidade do drawer
+            drawer.setAttribute('aria-hidden', 'true');
+
+            const closeMenu = () => {
+                drawer.classList.remove('open');
+                document.body.classList.remove('menu-open');
+                drawer.setAttribute('aria-hidden', 'true');
+                menuButton.setAttribute('aria-expanded', 'false');
+                menuButton.setAttribute('aria-label', 'Abrir menu');
+            };
             menuButton.addEventListener('click', () => {
                 const opening = !drawer.classList.contains('open');
-                drawer.classList.toggle('open', opening); document.body.classList.toggle('menu-open', opening);
-                menuButton.setAttribute('aria-expanded', String(opening)); menuButton.setAttribute('aria-label', opening ? 'Fechar menu' : 'Abrir menu');
+                drawer.classList.toggle('open', opening);
+                document.body.classList.toggle('menu-open', opening);
+                drawer.setAttribute('aria-hidden', String(!opening));
+                menuButton.setAttribute('aria-expanded', String(opening));
+                menuButton.setAttribute('aria-label', opening ? 'Fechar menu' : 'Abrir menu');
             });
             drawer.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
             window.addEventListener('resize', () => { if (window.innerWidth > 920) closeMenu(); });
