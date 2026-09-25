@@ -92,9 +92,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
     $validFlairs = array('','showcase','tutorial','noticia','pergunta','projeto','ajuda','discussao_tecnica','spoiler');
     if (!in_array($flair, $validFlairs)) $flair = '';
 
-    try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS image_url VARCHAR(500) DEFAULT NULL"); } catch(Exception $e){}
-    try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS image_type ENUM('upload','url') DEFAULT NULL"); } catch(Exception $e){}
-
     // Proteção anti-duplo submit
     $submitToken = $_POST['submit_token'] ?? '';
     if ($submitToken && isset($_SESSION['last_submit_token']) && $_SESSION['last_submit_token'] === $submitToken) {
@@ -114,15 +111,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
         if (!$comm) {
             $error = 'Comunidade inválida.';
         } else {
-            // Garantir colunas necessárias para moderação
-            try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS flair VARCHAR(20) DEFAULT NULL"); } catch(Exception $e){}
-            try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'approved'"); } catch(Exception $e){}
-            try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS moderated_by INT NULL"); } catch(Exception $e){}
-            try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS moderated_at DATETIME NULL"); } catch(Exception $e){}
-            try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS rejection_reason VARCHAR(500) NULL"); } catch(Exception $e){}
-            try { $db->exec("ALTER TABLE forum_memberships MODIFY COLUMN role ENUM('owner','admin','moderator','member') NOT NULL DEFAULT 'member'"); } catch(Exception $e){}
-            try { $db->exec("CREATE TABLE IF NOT EXISTS forum_moderation_log (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, post_id INT NOT NULL, moderator_id INT NOT NULL, action ENUM('approved','rejected') NOT NULL, reason VARCHAR(500) NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, INDEX idx_log_post (post_id), INDEX idx_log_mod (moderator_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"); } catch(Exception $e){}
-
             // Rate limit: máx 3 posts pendentes por utilizador por comunidade por hora
             $rl = $db->prepare("SELECT COUNT(*) FROM forum_posts WHERE user_id=? AND community_id=? AND status='pending' AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)");
             $rl->execute(array((int)$currentUser['id'], $commId));

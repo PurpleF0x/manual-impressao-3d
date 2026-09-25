@@ -9,47 +9,6 @@ $currentUser = getCurrentUser();
 $uid = (int)$currentUser['id'];
 $db  = getDB();
 
-// ── Garantir tabelas ──────────────────────────────────────────
-try { $db->exec("CREATE TABLE IF NOT EXISTS shop_items (
-    id           INT AUTO_INCREMENT PRIMARY KEY,
-    name         VARCHAR(100) NOT NULL,
-    description  VARCHAR(255),
-    category     ENUM('frame','background','banner','accent','badge','medal') NOT NULL,
-    item_key     VARCHAR(50) NOT NULL UNIQUE,
-    css_value    TEXT NOT NULL,
-    preview_css  TEXT,
-    price        INT DEFAULT 100,
-    source       ENUM('shop','community','achievement') DEFAULT 'shop',
-    community_id INT NULL,
-    is_active    TINYINT(1) DEFAULT 1,
-    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"); } catch(Exception $e){}
-
-try { $db->exec("CREATE TABLE IF NOT EXISTS user_inventory (
-    user_id   INT NOT NULL,
-    item_id   INT NOT NULL,
-    obtained_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, item_id),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (item_id) REFERENCES shop_items(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"); } catch(Exception $e){}
-
-try { $db->exec("CREATE TABLE IF NOT EXISTS user_profile_config (
-    user_id       INT PRIMARY KEY,
-    frame_key     VARCHAR(50) NULL,
-    background_key VARCHAR(50) NULL,
-    banner_url    VARCHAR(500) NULL,
-    accent_color  VARCHAR(20) NULL,
-    top_badges    TEXT NULL,
-    coins         INT DEFAULT 0,
-    updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"); } catch(Exception $e){}
-
-try { $db->exec("ALTER TABLE shop_items MODIFY COLUMN category ENUM('frame','background','banner','accent','badge','medal') NOT NULL"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE user_profile_config ADD COLUMN IF NOT EXISTS top_badges TEXT NULL"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS coins INT DEFAULT 0"); } catch(Exception $e){}
-
 // ── Seed de items ─────────────────────────────────────────────
 $existingCount = (int)$db->query("SELECT COUNT(*) FROM shop_items")->fetchColumn();
 if (true) { // Sempre verificar novos items (INSERT IGNORE protege duplicados

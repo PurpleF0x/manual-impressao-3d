@@ -14,34 +14,6 @@ $db   = getDB();
 $errors  = [];
 $success = [];
 
-// --- Garantir colunas extras ---
-try { $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT DEFAULT NULL"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS location VARCHAR(100) DEFAULT NULL"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS website VARCHAR(255) DEFAULT NULL"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) DEFAULT NULL"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS experience_level ENUM('iniciante','intermedio','avancado','profissional') DEFAULT 'iniciante'"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS karma_total INT DEFAULT 0"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS top_badges TEXT DEFAULT NULL"); } catch(Exception $e){}
-
-// --- Tabelas extra ---
-try { $db->exec("CREATE TABLE IF NOT EXISTS user_printers (
-    id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL,
-    brand VARCHAR(100) NOT NULL, model VARCHAR(100) NOT NULL,
-    type ENUM('FDM','SLA','SLS','MSLA','Outro') DEFAULT 'FDM',
-    bed_size VARCHAR(50) DEFAULT NULL, notes TEXT DEFAULT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)"); } catch(Exception $e){}
-try { $db->exec("CREATE TABLE IF NOT EXISTS user_slicers (
-    id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL,
-    name VARCHAR(100) NOT NULL, version VARCHAR(50) DEFAULT NULL,
-    notes TEXT DEFAULT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)"); } catch(Exception $e){}
-try { $db->exec("CREATE TABLE IF NOT EXISTS user_materials (
-    id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL,
-    material VARCHAR(100) NOT NULL, brand VARCHAR(100) DEFAULT NULL,
-    notes TEXT DEFAULT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)"); } catch(Exception $e){}
-
 // ==================== PROCESSAR FORMULÁRIOS ====================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {

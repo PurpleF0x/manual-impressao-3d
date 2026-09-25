@@ -9,9 +9,6 @@ $currentUser = getCurrentUser();
 $uid = (int)$currentUser['id'];
 $db  = getDB();
 
-// Garantir colunas necessárias
-try { $db->exec("ALTER TABLE forum_communities ADD COLUMN IF NOT EXISTS description VARCHAR(500) DEFAULT NULL"); } catch(Exception $e){}
-
 $commId = (int)($_GET['id'] ?? 0);
 if ($commId < 1) { header('Location: /forum/'); exit; }
 
@@ -134,15 +131,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
 
 $csrf = generateCSRFToken();
 $bannerColor = $comm['banner_color'] ?: '#00e5ff';
-
-// Garantir colunas de moderação (safe — ignora se já existem)
-try { $db->exec("ALTER TABLE forum_communities ADD COLUMN IF NOT EXISTS requires_approval TINYINT(1) DEFAULT 0"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'approved'"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS moderated_by INT NULL"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS moderated_at DATETIME NULL"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE forum_posts ADD COLUMN IF NOT EXISTS rejection_reason VARCHAR(500) NULL"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE forum_memberships MODIFY COLUMN role ENUM('owner','admin','moderator','member') NOT NULL DEFAULT 'member'"); } catch(Exception $e){}
-try { $db->exec("CREATE TABLE IF NOT EXISTS forum_moderation_log (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, post_id INT NOT NULL, moderator_id INT NOT NULL, action ENUM('approved','rejected') NOT NULL, reason VARCHAR(500) NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, INDEX idx_log_post (post_id), INDEX idx_log_mod (moderator_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"); } catch(Exception $e){}
 
 // Posts pendentes desta comunidade
 $pendingPosts = array();

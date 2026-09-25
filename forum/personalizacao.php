@@ -9,13 +9,6 @@ $currentUser = getCurrentUser();
 $uid = (int)$currentUser['id'];
 $db  = getDB();
 
-// ── Garantir tabelas ──────────────────────────────────────────
-try { $db->exec("CREATE TABLE IF NOT EXISTS shop_items (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100) NOT NULL, description VARCHAR(255), category ENUM('frame','background','banner','accent','badge','medal') NOT NULL, item_key VARCHAR(50) NOT NULL UNIQUE, css_value TEXT NOT NULL, preview_css TEXT, price INT DEFAULT 100, source ENUM('shop','community','achievement') DEFAULT 'shop', community_id INT NULL, is_active TINYINT(1) DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"); } catch(Exception $e){}
-try { $db->exec("CREATE TABLE IF NOT EXISTS user_inventory (user_id INT NOT NULL, item_id INT NOT NULL, obtained_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (user_id, item_id), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (item_id) REFERENCES shop_items(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE shop_items MODIFY COLUMN category ENUM('frame','background','banner','accent','badge','medal') NOT NULL"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE user_profile_config ADD COLUMN IF NOT EXISTS top_badges TEXT NULL"); } catch(Exception $e){}
-try { $db->exec("ALTER TABLE user_profile_config ADD COLUMN IF NOT EXISTS coins INT DEFAULT 0"); } catch(Exception $e){}
-
 // ── Seed items se vazio ───────────────────────────────────────
 if ((int)$db->query("SELECT COUNT(*) FROM shop_items")->fetchColumn() === 0) {
     $items = array(
@@ -56,9 +49,6 @@ try {
     $cq->execute(array($uid)); $cc = $cq->fetch();
     if ($cc) {
         $config = $cc;
-        if (!isset($cc['top_badges'])) {
-             try { $db->exec("ALTER TABLE user_profile_config ADD COLUMN top_badges TEXT NULL"); } catch(Exception $e){}
-        }
     } else {
         // Tenta obter moedas legadas calculando uma vez se for o primeiro acesso
         try {

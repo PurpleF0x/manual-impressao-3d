@@ -34,10 +34,6 @@ if (!$profile || !$profile['is_active']) {
     </div>');
 }
 
-foreach (['bio TEXT', 'location VARCHAR(100)', 'website VARCHAR(255)', 'avatar_url VARCHAR(500)', "experience_level ENUM('iniciante','intermedio','avancado','profissional') DEFAULT 'iniciante'"] as $col) {
-    try { $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS {$col}"); } catch(Exception $e){}
-}
-
 $printers  = $db->prepare("SELECT * FROM user_printers  WHERE user_id=? ORDER BY created_at DESC"); $printers->execute([$targetId]);  $printers=$printers->fetchAll();
 $slicers   = $db->prepare("SELECT * FROM user_slicers   WHERE user_id=? ORDER BY created_at DESC"); $slicers->execute([$targetId]);   $slicers=$slicers->fetchAll();
 $materials = $db->prepare("SELECT * FROM user_materials WHERE user_id=? ORDER BY created_at DESC"); $materials->execute([$targetId]); $materials=$materials->fetchAll();
