@@ -16,67 +16,30 @@ require_once __DIR__ . '/../config/database.php';
 
 $_CACHE = [];
 
+register_shutdown_function(function() {
+    if (defined('DISABLE_PERF_COMMENT')) return;
+    $time = round(microtime(true) - ($GLOBALS['PERF_START_TIME'] ?? microtime(true)), 4);
+    $queries = $GLOBALS['QUERY_COUNT'] ?? 0;
+    $ddls = $GLOBALS['DDL_COUNT'] ?? 0;
+    echo "\n<!-- PERF DIAGNOSTIC: time={$time}s | queries={$queries} | ddl_queries={$ddls} -->\n";
+});
+
 function ensureUserProfileConfig(?int $userId = null): void {
-    if (isset($_SESSION['db_schema_verified']) && $_SESSION['db_schema_verified'] === true && ($userId === null)) {
+    if ($userId === null || $userId <= 0) return;
+
+    static $ensured = [];
+    if (isset($ensured[$userId]) || isset($_SESSION['user_profile_config_ensured'][$userId])) {
+        $ensured[$userId] = true;
         return;
     }
 
-    $db = getDB();
-
     try {
-        $db->exec("CREATE TABLE IF NOT EXISTS user_profile_config (
-            user_id INT PRIMARY KEY,
-            frame_key VARCHAR(50) NULL,
-            background_key VARCHAR(50) NULL,
-            banner_url VARCHAR(500) NULL,
-            accent_color VARCHAR(20) NULL,
-            top_badges TEXT NULL,
-            coins INT DEFAULT 0,
-            streak_count INT DEFAULT 0,
-            last_streak_date DATE NULL,
-            daily_missions_data TEXT NULL,
-            growth_points INT DEFAULT 0,
-            has_seen_tutorial TINYINT(1) DEFAULT 0,
-            birth_date DATE NULL,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $db = getDB();
+        $stmt = $db->prepare("INSERT IGNORE INTO user_profile_config (user_id) VALUES (?)");
+        $stmt->execute([$userId]);
 
-        $columns = [
-            'frame_key' => "ALTER TABLE user_profile_config ADD COLUMN frame_key VARCHAR(50) NULL",
-            'background_key' => "ALTER TABLE user_profile_config ADD COLUMN background_key VARCHAR(50) NULL",
-            'banner_url' => "ALTER TABLE user_profile_config ADD COLUMN banner_url VARCHAR(500) NULL",
-            'accent_color' => "ALTER TABLE user_profile_config ADD COLUMN accent_color VARCHAR(20) NULL",
-            'top_badges' => "ALTER TABLE user_profile_config ADD COLUMN top_badges TEXT NULL",
-            'coins' => "ALTER TABLE user_profile_config ADD COLUMN coins INT DEFAULT 0",
-            'streak_count' => "ALTER TABLE user_profile_config ADD COLUMN streak_count INT DEFAULT 0",
-            'last_streak_date' => "ALTER TABLE user_profile_config ADD COLUMN last_streak_date DATE NULL",
-            'daily_missions_data' => "ALTER TABLE user_profile_config ADD COLUMN daily_missions_data TEXT NULL",
-            'growth_points' => "ALTER TABLE user_profile_config ADD COLUMN growth_points INT DEFAULT 0",
-            'has_seen_tutorial' => "ALTER TABLE user_profile_config ADD COLUMN has_seen_tutorial TINYINT(1) DEFAULT 0",
-            'birth_date' => "ALTER TABLE user_profile_config ADD COLUMN birth_date DATE NULL",
-            'updated_at' => "ALTER TABLE user_profile_config ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
-        ];
-
-        foreach ($columns as $column => $alterSql) {
-            try {
-                $db->query("SELECT {$column} FROM user_profile_config LIMIT 1");
-            } catch (Exception $e) {
-                try { $db->exec($alterSql); } catch (Exception $ignored) {}
-            }
-        }
-
-        // Garantir que a tabela users permite username NULL (para onboarding Google)
-        try {
-            $db->exec("ALTER TABLE users MODIFY username VARCHAR(50) NULL");
-        } catch (Exception $e) {}
-
-        if ($userId !== null && $userId > 0) {
-            $stmt = $db->prepare("INSERT IGNORE INTO user_profile_config (user_id) VALUES (?)");
-            $stmt->execute([$userId]);
-        }
-
-        $_SESSION['db_schema_verified'] = true;
+        $ensured[$userId] = true;
+        $_SESSION['user_profile_config_ensured'][$userId] = true;
     } catch (Exception $e) {
         error_log("Erro ensureUserProfileConfig: " . $e->getMessage());
     }
@@ -91,36 +54,6 @@ function getCurrentUser(): ?array {
     global $_CACHE;
     if (!isset($_CACHE['current_user'])) {
         $db   = getDB();
-        // Garantir que a coluna karma_total e tabela xp_log existem (Auto-fix)
-        try {
-            $stmt = $db->prepare('SELECT karma_total FROM users LIMIT 1');
-            $stmt->execute();
-        } catch (Exception $e) {
-            $db->exec("ALTER TABLE users ADD COLUMN karma_total INT DEFAULT 0");
-            $db->exec("ALTER TABLE users ADD COLUMN prefs_show_karma TINYINT(1) DEFAULT 1");
-            $db->exec("ALTER TABLE users ADD COLUMN top_badges TEXT DEFAULT NULL");
-        }
-
-        // Garantir coluna para Google Login
-        try {
-            $db->query("SELECT google_id FROM users LIMIT 1");
-        } catch (Exception $e) {
-            $db->exec("ALTER TABLE users ADD COLUMN google_id VARCHAR(255) NULL UNIQUE");
-        }
-
-        try {
-            $db->query("SELECT 1 FROM xp_log LIMIT 1");
-        } catch (Exception $e) {
-            $db->exec("CREATE TABLE xp_log (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                user_id INT NOT NULL,
-                xp_amount INT NOT NULL,
-                reason VARCHAR(255),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
-        }
-
         $stmt = $db->prepare('SELECT * FROM users WHERE id = ? AND is_active = TRUE LIMIT 1');
         $stmt->execute([$_SESSION['user_id']]);
         $user = $stmt->fetch();

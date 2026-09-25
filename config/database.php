@@ -18,6 +18,36 @@ define('DB_OPTIONS', [
     PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4",
 ]);
 
+if (!isset($GLOBALS['PERF_START_TIME'])) {
+    $GLOBALS['PERF_START_TIME'] = microtime(true);
+}
+$GLOBALS['QUERY_COUNT'] = 0;
+$GLOBALS['DDL_COUNT']   = 0;
+
+class TrackedPDO extends PDO {
+    public function exec(string $statement): int|false {
+        $GLOBALS['QUERY_COUNT']++;
+        if (preg_match('/^\s*(ALTER|CREATE|DROP|RENAME)\s+/i', $statement)) {
+            $GLOBALS['DDL_COUNT']++;
+        }
+        return parent::exec($statement);
+    }
+    public function query(string $query, ?int $fetchMode = null, ...$fetch_mode_args): PDOStatement|false {
+        $GLOBALS['QUERY_COUNT']++;
+        if (preg_match('/^\s*(ALTER|CREATE|DROP|RENAME)\s+/i', $query)) {
+            $GLOBALS['DDL_COUNT']++;
+        }
+        return parent::query($query, $fetchMode, ...$fetch_mode_args);
+    }
+    public function prepare(string $query, array $options = []): PDOStatement|false {
+        $GLOBALS['QUERY_COUNT']++;
+        if (preg_match('/^\s*(ALTER|CREATE|DROP|RENAME)\s+/i', $query)) {
+            $GLOBALS['DDL_COUNT']++;
+        }
+        return parent::prepare($query, $options);
+    }
+}
+
 /**
  * Retorna a ligação à Base de Dados (Singleton)
  */
@@ -28,16 +58,7 @@ function getDB(): PDO {
     $dsn = 'mysql:host=' . DB_HOST . ';port=' . DB_PORT . ';dbname=' . DB_NAME . ';charset=' . DB_CHARSET;
 
     try {
-        $pdo = new PDO($dsn, DB_USER, DB_PASS, DB_OPTIONS);
-
-        // ── Pequena migração para o novo cargo 'owner' ───────────
-        static $migrated = false;
-        if (!$migrated) {
-            $pdo->exec("ALTER TABLE users MODIFY COLUMN role ENUM('owner','master','admin','moderator','user') DEFAULT 'user'");
-            // Promover email específico
-            $pdo->exec("UPDATE users SET role = 'owner' WHERE email = 'manual3d.projetos@gmail.com'");
-            $migrated = true;
-        }
+        $pdo = new TrackedPDO($dsn, DB_USER, DB_PASS, DB_OPTIONS);
     } catch (PDOException $e) {
         die('Erro de ligação: ' . $e->getMessage());
     }
