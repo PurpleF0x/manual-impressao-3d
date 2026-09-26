@@ -380,64 +380,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
         <?php endforeach; ?>
     </div>
 
-    <!-- Posts pendentes de aprovação -->
-    <div class="card">
-        <div class="card-header">
-            <div class="card-header-icon" style="background:rgba(255,204,0,0.1)">⏳</div>
-            <div style="flex:1">
-                <div class="card-header-title">Posts Pendentes de Aprovação</div>
-                <div class="card-header-sub">Revê e aprova ou rejeita os posts submetidos pelos membros</div>
-            </div>
-            <?php if ($pendingCount > 0): ?>
-            <span style="background:rgba(255,204,0,0.15);color:#ffcc00;border:1px solid rgba(255,204,0,0.3);font-family:'Space Mono',monospace;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px"><?php echo $pendingCount; ?> pendente<?php echo $pendingCount!==1?'s':''; ?></span>
-            <?php endif; ?>
-        </div>
-        <div class="card-body">
-            <?php if (empty($pendingPosts)): ?>
-            <div style="text-align:center;padding:32px 0;color:var(--muted)">
-                <div style="font-size:32px;margin-bottom:10px">✅</div>
-                <div style="font-size:14px">Nenhum post pendente. Tudo em dia!</div>
-            </div>
-            <?php else: ?>
-            <div style="display:flex;flex-direction:column;gap:14px">
-                <?php foreach($pendingPosts as $p): ?>
-                <div style="background:var(--surface2);border:1px solid rgba(255,204,0,0.15);border-radius:12px;padding:16px 18px">
-                    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px">
-                        <div style="flex:1;min-width:0">
-                            <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><?php echo sanitize($p['title']); ?></div>
-                            <div style="display:flex;align-items:center;gap:8px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">
-                                <span>@<?php echo sanitize($p['username']); ?></span>
-                                <span>·</span>
-                                <span><?php echo date('d/m/Y H:i', strtotime($p['created_at'])); ?></span>
-                                <?php if ($p['flair']): ?><span style="background:rgba(0,229,255,0.08);color:var(--accent);border:1px solid rgba(0,229,255,0.2);padding:1px 7px;border-radius:10px"><?php echo sanitize($p['flair']); ?></span><?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                    <?php if ($p['content']): ?>
-                    <div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:12px;max-height:300px;overflow-y:auto;padding:12px;background:var(--surface);border-radius:8px;border:1px solid var(--border2);white-space:pre-wrap;word-break:break-word"><?php echo sanitize($p['content']); ?></div>
-                    <?php endif; ?>
-                    <div style="display:flex;gap:8px;flex-wrap:wrap">
-                        <form method="POST" style="display:inline">
-                            <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
-                            <input type="hidden" name="action"  value="approve_post">
-                            <input type="hidden" name="post_id" value="<?php echo (int)$p['id']; ?>">
-                            <button type="submit" class="btn" style="background:rgba(0,255,136,0.1);color:var(--accent4);border:1px solid rgba(0,255,136,0.25);font-size:10px;padding:8px 16px">✅ APROVAR</button>
-                        </form>
-                        <form method="POST" style="display:inline;display:flex;gap:6px;align-items:center">
-                            <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
-                            <input type="hidden" name="action"  value="reject_post">
-                            <input type="hidden" name="post_id" value="<?php echo (int)$p['id']; ?>">
-                            <input type="text" name="rejection_reason" placeholder="Motivo (opcional)" style="background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;width:180px">
-                            <button type="submit" class="btn" style="background:rgba(255,68,68,0.08);color:#ff8888;border:1px solid rgba(255,68,68,0.25);font-size:10px;padding:8px 16px">❌ REJEITAR</button>
-                        </form>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-            <?php endif; ?>
-        </div>
-    </div>
-
     <!-- Gestão de membros e roles (apenas owner) -->
     <?php if ($isOwner || $isGlobMod): ?>
     <div class="card">
@@ -496,43 +438,45 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
     <div class="tab-panel" id="tab-pendentes">
         <div class="card">
             <div class="card-header">
-                <div class="card-header-icon" style="background:rgba(255,107,53,0.1)">⏳</div>
-                <div>
+                <div class="card-header-icon" style="background:rgba(255,107,53,0.12)">⏳</div>
+                <div style="flex:1">
                     <div class="card-header-title">Posts Aguardando Aprovação</div>
-                    <div class="card-header-sub">Estes posts só aparecerão na comunidade após serem aceites</div>
+                    <div class="card-header-sub">Clica num cartão para rever o post completo antes de aprovar ou rejeitar</div>
                 </div>
+                <?php if ($pendingCount > 0): ?>
+                <span style="background:rgba(255,204,0,0.15);color:#ffcc00;border:1px solid rgba(255,204,0,0.3);font-family:'Space Mono',monospace;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px"><?php echo $pendingCount; ?> pendente<?php echo $pendingCount!==1?'s':''; ?></span>
+                <?php endif; ?>
             </div>
             <div class="card-body">
                 <?php if (empty($pendingPosts)): ?>
-                    <div class="empty-state">Nenhum post pendente de momento.</div>
+                    <div style="text-align:center;padding:40px 0;color:var(--muted)">
+                        <div style="font-size:36px;margin-bottom:10px">✅</div>
+                        <div style="font-size:14px;font-weight:600;color:var(--text)">Nenhum post pendente de momento.</div>
+                        <div style="font-size:12px;margin-top:4px">Todos os posts submetidos já foram revistos.</div>
+                    </div>
                 <?php else: ?>
-                    <?php foreach ($pendingPosts as $pp): ?>
-                    <div class="pending-card">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:14px;">
+                        <?php foreach ($pendingPosts as $idx => $pp): ?>
+                        <div class="pending-grid-card" onclick="openPendingModal(<?php echo $idx; ?>)" style="background:var(--surface2);border:1px solid rgba(255,204,0,0.2);border-radius:12px;padding:16px;cursor:pointer;transition:all 0.2s ease;display:flex;flex-direction:column;justify-content:space-between;min-height:110px;">
                             <div>
-                                <div style="font-weight:700; color:#fff; font-size:15px"><?php echo sanitize($pp['title']); ?></div>
-                                <div style="font-size:11px; color:var(--muted)">Por @<?php echo sanitize($pp['username']); ?> em <?php echo date('d/m/Y H:i', strtotime($pp['created_at'])); ?></div>
+                                <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:10px;">
+                                    <?php echo sanitize($pp['title']); ?>
+                                </div>
                             </div>
-                            <div style="display:flex; gap:8px">
-                                <form method="POST" style="margin:0">
-                                    <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
-                                    <input type="hidden" name="action" value="approve_post">
-                                    <input type="hidden" name="post_id" value="<?php echo $pp['id']; ?>">
-                                    <button type="submit" class="btn btn-primary" style="padding:6px 12px; font-size:10px; background:var(--accent4); color:#000">APROVAR</button>
-                                </form>
-                                <form method="POST" style="margin:0">
-                                    <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
-                                    <input type="hidden" name="action" value="reject_post">
-                                    <input type="hidden" name="post_id" value="<?php echo $pp['id']; ?>">
-                                    <button type="submit" class="btn btn-danger" style="padding:6px 12px; font-size:10px" onclick="return confirm('Rejeitar este post?')">REJEITAR</button>
-                                </form>
+                            <div style="margin-top:auto;">
+                                <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);display:flex;flex-direction:column;gap:3px;">
+                                    <span style="color:var(--text);font-weight:600">@<?php echo sanitize($pp['username']); ?></span>
+                                    <span><?php echo date('d/m/Y H:i', strtotime($pp['created_at'])); ?></span>
+                                </div>
+                                <?php if (!empty($pp['flair'])): ?>
+                                <div style="margin-top:8px">
+                                    <span style="background:rgba(0,229,255,0.08);color:var(--accent);border:1px solid rgba(0,229,255,0.2);font-family:'Space Mono',monospace;font-size:9px;padding:2px 8px;border-radius:10px"><?php echo sanitize($pp['flair']); ?></span>
+                                </div>
+                                <?php endif; ?>
                             </div>
                         </div>
-                        <?php if($pp['content']): ?>
-                            <div style="font-size:13px; color:var(--muted); line-height:1.5; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px"><?php echo nl2br(sanitize(mb_substr($pp['content'], 0, 300))); ?>...</div>
-                        <?php endif; ?>
+                        <?php endforeach; ?>
                     </div>
-                    <?php endforeach; ?>
                 <?php endif; ?>
             </div>
         </div>
@@ -540,7 +484,107 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 
 </div>
 
+<!-- MODAL DE VISUALIZAÇÃO COMPLETA DE POST PENDENTE -->
+<div id="pendingModal" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:20px;">
+    <div style="background:var(--surface); border:1px solid var(--border2); border-radius:18px; max-width:680px; width:100%; max-height:90vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.8);">
+        <!-- Header -->
+        <div style="padding:20px 24px; border-bottom:1px solid var(--border2); display:flex; align-items:center; justify-content:space-between; background:var(--surface2);">
+            <div>
+                <div style="font-family:'Space Mono',monospace; font-size:10px; color:var(--accent2); letter-spacing:2px; text-transform:uppercase">Moderação de Post Pendente</div>
+                <div id="modalTitle" style="font-family:'Syne',sans-serif; font-size:18px; font-weight:800; color:#fff; margin-top:4px"></div>
+            </div>
+            <button onclick="closePendingModal()" style="background:none; border:none; color:var(--muted); font-size:24px; cursor:pointer; padding:4px 8px; line-height:1; transition:color 0.2s">&times;</button>
+        </div>
+
+        <!-- Body -->
+        <div style="padding:24px; overflow-y:auto; flex:1;">
+            <!-- Meta info -->
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border2); font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); flex-wrap:wrap">
+                <span>Autor: <strong id="modalAuthor" style="color:var(--text)"></strong></span>
+                <span>·</span>
+                <span id="modalDate"></span>
+                <span id="modalFlairBadge" style="display:none; background:rgba(0,229,255,0.08); color:var(--accent); border:1px solid rgba(0,229,255,0.2); padding:2px 8px; border-radius:10px"></span>
+            </div>
+
+            <!-- Image if present -->
+            <div id="modalImageWrap" style="display:none; margin-bottom:16px; text-align:center;">
+                <img id="modalImage" src="" alt="Imagem do post" style="max-width:100%; max-height:280px; border-radius:10px; border:1px solid var(--border2); object-fit:contain;">
+            </div>
+
+            <!-- Text Content -->
+            <div id="modalContent" style="font-size:14px; color:var(--text); line-height:1.7; white-space:pre-wrap; word-break:break-word; background:var(--surface2); padding:16px; border-radius:12px; border:1px solid var(--border2); max-height:350px; overflow-y:auto;"></div>
+        </div>
+
+        <!-- Actions Footer -->
+        <div style="padding:18px 24px; border-top:1px solid var(--border2); background:var(--surface2); display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;">
+            <form method="POST" style="display:inline; margin:0">
+                <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
+                <input type="hidden" name="action" value="approve_post">
+                <input type="hidden" name="post_id" id="modalPostIdApprove" value="">
+                <button type="submit" class="btn" style="background:rgba(0,255,136,0.12); color:var(--accent4); border:1px solid rgba(0,255,136,0.3); font-family:'Space Mono',monospace; font-size:11px; font-weight:700; padding:10px 20px; border-radius:8px; cursor:pointer">✅ APROVAR POST</button>
+            </form>
+            <form method="POST" style="display:flex; gap:8px; align-items:center; margin:0">
+                <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
+                <input type="hidden" name="action" value="reject_post">
+                <input type="hidden" name="post_id" id="modalPostIdReject" value="">
+                <input type="text" name="rejection_reason" placeholder="Motivo da rejeição (opcional)" style="background:var(--surface); border:1px solid var(--border2); border-radius:8px; padding:8px 12px; color:var(--text); font-family:'Inter',sans-serif; font-size:12px; width:220px">
+                <button type="submit" class="btn" style="background:rgba(255,68,68,0.1); color:#ff8888; border:1px solid rgba(255,68,68,0.3); font-family:'Space Mono',monospace; font-size:11px; font-weight:700; padding:10px 18px; border-radius:8px; cursor:pointer">❌ REJEITAR POST</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.pending-grid-card:hover {
+    border-color: var(--accent2) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+</style>
+
 <script>
+var pendingPostsData = <?php echo json_encode($pendingPosts, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?> || [];
+
+function openPendingModal(idx) {
+    var p = pendingPostsData[idx];
+    if (!p) return;
+    document.getElementById('modalTitle').textContent = p.title || '';
+    document.getElementById('modalAuthor').textContent = '@' + (p.username || '') + (p.full_name ? ' (' + p.full_name + ')' : '');
+    document.getElementById('modalDate').textContent = p.created_at ? new Date(p.created_at.replace(/-/g, '/')).toLocaleString('pt-PT') : '';
+
+    var flairBadge = document.getElementById('modalFlairBadge');
+    if (p.flair) {
+        flairBadge.textContent = p.flair;
+        flairBadge.style.display = 'inline-block';
+    } else {
+        flairBadge.style.display = 'none';
+    }
+
+    var imgWrap = document.getElementById('modalImageWrap');
+    var img = document.getElementById('modalImage');
+    if (p.image_url) {
+        img.src = '/' + p.image_url.replace(/^\/+/, '');
+        imgWrap.style.display = 'block';
+    } else {
+        imgWrap.style.display = 'none';
+    }
+
+    document.getElementById('modalContent').textContent = p.content || '(Post sem conteúdo de texto)';
+    document.getElementById('modalPostIdApprove').value = p.id;
+    document.getElementById('modalPostIdReject').value = p.id;
+
+    var modal = document.getElementById('pendingModal');
+    modal.style.display = 'flex';
+}
+
+function closePendingModal() {
+    document.getElementById('pendingModal').style.display = 'none';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closePendingModal();
+});
+
 function switchTab(tabId, btn) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
