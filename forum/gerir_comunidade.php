@@ -414,7 +414,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
                         </div>
                     </div>
                     <?php if ($p['content']): ?>
-                    <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px;max-height:80px;overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,#000 60%,transparent)"><?php echo nl2br(sanitize(mb_substr($p['content'],0,300))); ?></div>
+                    <div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:12px;max-height:300px;overflow-y:auto;padding:12px;background:var(--surface);border-radius:8px;border:1px solid var(--border2);white-space:pre-wrap;word-break:break-word"><?php echo sanitize($p['content']); ?></div>
                     <?php endif; ?>
                     <div style="display:flex;gap:8px;flex-wrap:wrap">
                         <form method="POST" style="display:inline">

@@ -41,14 +41,13 @@ if (!empty($_SESSION['forum_flash'])) {
     unset($_SESSION['forum_flash']);
 }
 
-// Regras de visibilidade de posts
-$postWhere = "AND (fp.status='approved' OR fp.status IS NULL)";
+// Regras de visibilidade de posts na comunidade
 if ($canMod) {
-    // Moderadores vêem tudo menos os rejeitados
+    // Moderadores e equipa da comunidade vêem posts pendentes e aprovados
     $postWhere = "AND fp.status != 'rejected'";
-} elseif ($currentUser) {
-    // Utilizador vê aprovados + os seus próprios pendentes
-    $postWhere = "AND (fp.status='approved' OR fp.status IS NULL OR (fp.status='pending' AND fp.user_id = ".(int)$currentUser['id']."))";
+} else {
+    // Utilizadores normais (visitantes e membros) vêem estritamente posts aprovados
+    $postWhere = "AND (fp.status='approved' OR fp.status IS NULL)";
 }
 
 $posts = $db->query("
