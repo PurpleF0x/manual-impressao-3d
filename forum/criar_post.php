@@ -8,18 +8,19 @@ require_once __DIR__ . '/../includes/functions.php';
 if (!isLoggedIn()) { header('Location: ../login.php'); exit; }
 $currentUser = getCurrentUser();
 $db  = getDB();
+$isStaff = in_array($currentUser['role'] ?? '', array('admin','moderator','master'));
 
 // Comunidade pré-selecionada via GET
 $preSlug = trim($_GET['comm'] ?? '');
 $preComm = null;
 if ($preSlug) {
-    $ps = $db->prepare("SELECT id,name,slug,icon,banner_color FROM forum_communities WHERE slug=? AND is_active=1");
+    $ps = $db->prepare("SELECT id,name,slug,icon,banner_color,requires_approval FROM forum_communities WHERE slug=? AND is_active=1");
     $ps->execute(array($preSlug));
     $preComm = $ps->fetch();
 }
 
 // Todas as comunidades (para o select)
-$allComms = $db->query("SELECT id,name,slug,icon FROM forum_communities WHERE is_active=1 ORDER BY name ASC")->fetchAll();
+$allComms = $db->query("SELECT id,name,slug,icon,requires_approval FROM forum_communities WHERE is_active=1 ORDER BY name ASC")->fetchAll();
 
 // Comunidades do utilizador (sidebar)
 $myCommunities = array();
@@ -105,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCSRFToken($_POST['csrf_token'
     elseif (mb_strlen($title) > 300) $error = 'O título não pode ter mais de 300 caracteres.';
     else {
         // Verificar comunidade
-        $cs = $db->prepare("SELECT id,slug FROM forum_communities WHERE id=? AND is_active=1");
+        $cs = $db->prepare("SELECT id,slug,requires_approval FROM forum_communities WHERE id=? AND is_active=1");
         $cs->execute(array($commId));
         $comm = $cs->fetch();
         if (!$comm) {
@@ -318,6 +319,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
                         data-icon="<?php echo htmlspecialchars($c['icon']); ?>"
                         data-name="<?php echo htmlspecialchars($c['name']); ?>"
                         data-slug="<?php echo htmlspecialchars($c['slug']); ?>"
+                        data-requires-approval="<?php echo (int)($c['requires_approval'] ?? 0); ?>"
                         <?php echo ($preComm && (int)$preComm['id']===(int)$c['id']) ? 'selected' : ''; ?>>
                         <?php echo $c['icon']; ?> <?php echo sanitize($c['name']); ?>
                     </option>
@@ -421,7 +423,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
                 <button type="submit" class="submit-btn" id="submitBtn">📨 SUBMETER POST</button>
                 <a href="<?php echo $preComm ? 'comunidade?slug='.urlencode($preComm['slug']) : '/forum/'; ?>" class="cancel-btn">Cancelar</a>
             </div>
-            <div style="margin-top:14px;padding:12px 16px;background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.2);border-radius:10px;font-size:12px;color:var(--muted);display:flex;align-items:flex-start;gap:8px">
+            <div id="approvalNotice" style="<?php echo ($preComm && !empty($preComm['requires_approval']) && !$isStaff) ? 'display:flex;' : 'display:none;'; ?>margin-top:14px;padding:12px 16px;background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.2);border-radius:10px;font-size:12px;color:var(--muted);align-items:flex-start;gap:8px">
                 <span style="font-size:15px;flex-shrink:0">🛡️</span>
                 <span>O teu post ficará <strong style="color:var(--text)">pendente de aprovação</strong> pela equipa da comunidade antes de ser publicado. Receberás feedback assim que for revisto.</span>
             </div>
@@ -479,12 +481,23 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background-im
 function onCommChange(sel) {
     var opt = sel.options[sel.selectedIndex];
     var preview = document.getElementById('commPreview');
-    if (!opt.value) { preview.classList.remove('show'); return; }
-    document.getElementById('cpIcon').textContent = opt.dataset.icon || '💬';
-    document.getElementById('cpName').textContent = opt.dataset.name || '';
+    var notice = document.getElementById('approvalNotice');
+    if (!opt.value) {
+        if (preview) preview.classList.remove('show');
+        if (notice) notice.style.display = 'none';
+        return;
+    }
+    if (document.getElementById('cpIcon')) document.getElementById('cpIcon').textContent = opt.dataset.icon || '💬';
+    if (document.getElementById('cpName')) document.getElementById('cpName').textContent = opt.dataset.name || '';
     var cpLink = document.getElementById('cpLink');
-    cpLink.href = 'comunidade?slug=' + encodeURIComponent(opt.dataset.slug || '');
-    preview.classList.add('show');
+    if (cpLink) cpLink.href = 'comunidade?slug=' + encodeURIComponent(opt.dataset.slug || '');
+    if (preview) preview.classList.add('show');
+
+    var reqApproval = opt.dataset.requiresApproval === '1';
+    var isStaff = <?php echo ($isStaff ? 'true' : 'false'); ?>;
+    if (notice) {
+        notice.style.display = (reqApproval && !isStaff) ? 'flex' : 'none';
+    }
 }
 
 // Clicar numa comunidade da sidebar seleciona-a no select
